@@ -16,6 +16,7 @@ export class UserService {
         let response = await this.httpService.get('User/Profile');
         if (response) {
             this.user = response.data;
+            //@ts-ignore
             user.set(this.user);
             return this.user;
         }
@@ -31,8 +32,8 @@ export class UserService {
         return response;
     }
 
-    public async signup(email: string, password: string) {
-        let response = await this.httpService.post('User', {email, password});
+    public async signup(email: string, password: string, profileName: string) {
+        let response = await this.httpService.post('User', {email, password, profileName});
         if (response.data.token) {
             SetJwtToken(response.data.token);
             return await this.getUserProfile();
@@ -44,5 +45,13 @@ export class UserService {
         SetJwtToken('');
         this.user = null;
         user.set(null);
+    }
+
+    public async updateProfile(profileName: string) {
+        let response = await this.httpService.patch('User', {profileName});
+        if (response) {
+            await this.getUserProfile();
+        }
+        return null;
     }
 }

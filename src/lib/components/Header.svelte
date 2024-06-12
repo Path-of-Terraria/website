@@ -17,9 +17,11 @@
     import {onDestroy} from "svelte";
     import LoginModal from "$lib/components/LoginModal.svelte";
     import {UserService} from "$lib/services/user-service";
+    import SettingsModal from "$lib/components/SettingsModal.svelte";
     let userService = new UserService();
 
     let currentUser: IUser;
+    let settingsOpen = false;
 
     const unsubscribe = user.subscribe(value => {
         console.log('user', value);
@@ -32,7 +34,6 @@
         unsubscribe();
     });
 </script>
-
 <Navbar color="primary">
     <NavBrand href="/">
         <picture>
@@ -62,11 +63,14 @@
     {#if currentUser}
         <Dropdown placement="bottom" triggeredBy="#avatar-menu">
             <DropdownHeader>
+                <span class="block text-sm">{currentUser.profileName}</span>
                 <span class="block truncate text-sm font-medium">{currentUser.email}</span>
             </DropdownHeader>
-            <DropdownItem>Settings</DropdownItem>
+            <DropdownItem on:click={() => settingsOpen = true}>Settings</DropdownItem>
             <DropdownDivider/>
             <DropdownItem on:click={() => userService.signout()}>Sign out</DropdownItem>
         </Dropdown>
     {/if}
 </Navbar>
+
+<SettingsModal bind:open={settingsOpen} bind:currentUser={currentUser}/>

@@ -6,6 +6,7 @@ export interface IUser {
     name: string;
     email: string;
     steamId: string;
+    profileName: string;
 }
 
 function createUserStore() {
@@ -15,6 +16,7 @@ function createUserStore() {
         // Check if localStorage is available (only in the browser)
         if (typeof localStorage !== 'undefined') {
             const response = await userService.getUserProfile();
+            //@ts-ignore
             set(response);
         } else {
             // If localStorage is not available, set uver to null

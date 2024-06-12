@@ -23,6 +23,9 @@ importers:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.1
         version: 3.1.1(svelte@5.0.0-next.153)(vite@5.2.13)
+      '@zerodevx/svelte-toast':
+        specifier: 0.9.5
+        version: 0.9.5(svelte@5.0.0-next.153)
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
@@ -395,6 +398,11 @@ packages:
 
   '@yr/monotone-cubic-spline@1.0.3':
     resolution: {integrity: sha512-FQXkOta0XBSUPHndIKON2Y9JeQz5ZeMqLYZVVK93FliNBFm7LNMIZmY6FrMEB9XPcDbE2bekMbZD6kzDkxwYjA==}
+
+  '@zerodevx/svelte-toast@0.9.5':
+    resolution: {integrity: sha512-JLeB/oRdJfT+dz9A5bgd3Z7TuQnBQbeUtXrGIrNWMGqWbabpepBF2KxtWVhL2qtxpRqhae2f6NAOzH7xs4jUSw==}
+    peerDependencies:
+      svelte: ^3.57.0 || ^4.0.0
 
   acorn-typescript@1.4.13:
     resolution: {integrity: sha512-xsc9Xv0xlVfwp2o7sQ+GCQ1PgbkdcpWdTzrwXxO3xDMTAywVS3oXVOcOHuRjAPkS4P9b+yc/qNF15460v+jp4Q==}
@@ -1470,6 +1478,10 @@ snapshots:
   '@types/pug@2.0.10': {}
 
   '@yr/monotone-cubic-spline@1.0.3': {}
+
+  '@zerodevx/svelte-toast@0.9.5(svelte@5.0.0-next.153)':
+    dependencies:
+      svelte: 5.0.0-next.153
 
   acorn-typescript@1.4.13(acorn@8.11.3):
     dependencies:
