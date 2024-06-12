@@ -54,4 +54,12 @@ export class UserService {
         }
         return null;
     }
+
+    public async unlinkSteam() {
+        let response = await this.httpService.delete('User/UnlinkSteam');
+        if (response) {
+            await this.getUserProfile();
+        }
+        return null;
+    }
 }
