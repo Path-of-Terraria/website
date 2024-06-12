@@ -1,6 +1,6 @@
 import {HttpService} from "$lib/services/http-service";
 import {GetJwtToken, SetJwtToken} from "$lib/services/session-service";
-import type {IUser} from "$lib/stores/user-store";
+import {type IUser, user} from "$lib/stores/user-store";
 
 export class UserService {
     httpService = new HttpService();
@@ -15,7 +15,9 @@ export class UserService {
         }
         let response = await this.httpService.get('User/Profile');
         if (response) {
-            this.user = response;
+            this.user = response.data;
+            user.set(this.user);
+            return this.user;
         }
         return null;
     }
@@ -24,6 +26,7 @@ export class UserService {
         let response = await this.httpService.post('', {email, password});
         if (response.data.token) {
             SetJwtToken(response.data.token);
+            await this.getUserProfile();
         }
         return response;
     }
@@ -35,5 +38,11 @@ export class UserService {
             return await this.getUserProfile();
         }
         return response;
+    }
+
+    public async signout() {
+        SetJwtToken('');
+        this.user = null;
+        user.set(null);
     }
 }

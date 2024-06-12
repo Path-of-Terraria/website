@@ -14,7 +14,8 @@ function createUserStore() {
     const checkAndFetchUser = async () => {
         // Check if localStorage is available (only in the browser)
         if (typeof localStorage !== 'undefined') {
-            return await userService.getUserProfile();
+            const response = await userService.getUserProfile();
+            set(response);
         } else {
             // If localStorage is not available, set uver to null
             set(null);

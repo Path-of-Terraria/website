@@ -12,13 +12,17 @@
         DropdownDivider
     } from 'flowbite-svelte';
     import logo from '$lib/images/logo.png';
+    import avatar from '$lib/images/avatar.png';
     import {type IUser, user} from "$lib/stores/user-store";
     import {onDestroy} from "svelte";
     import LoginModal from "$lib/components/LoginModal.svelte";
+    import {UserService} from "$lib/services/user-service";
+    let userService = new UserService();
 
     let currentUser: IUser;
 
     const unsubscribe = user.subscribe(value => {
+        console.log('user', value);
         // @ts-ignore
         currentUser = value;
     });
@@ -39,30 +43,30 @@
 			Path of Terraria
 		</span>
     </NavBrand>
-    <div class="flex items-center md:order-2">
-        {#if !currentUser}
-            <LoginModal/>
-        {:else}
-            <Avatar id="avatar-menu" src="/images/profile-picture-3.webp"/>
-            <NavHamburger class1="w-full md:flex md:w-auto md:order-1" />
-        {/if}
-
-        <NavHamburger class1="w-full md:flex md:w-auto md:order-1"/>
-    </div>
-    <Dropdown placement="bottom" triggeredBy="#avatar-menu">
-        <DropdownHeader>
-            <span class="block text-sm">Bonnie Green</span>
-            <span class="block truncate text-sm font-medium">name@flowbite.com</span>
-        </DropdownHeader>
-        <DropdownItem>Dashboard</DropdownItem>
-        <DropdownItem>Settings</DropdownItem>
-        <DropdownItem>Earnings</DropdownItem>
-        <DropdownDivider/>
-        <DropdownItem>Sign out</DropdownItem>
-    </Dropdown>
     <NavUl>
         <NavLi href="/">Home</NavLi>
         <NavLi href="/leaderboards">Leaderboards</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank">Wiki</NavLi>
     </NavUl>
+
+    <div class="flex items-center md:order-2">
+        {#if !currentUser}
+            <LoginModal/>
+        {:else}
+            <Avatar id="avatar-menu" src={avatar}/>
+            <NavHamburger class1="w-full md:flex md:w-auto md:order-1" />
+        {/if}
+
+        <NavHamburger class1="w-full md:flex md:w-auto md:order-1"/>
+    </div>
+    {#if currentUser}
+        <Dropdown placement="bottom" triggeredBy="#avatar-menu">
+            <DropdownHeader>
+                <span class="block truncate text-sm font-medium">{currentUser.email}</span>
+            </DropdownHeader>
+            <DropdownItem>Settings</DropdownItem>
+            <DropdownDivider/>
+            <DropdownItem on:click={() => userService.signout()}>Sign out</DropdownItem>
+        </Dropdown>
+    {/if}
 </Navbar>
