@@ -24,7 +24,6 @@
     let settingsOpen = false;
 
     const unsubscribe = user.subscribe(value => {
-        console.log('user', value);
         // @ts-ignore
         currentUser = value;
     });
