@@ -8,6 +8,7 @@
 		"dependencies:update:patch": "pnpm dlx npm-check-updates -u --target patch",
 		"dependencies:update:minor": "pnpm dlx npm-check-updates -u --target minor",
 		"build": "vite build",
+		"start": "vite --port 80 --host",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
