@@ -1,0 +1,46 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CONTAINER_REGISTRY: registry.digitalocean.com
+  DOCKERFILE_PATH: '**/Dockerfile'
+  DOCKER_CREDS: dop_v1_7cdb76fb1ff0da0379bf302937aeea27d6dbc82a513de1fb164baeb5dbf13092
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      -   name: Set IMAGE_REPOSITORY based on branch
+          id: set_repo
+          run: |
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+              echo "IMAGE_REPOSITORY=path-of-terraria/website" >> $GITHUB_ENV
+            elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              echo "IMAGE_REPOSITORY=path-of-terraria/main-qa" >> $GITHUB_ENV
+            fi
+
+      -   name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+      -   name: Login to Docker registry
+          uses: docker/login-action@v3
+          with:
+            registry: https://${{ env.CONTAINER_REGISTRY }}
+            username: ${{ env.DOCKER_CREDS }}
+            password: ${{ env.DOCKER_CREDS }}
+
+      -   name: Build and push Docker image
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            push: true
+            tags: |
+              ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_REPOSITORY }}:${{ github.run_id }}
+              ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_REPOSITORY }}:latest
