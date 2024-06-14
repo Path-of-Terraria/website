@@ -5,9 +5,7 @@
 
 	let leaderboardsPromise: Promise<IPlayer[]> = getLeaderboards();
 	async function getLeaderboards() {
-		let response = await playerService.getTop50Players();
-		console.log(response)
-		return response;
+		return await playerService.getTop50Players();
 	}
 </script>
 
