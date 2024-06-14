@@ -37,7 +37,7 @@
         </div>
         {#if !currentUser.steamId}
             <span class="block text-sm">Link Steam Account (This is required for Leaderboards)</span>
-            <a href="http://localhost:5000/LoginWithSteam?userId={currentUser.id}">
+            <a href="${import.meta.env.VITE_API_BASE_URL}/LoginWithSteam?userId={currentUser.id}">
                 <img src={steamSignin} alt="steam signing">
             </a>
         {:else }
