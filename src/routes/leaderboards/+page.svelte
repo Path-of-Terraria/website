@@ -1,23 +1,14 @@
 <script lang="ts">
     import {Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell} from 'flowbite-svelte';
+	import {type IPlayer, PlayerService} from "$lib/services/player-service";
+	let playerService = new PlayerService();
 
-    let data = [
-        {
-            name: 'Player 1',
-            level: 1,
-            experience: '500'
-        },
-        {
-            name: 'Player 2',
-            level: 2,
-            experience: '1000'
-        },
-        {
-            name: 'Player 3',
-            level: 3,
-            experience: '2000'
-        }
-    ]
+	let leaderboardsPromise: Promise<IPlayer[]> = getLeaderboards();
+	async function getLeaderboards() {
+		let response = await playerService.getTop50Players();
+		console.log(response)
+		return response;
+	}
 </script>
 
 <div class="container mx-auto">
@@ -34,21 +25,23 @@
 			<TableHeadCell>Experience</TableHeadCell>
 		</TableHead>
 		<TableBody tableBodyClass="divide-y">
-			<TableBodyRow>
-				<TableBodyCell>Player 1</TableBodyCell>
-				<TableBodyCell>Sliver</TableBodyCell>
-				<TableBodyCell>Laptop</TableBodyCell>
-			</TableBodyRow>
-			<TableBodyRow>
-				<TableBodyCell>Microsoft Surface Pro</TableBodyCell>
-				<TableBodyCell>White</TableBodyCell>
-				<TableBodyCell>Laptop PC</TableBodyCell>
-			</TableBodyRow>
-			<TableBodyRow>
-				<TableBodyCell>Magic Mouse 2</TableBodyCell>
-				<TableBodyCell>Black</TableBodyCell>
-				<TableBodyCell>Accessories</TableBodyCell>
-			</TableBodyRow>
+			{#await leaderboardsPromise}
+				<TableBodyRow>
+					<TableBodyCell>Fetching...</TableBodyCell>
+					<TableBodyCell>The...</TableBodyCell>
+					<TableBodyCell>Data...</TableBodyCell>
+				</TableBodyRow>
+			{:then leaders}
+				{#each leaders as leader}
+					<TableBodyRow>
+						<TableBodyCell>{leader.name}</TableBodyCell>
+						<TableBodyCell>{leader.stats.level}</TableBodyCell>
+						<TableBodyCell>{leader.stats.experience}</TableBodyCell>
+					</TableBodyRow>
+				{/each}
+			{:catch someError}
+				Failed to load leaderboards
+			{/await}
 		</TableBody>
 	</Table>
 </div>
