@@ -30,13 +30,21 @@
 					<TableBodyCell>Data...</TableBodyCell>
 				</TableBodyRow>
 			{:then leaders}
-				{#each leaders as leader}
+				{#if leaders.length === 0}
 					<TableBodyRow>
-						<TableBodyCell>{leader.name}</TableBodyCell>
-						<TableBodyCell>{leader.stats.level}</TableBodyCell>
-						<TableBodyCell>{leader.stats.experience}</TableBodyCell>
+						<TableBodyCell>No</TableBodyCell>
+						<TableBodyCell>player data</TableBodyCell>
+						<TableBodyCell>found</TableBodyCell>
 					</TableBodyRow>
-				{/each}
+				{:else}
+					{#each leaders as leader}
+						<TableBodyRow>
+							<TableBodyCell>{leader.name}</TableBodyCell>
+							<TableBodyCell>{leader.stats.level}</TableBodyCell>
+							<TableBodyCell>{leader.stats.experience}</TableBodyCell>
+						</TableBodyRow>
+					{/each}
+				{/if}
 			{:catch someError}
 				Failed to load leaderboards
 			{/await}
