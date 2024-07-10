@@ -1,4 +1,7 @@
 <script>
+	export const ssr = false;
+	export const prerender = true;
+	export const trailingSlash = 'always';
 	import Header from '$lib/components/Header.svelte';
 	import './styles.css';
 	import {SvelteToast} from "@zerodevx/svelte-toast";

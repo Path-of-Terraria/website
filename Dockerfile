@@ -1,10 +1,11 @@
-FROM node:20-alpine
-WORKDIR /app
-COPY . ./
-RUN npm install -g pnpm
-RUN pnpm install
-RUN pnpm run build
+# production stage
+FROM nginx:alpine as production-stage
 
-EXPOSE 3000
+COPY nginx.conf /etc/nginx/nginx.conf
+WORKDIR /usr/share/nginx/html
 
-CMD ["npm", "run", "start"]
+COPY build/ .
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
