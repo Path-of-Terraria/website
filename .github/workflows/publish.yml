@@ -35,7 +35,7 @@ jobs:
             node-version: '20'
 
       -   name: Setup pnpm
-          uses: pnpm/action-setup@v2
+          uses: pnpm/action-setup@v4
 
       -   name: Run pnpm install
           run: pnpm i

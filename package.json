@@ -1,6 +1,8 @@
 {
 	"name": "pot-website",
+	"description": "Website for Path of Terraria",
 	"version": "0.0.1",
+	"packageManager": "pnpm@9.4.0",
 	"scripts": {
 		"dev": "vite dev",
 		"dependencies:check": "pnpm dlx npm-check-updates",
