@@ -53,7 +53,7 @@
         {#if !currentUser}
             <LoginModal/>
         {:else}
-            <Avatar id="avatar-menu" src={avatar}/>
+            <Avatar id="avatar-menu" src={avatar} class="cursor-pointer"/>
             <NavHamburger class1="w-full md:flex md:w-auto md:order-1" />
         {/if}
 
