@@ -29,6 +29,20 @@ jobs:
           with:
             fetch-depth: 0
 
+      -   name: Use Node.js 20.x
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+
+      -   name: Setup pnpm
+          uses: pnpm/action-setup@v2
+
+      -   name: Run pnpm install
+          run: pnpm i
+
+      -   name: Run pnpm build
+          run: pnpm run build
+
       -   name: Login to Docker registry
           uses: docker/login-action@v3
           with:
