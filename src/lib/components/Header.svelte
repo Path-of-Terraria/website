@@ -39,9 +39,9 @@
             <img class="me-3 h-6 sm:h-9" src={logo} alt="Logo"/>
         </picture>
 
-        <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+        <h1 class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
 			Path of Terraria
-		</span>
+		</h1>
     </NavBrand>
     <NavUl>
         <NavLi href="/">Home</NavLi>
