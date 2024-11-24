@@ -54,10 +54,9 @@
             <LoginModal/>
         {:else}
             <Avatar id="avatar-menu" src={avatar} class="cursor-pointer"/>
-            <NavHamburger class1="w-full md:flex md:w-auto md:order-1" />
         {/if}
 
-        <NavHamburger class1="w-full md:flex md:w-auto md:order-1"/>
+        <NavHamburger class="w-full md:flex md:w-auto md:order-1 md:hidden"/>
     </div>
     {#if currentUser}
         <Dropdown placement="bottom" triggeredBy="#avatar-menu">
