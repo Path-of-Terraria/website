@@ -1,6 +1,22 @@
 <script>
 	import FeatureCard from "$lib/components/FeatureCard.svelte";
 	import {Heading} from "flowbite-svelte";
+	import { onMount } from 'svelte';
+	import { toast } from '@zerodevx/svelte-toast';
+
+	onMount(() => {
+		const url = new URL(window.location.href);
+		const userId = url.searchParams.get('userId');
+
+		if (userId) {
+			// Remove the userId query parameter
+			url.searchParams.delete('userId');
+			window.history.replaceState({}, document.title, url.toString());
+
+			// Show toast notification
+			toast.push('We linked your Steam account to your Path of Terraria account.');
+		}
+	});
 </script>
 
 <svelte:head>
