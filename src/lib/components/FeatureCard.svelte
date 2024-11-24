@@ -2,8 +2,10 @@
     import { Card, Button } from 'flowbite-svelte';
     import { ArrowRightOutline } from 'flowbite-svelte-icons';
     export let title: string = "title";
+    export let target: string = "_blank";
     export let description: string = "description";
     export let link: string = "#";
+    export let linkText: string = "Read more";
 </script>
 
 <Card>
@@ -14,9 +16,9 @@
         {description}
     </p>
     {#if link}
-        <a href={link} target="_blank">
+        <a href={link} target={target}>
             <Button class="w-fit">
-                Read more <ArrowRightOutline class="w-6 h-6 ms-2 text-white" />
+                {linkText} <ArrowRightOutline class="w-6 h-6 ms-2 text-white" />
             </Button>
         </a>
     {/if}

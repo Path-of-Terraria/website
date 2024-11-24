@@ -19,6 +19,7 @@
     import {UserService} from "$lib/services/user-service";
     import SettingsModal from "$lib/components/SettingsModal.svelte";
     let userService = new UserService();
+    const isDebug = import.meta.env.VITE_DEBUG === 'true';
 
     let currentUser: IUser;
     let settingsOpen = false;
@@ -47,6 +48,9 @@
         <NavLi href="/">Home</NavLi>
         <NavLi href="/leaderboards">Leaderboards</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank">Wiki</NavLi>
+        {#if isDebug}
+            <NavLi href="/mod-data">Mod Data</NavLi>
+        {/if}
     </NavUl>
 
     <div class="flex items-center md:order-2">
