@@ -8,7 +8,7 @@ on:
 env:
   CONTAINER_REGISTRY: registry.digitalocean.com
   DOCKERFILE_PATH: '**/Dockerfile'
-  DOCKER_CREDS: dop_v1_7cdb76fb1ff0da0379bf302937aeea27d6dbc82a513de1fb164baeb5dbf13092
+  DOCKER_CREDS: ${{ secrets.CI_DIGITAL_OCEAN_DEPLOYS }}
 
 jobs:
   build-and-push:
