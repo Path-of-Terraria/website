@@ -12,7 +12,7 @@ export interface IPlayerStats {
 }
 
 export class PlayerService {
-    httpService = new HttpService();
+    httpService = HttpService.getInstance();
 
     public async getTop50Players(): Promise<IPlayer[]> {
         let response = await this.httpService.get('Player/Leaderboard?count=50&skip=0');

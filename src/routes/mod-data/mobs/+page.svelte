@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { ModDataService } from '$lib/services/mod-data-service';
     import EditModal from '$lib/components/EditMobDataModal.svelte';
+    import { Button } from 'flowbite-svelte';
     let modDataService = new ModDataService();
     import type { IMobData } from '$lib/models/mob-data';
 
@@ -49,27 +50,40 @@
         filteredMobData = [...mobData];
         closeEditModal();
     }
+
+    async function exportMobData() {
+        try {
+            await modDataService.exportMobData(mobData);
+        } catch (err) {
+            error = 'Failed to export mob data';
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-4">Mob Data</h1>
 
-    <!-- Search Input -->
-    <div class="mb-4">
-        <label
-            for="search"
-            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-        >
-            Search Mobs
-        </label>
-        <input
-            id="search"
-            type="text"
-            bind:value={searchQuery}
-            on:input={handleSearch}
-            placeholder="Type to search by name..."
-            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-gray-400 focus:ring focus:ring-blue-300 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-        />
+    <!-- Search Input and Save Button -->
+    <div class="mb-4 flex items-center space-x-4">
+        <div class="flex-grow">
+            <label
+                for="search"
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >
+                Search Mobs
+            </label>
+            <input
+                id="search"
+                type="text"
+                bind:value={searchQuery}
+                on:input={handleSearch}
+                placeholder="Type to search by name..."
+                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-gray-400 focus:ring focus:ring-blue-300 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+            />
+        </div>
+        <Button color="green" on:click={exportMobData}>
+            Export
+        </Button>
     </div>
 
     <!-- Error Message -->

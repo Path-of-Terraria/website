@@ -3,7 +3,7 @@ import {GetJwtToken, SetJwtToken} from "$lib/services/session-service";
 import {type IUser, user} from "$lib/stores/user-store";
 
 export class UserService {
-    httpService = new HttpService();
+    httpService = HttpService.getInstance();
     user: IUser | null = null;
 
     public async getUserProfile() {
