@@ -11,3 +11,10 @@ export function SetJwtToken(value: string) {
     }
     return localStorage.setItem('jwt_token', value);
 }
+
+export function ClearStorageItem(key: string) {
+    if (typeof localStorage === 'undefined') {
+        return null;
+    }
+    return localStorage.removeItem(key);
+}

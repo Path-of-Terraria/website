@@ -8,9 +8,9 @@
 
     let userService = new UserService();
 
-    let email = ""
-    let password = ""
-    let profileName = ""
+    let email = "";
+    let password = "";
+    let profileName = "";
     let view = "login";
 
     async function signup() {
@@ -22,14 +22,21 @@
         await userService.login(email, password);
         modalOpen = false;
     }
+
+    async function forgotPassword() {
+        await userService.forgotPassword(email);
+        toast.push("If an account exists, an email will be sent with a reset link");
+    }
 </script>
 
 <Button on:click={() => (modalOpen = true)}>Login</Button>
 <form on:submit={async (e) => {
    if (view === 'login') {
        await login();
-    } else {
+    } else if (view === 'register') {
         await signup();
+    } else {
+        await forgotPassword();
     }
 }}>
     <Modal title="Login / Signup" bind:open={modalOpen} autoclose={false}>
@@ -43,27 +50,43 @@
             <Label for="small-input" class="block mb-2">Email</Label>
             <Input id="small-input" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
         </div>
-        <div class="mb-6">
-            <Label for="small-input" class="block mb-2">Password</Label>
-            <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={password}/>
-        </div>
+        { #if view !== 'forgot-password'}
+            <div class="mb-6">
+                <Label for="small-input" class="block mb-2">Password</Label>
+                <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={password}/>
+            </div>
+        {/if}
         <svelte:fragment slot="footer">
-            <div class="text-right">
-                {#if view === 'login' }
-                    <Button type="submit" disabled={!email || !password}>
-                        Login
+            <div class="flex justify-between w-full">
+                <div class="inline-flex">
+                    <Button color="alternative" on:click={() => view = 'forgot-password'}>
+                        Forgot Password
                     </Button>
-                    <Button color="alternative" on:click={() => view = 'register'}>
-                        Register Instead
-                    </Button>
-                {:else}
-                    <Button type="submit" disabled={!email || !password || !profileName}>
-                        Signup
-                    </Button>
-                    <Button color="alternative" on:click={() => view = 'login'}>
-                        Signin Instead
-                    </Button>
-                {/if}
+                </div>
+                <div class="inline-flex">
+                    {#if view === 'login' }
+                        <Button color="alternative" on:click={() => view = 'register'}>
+                            Register Instead
+                        </Button>
+                        <Button type="submit" disabled={!email || !password}>
+                            Login
+                        </Button>
+                    {:else if view === 'login'}
+                        <Button color="alternative" on:click={() => view = 'login'}>
+                            Signin Instead
+                        </Button>
+                        <Button type="submit" disabled={!email || !password || !profileName}>
+                            Signup
+                        </Button>
+                    {:else}
+                        <Button color="alternative" on:click={() => view = 'login'}>
+                            Back to Login
+                        </Button>
+                        <Button type="submit" disabled={!email}>
+                            Send Reset Email
+                        </Button>
+                    {/if}
+                </div>
             </div>
         </svelte:fragment>
     </Modal>

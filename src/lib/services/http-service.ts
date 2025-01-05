@@ -19,7 +19,27 @@ export class HttpService {
         axios.interceptors.response.use(function (response) {
             return response;
         }, function (error) {
-            toast.push('Failed to fetch');
+            console.log('response error', error);
+            if (error.response) {
+                if (error.response.status === 401) {
+                    toast.push('Unauthorized');
+                    return Promise.reject(error);
+                }
+                if (error.response.status === 403) {
+                    toast.push('Forbidden');
+                    return Promise.reject(error);
+                }
+                if (error.response.status === 404) {
+                    toast.push('Not Found');
+                    return Promise.reject(error);
+                }
+                if (error.response.data.message) {
+                    toast.push(error.response.data.message);
+                    return Promise.reject(error);
+                }
+            } else {
+                toast.push('Failed to fetch');
+            }
             return Promise.reject(error);
         });
     }

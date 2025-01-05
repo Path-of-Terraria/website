@@ -1,19 +1,30 @@
-<script>
+<script lang="ts">
 	import FeatureCard from "$lib/components/FeatureCard.svelte";
 	import {Heading} from "flowbite-svelte";
 	import { onMount } from 'svelte';
 	import { toast } from '@zerodevx/svelte-toast';
 
-	onMount(() => {
+	import { user} from "$lib/stores/user-store";
+
+	import {UserService} from "$lib/services/user-service";
+
+	let userService = new UserService();
+
+	onMount(async () => {
+		if (typeof localStorage !== 'undefined') {
+			const response = await userService.getUserProfile();
+			//@ts-ignore
+			user.set(response);
+		} else {
+			// If localStorage is not available, set user to null
+			user.set(null);
+		}
 		const url = new URL(window.location.href);
 		const userId = url.searchParams.get('userId');
 
 		if (userId) {
-			// Remove the userId query parameter
 			url.searchParams.delete('userId');
 			window.history.replaceState({}, document.title, url.toString());
-
-			// Show toast notification
 			toast.push('We linked your Steam account to your Path of Terraria account.');
 		}
 	});

@@ -1,5 +1,5 @@
 import {HttpService} from "$lib/services/http-service";
-import {GetJwtToken, SetJwtToken} from "$lib/services/session-service";
+import {GetJwtToken, SetJwtToken, ClearStorageItem} from "$lib/services/session-service";
 import {type IUser, user} from "$lib/stores/user-store";
 
 export class UserService {
@@ -7,18 +7,24 @@ export class UserService {
     user: IUser | null = null;
 
     public async getUserProfile() {
-        if(!GetJwtToken()) {
+        if (!GetJwtToken()) {
             return null;
         }
         if (this.user) {
             return this.user;
         }
-        let response = await this.httpService.get('User/Profile');
-        if (response) {
-            this.user = response.data;
-            //@ts-ignore
-            user.set(this.user);
-            return this.user;
+        try {
+            let response = await this.httpService.get('User/Profile');
+            if (response) {
+                this.user = response.data;
+                //@ts-ignore
+                user.set(this.user);
+                return this.user;
+            }
+        } catch(e) {
+            ClearStorageItem('jwt_token');
+            user.set(null);
+            return null;
         }
         return null;
     }
@@ -39,6 +45,14 @@ export class UserService {
             return await this.getUserProfile();
         }
         return response;
+    }
+
+    public async forgotPassword(email: string) {
+        return await this.httpService.post('RequestPasswordReset', {email});
+    }
+
+    public async resetPassword(email: string, token: string, password: string) {
+        return await this.httpService.post('ResetPassword', {token, password, email});
     }
 
     public async signout() {
