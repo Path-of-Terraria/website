@@ -1,6 +1,5 @@
 <script lang="ts">
-
-import FeatureCard from "$lib/components/FeatureCard.svelte";
+	import FeatureCard from "$lib/components/FeatureCard.svelte";
 </script>
 
 <div class="container mx-auto p-4">
