@@ -1,6 +1,7 @@
 import {HttpService} from "$lib/services/http-service";
 import {GetJwtToken, SetJwtToken, ClearStorageItem} from "$lib/services/session-service";
 import {type IUser, user} from "$lib/stores/user-store";
+import type {IPlayer} from "$lib/services/player-service";
 
 export class UserService {
     httpService = HttpService.getInstance();
@@ -75,5 +76,13 @@ export class UserService {
             await this.getUserProfile();
         }
         return null;
+    }
+
+    public async getPlayers(profileName: string): Promise<IPlayer[]> {
+        let response = await this.httpService.get(`User/${profileName}/Players`);
+        if (response) {
+            return response.data as IPlayer[];
+        }
+        return [];
     }
 }

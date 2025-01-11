@@ -68,9 +68,19 @@
                 <span class="block text-sm">{currentUser.profileName}</span>
                 <span class="block truncate text-sm font-medium">{currentUser.email}</span>
             </DropdownHeader>
-            <DropdownItem on:click={() => settingsOpen = true}>Settings</DropdownItem>
+            <DropdownItem on:click={() => settingsOpen = true}>
+                Settings
+            </DropdownItem>
             <DropdownDivider/>
-            <DropdownItem on:click={() => userService.signout()}>Sign out</DropdownItem>
+            <DropdownItem>
+                <NavLi href="profile/{currentUser.profileName}/characters">
+                    Characters
+                </NavLi>
+            </DropdownItem>
+            <DropdownDivider/>
+            <DropdownItem on:click={() => userService.signout()}>
+                Sign out
+            </DropdownItem>
         </Dropdown>
     {/if}
 </Navbar>
