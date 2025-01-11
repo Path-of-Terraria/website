@@ -18,9 +18,11 @@
 			</p>
 		</caption>
 		<TableHead>
-			<TableHeadCell>Player Name</TableHeadCell>
+			<TableHeadCell>Character Name</TableHeadCell>
 			<TableHeadCell>Level</TableHeadCell>
-			<TableHeadCell>Experience</TableHeadCell>
+			<TableHeadCell>Strength</TableHeadCell>
+			<TableHeadCell>Dexterity</TableHeadCell>
+			<TableHeadCell>Intelligence</TableHeadCell>
 		</TableHead>
 		<TableBody tableBodyClass="divide-y">
 			{#await leaderboardsPromise}
@@ -28,20 +30,26 @@
 					<TableBodyCell>Fetching...</TableBodyCell>
 					<TableBodyCell>The...</TableBodyCell>
 					<TableBodyCell>Data...</TableBodyCell>
+					<TableBodyCell>...</TableBodyCell>
+					<TableBodyCell>...</TableBodyCell>
 				</TableBodyRow>
 			{:then leaders}
 				{#if leaders.length === 0}
 					<TableBodyRow>
 						<TableBodyCell>No</TableBodyCell>
-						<TableBodyCell>player data</TableBodyCell>
+						<TableBodyCell>player</TableBodyCell>
+						<TableBodyCell>data</TableBodyCell>
 						<TableBodyCell>found</TableBodyCell>
+						<TableBodyCell>...</TableBodyCell>
 					</TableBodyRow>
 				{:else}
 					{#each leaders as leader}
 						<TableBodyRow>
 							<TableBodyCell>{leader.name}</TableBodyCell>
 							<TableBodyCell>{leader.stats.level}</TableBodyCell>
-							<TableBodyCell>{leader.stats.experience}</TableBodyCell>
+							<TableBodyCell>{leader.stats.strength}</TableBodyCell>
+							<TableBodyCell>{leader.stats.dexterity}</TableBodyCell>
+							<TableBodyCell>{leader.stats.intelligence}</TableBodyCell>
 						</TableBodyRow>
 					{/each}
 				{/if}
