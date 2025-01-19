@@ -1,5 +1,6 @@
 <script lang="ts">
     import {type ITradeListing} from "$lib/models/trade-listing";
+    import placeholder from '$lib/images/item-placeholder.png';
 
     export let listing: ITradeListing;
 
@@ -30,9 +31,9 @@
 
 <div class="trade-listing-card bg-gray-800 rounded-lg shadow-md flex p-4 gap-4">
     <!-- Left Section: Item Image -->
-    <div class="flex-shrink-0">
+    <div class="flex-shrink-0 flex items-center">
         <img
-                src="/images/item-placeholder.png"
+                src="{placeholder}"
                 alt="{listing?.itemData.name}"
                 class="w-16 h-16 rounded-md object-cover"
         />
