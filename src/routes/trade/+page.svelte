@@ -29,7 +29,7 @@
                 No Trades Found
             {:else}
                 {#each listings as listing}
-                    <div class="mx-auto">
+                    <div class="mx-auto w-full">
                         <TradeListing listing={listing}></TradeListing>
                     </div>
                 {/each}
