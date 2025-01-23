@@ -1,4 +1,5 @@
 export interface ITradeListing {
+    id: string;
     currency: TradeListingCurrency;
     amount: number;
     note: string;

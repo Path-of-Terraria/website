@@ -69,9 +69,11 @@
         </div>
 
         <div class="mt-4 flex gap-2">
-            <button class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded">
-                Buy
-            </button>
+            <a href="potonline:Trade/Complete/{listing?.id}">
+                <button class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded">
+                    Buy
+                </button>
+            </a>
             <button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded">
                 Offer
             </button>
