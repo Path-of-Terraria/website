@@ -3,10 +3,26 @@
 	import {Heading} from "flowbite-svelte";
 	import { onMount } from 'svelte';
 	import { toast } from '@zerodevx/svelte-toast';
+	import { HubConnectionBuilder } from "@microsoft/signalr"
 
 	import { user} from "$lib/stores/user-store";
 
 	import {UserService} from "$lib/services/user-service";
+
+	let connection = new HubConnectionBuilder()
+			.withUrl("http://localhost:5000/ModSocket")
+			.build();
+
+	connection.on("TradeUpdate", data => {
+		console.log('Sent some data', data);
+	});
+
+	connection.start()
+			.then(() => {
+				const tradeId = "123e4567-e89b-12d3-a456-426614174000";
+				const buyerSteamId = "123456789";
+				connection.invoke("SendTradeUpdate", tradeId, buyerSteamId)
+			});
 
 	let userService = new UserService();
 
