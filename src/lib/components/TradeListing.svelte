@@ -1,6 +1,12 @@
 <script lang="ts">
     import {type ITradeListing} from "$lib/models/trade-listing";
     import placeholder from '$lib/images/item-placeholder.png';
+    import {toast} from "@zerodevx/svelte-toast";
+    import {UserService} from "$lib/services/user-service";
+    import {TradeListingService} from "$lib/services/trade-listing-service";
+
+    let userService = new UserService();
+    let tradeListingService = new TradeListingService();
 
     export let listing: ITradeListing;
 
@@ -27,6 +33,15 @@
         "yellow-300",
         "green-300",
     ]
+
+    async function requestBuy() {
+        const user = await userService.getUserProfile();
+        if (user == null) {
+            toast.push('You must be logged in to buy items');
+            return;
+        }
+        return await tradeListingService.requestTradeListingSold(listing.id, user.steamId);
+    }
 </script>
 
 <div class="trade-listing-card bg-gray-800 rounded-lg shadow-md flex p-4 gap-4">
@@ -69,11 +84,11 @@
         </div>
 
         <div class="mt-4 flex gap-2">
-            <a href="potonline:Trade/Complete/{listing?.id}">
-                <button class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded">
-                    Buy
-                </button>
-            </a>
+            <button
+                    on:click={() => requestBuy()}
+                    class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded">
+                Buy
+            </button>
             <button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded">
                 Offer
             </button>
