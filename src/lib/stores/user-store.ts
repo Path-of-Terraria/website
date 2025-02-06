@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 export interface IUser {
-    id: number;
+    id: string;
     name: string;
     email: string;
     steamId: string;
