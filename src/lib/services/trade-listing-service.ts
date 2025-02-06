@@ -11,4 +11,10 @@ export class TradeListingService {
         }
         return [];
     }
+
+    public async requestTradeListingSold(tradeListingId: string, buyerSteamId: string): Promise<void> {
+        const response = await this.httpService.post(`TradeListing/${tradeListingId}/RequestSold`, {
+            "buyerSteamId": buyerSteamId
+        });
+    }
 }
