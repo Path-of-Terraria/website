@@ -47,6 +47,7 @@
     <NavUl>
         <NavLi href="/">Home</NavLi>
         <NavLi href="/leaderboards">Leaderboards</NavLi>
+        <NavLi href="/trade">Trade</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank">Wiki</NavLi>
         {#if isDebug}
             <NavLi href="/mod-data">Mod Data</NavLi>
@@ -60,7 +61,7 @@
             <Avatar id="avatar-menu" src={avatar} class="cursor-pointer"/>
         {/if}
 
-        <NavHamburger class="w-full md:flex md:w-auto md:order-1 md:hidden"/>
+        <NavHamburger class="w-full sm:flex md:w-auto md:order-1 md:hidden"/>
     </div>
     {#if currentUser}
         <Dropdown placement="bottom" triggeredBy="#avatar-menu">
