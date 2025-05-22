@@ -1,10 +1,10 @@
 <script lang="ts">
-    import {Button, Modal, Label, Input } from 'flowbite-svelte';
+    import {Button, Modal, Label, Input} from 'flowbite-svelte';
 
     let modalOpen = false;
 
     import {UserService} from "$lib/services/user-service";
-    import { toast } from '@zerodevx/svelte-toast'
+    import {toast} from '@zerodevx/svelte-toast'
 
     let userService = new UserService();
 
@@ -71,7 +71,7 @@
                         <Button type="submit" disabled={!email || !password}>
                             Login
                         </Button>
-                    {:else if view === 'login'}
+                    {:else if view === 'register'}
                         <Button color="alternative" on:click={() => view = 'login'}>
                             Signin Instead
                         </Button>
