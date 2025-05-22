@@ -9,6 +9,9 @@ export interface IPlayerStats {
     experience: number;
     level: number;
     class: string;
+    strength: number;
+    dexterity: number;
+    intelligence: number;
 }
 
 export class PlayerService {
