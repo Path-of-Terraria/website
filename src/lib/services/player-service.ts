@@ -24,4 +24,12 @@ export class PlayerService {
         }
         return [];
     }
+
+    public async getPlayer(name: string): Promise<IPlayer> {
+        let response = await this.httpService.get(`Player/${name}`);
+        if (response) {
+            return response.data as IPlayer;
+        }
+        return {} as IPlayer;
+    }
 }
