@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {type ITradeListing} from "$lib/models/trade-listing";
+    import {type ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
     import placeholder from '$lib/images/item-placeholder.png';
     import {toast} from "@zerodevx/svelte-toast";
     import {UserService} from "$lib/services/user-service";
@@ -60,15 +60,18 @@
             {listing?.itemData.name}
         </h3>
         <p class="text-sm text-{rarityColors[listing?.itemData.rarity]}">
-          {rarityTexts[listing?.itemData.rarity]}
+            {rarityTexts[listing?.itemData.rarity]}
         </p>
 
         <ul class="text-sm text-gray-300 mt-2 space-y-1">
             {#each listing?.itemData.properties as property}
                 <li>
                     <span>{property.name}</span>
-                    <span class="text-blue-300"> +{property.value}</span>
-                    <span class="text-yellow-400"> (Tier {property.affixTier})</span>
+                    {#if listing?.itemData.rarity !== TradeListingItemDataRarity.Unique}
+                        <span class="text-yellow-400">
+                            (Tier {property.tier})
+                        </span>
+                    {/if}
                 </li>
             {/each}
         </ul>
@@ -77,7 +80,7 @@
     <!-- Right Section: Price and Actions -->
     <div class="flex flex-col items-end">
         <div class="text-sm text-gray-400">
-          Exact Price:
+            Exact Price:
         </div>
         <div class="text-lg font-semibold text-yellow-300">
             {listing?.amount} {currencyNames[listing?.currency]}
