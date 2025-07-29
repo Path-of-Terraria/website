@@ -34,6 +34,6 @@ export enum TradeListingItemDataRarity {
 export interface ITradeListingItemDataAffix {
     name: string;
     value: number;
-    affixTier: number;
+    tier: number;
     isCorruptedAffix: boolean;
 }
