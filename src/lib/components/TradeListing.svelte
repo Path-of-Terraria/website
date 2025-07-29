@@ -98,3 +98,9 @@
         </div>
     </div>
 </div>
+
+<style>
+    .text-green-300 {
+        color: oklch(0.871 0.15 154.449);
+    }
+</style>
