@@ -11,13 +11,15 @@
     export let listing: ITradeListing;
 
     const currencyNames = [
-        "Glittering Shard",
-        "Unfolding Shard",
-        "Glimmering Shard",
-        "Limpid Shard",
-        "Radiant Shard",
-        "Echoing Shard",
-        "Corruption Shard",
+        "Glittering Shard", // GlitteringShard = 0
+        "Unfolding Shard",  // UnfoldingShard = 1
+        "Glimmering Shard", // GlimmeringShard = 2
+        "Limpid Shard",     // LimpidShard = 3
+        "Radiant Shard",    // RadiantShard = 4
+        "Echoing Shard",    // EchoingShard = 5
+        "Corruption Shard", // CorruptionShard = 6
+        "Shifting Shard", // ShiftingShard 7
+        "Mystic Shard", // MysticShard = 8,
     ];
 
     const rarityTexts = [
@@ -98,3 +100,9 @@
         </div>
     </div>
 </div>
+
+<style>
+    .text-green-300 {
+        color: oklch(0.871 0.15 154.449);
+    }
+</style>
