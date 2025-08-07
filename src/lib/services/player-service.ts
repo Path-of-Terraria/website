@@ -1,6 +1,7 @@
 import { HttpService } from "$lib/services/http-service";
 
 export interface IPlayer {
+    id: string;
     name: string;
     stats: IPlayerStats;
 }
@@ -31,5 +32,9 @@ export class PlayerService {
             return response.data as IPlayer;
         }
         return {} as IPlayer;
+    }
+
+    public async deletePlayer(id: string): Promise<void> {
+        await this.httpService.delete(`Player/${id}`);
     }
 }
