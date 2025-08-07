@@ -10,7 +10,7 @@
         { code: 'fr-FR', name: 'French' },
         { code: 'it-IT', name: 'Italian' },
         { code: 'de-DE', name: 'German' },
-        { code: 'pt-BR', name: 'Portuguese' },
+        { code: 'pt-BR', name: 'Brazilian Portuguese' },
         { code: 'ru-RU', name: 'Russian' },
         { code: 'zh-Hans', name: 'Chinese' },
         { code: 'pl-PL', name: 'Polish' }
