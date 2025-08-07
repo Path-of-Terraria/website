@@ -10,7 +10,7 @@
             <div class="mx-auto">
                 <FeatureCard
                         title="Edit Mob Data"
-                        description="View and edit the mob data for the site"
+                        description="View and edit the mob data for the mod"
                         link="/mod-data/mobs"
                         target=""
                         linkText="See Data"
@@ -19,7 +19,7 @@
             <div class="mx-auto">
                 <FeatureCard
                         title="Edit Localization"
-                        description="View and edit the localization for the site"
+                        description="View and edit the localization for the mod"
                         link="/mod-data/localization"
                         target=""
                         linkText="See Data"

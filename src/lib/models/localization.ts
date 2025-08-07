@@ -3,7 +3,7 @@ export interface IEnglishTranslation {
     value: string;
 }
 export interface ITranslationEntry {
-    id: string;
+    id: string | undefined;
     category: string;
     key: string;
     language: string;

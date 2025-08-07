@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { TranslationEntryService } from '$lib/services/translation-entry-service';
     import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
+    import { toast } from '@zerodevx/svelte-toast';
 
     // Available languages for translation
     const availableLanguages = [
@@ -23,6 +24,8 @@
     let activeCategory: string = '';
     let expandedGroups: Set<string> = new Set();
     let showTranslationTable: boolean = false;
+    let newTranslations: Record<string, string> = {};
+    let submitting: Record<string, boolean> = {};
 
     const translationService = new TranslationEntryService();
 
@@ -173,6 +176,73 @@
         const parts = groupKey.split('.');
         return parts.length >= 4 ? parts[3] : groupKey;
     }
+    
+    /**
+     * Submits a new translation for a key that doesn't have one yet
+     * 
+     * @param key The translation key
+     */
+    async function submitTranslation(key: string) {
+        if (!newTranslations[key] || newTranslations[key].trim() === '') {
+            toast.push('Please enter a translation', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+            return;
+        }
+        
+        try {
+            submitting[key] = true;
+            submitting = {...submitting}; // Trigger reactivity
+            
+            // Extract category from key
+            const parts = key.split('.');
+            const category = parts.length >= 3 ? parts[2] : '';
+            
+            // Create new translation entry
+            const newTranslation: ITranslationEntry = {
+                id: '', // Will be assigned by the server
+                key: key,
+                value: newTranslations[key],
+                language: selectedLanguage,
+                category: category
+            };
+            
+            await translationService.create(newTranslation);
+            
+            // Update the UI to show the new translation
+            const updatedTranslations = [...languageTranslations];
+            updatedTranslations.push(newTranslation);
+            languageTranslations = updatedTranslations;
+            
+            // Update the categorized translations
+            processTranslations();
+            
+            // Clear the input
+            delete newTranslations[key];
+            newTranslations = {...newTranslations}; // Trigger reactivity
+            
+            toast.push('Translation added successfully', {
+                theme: {
+                    '--toastBackground': '#48BB78',
+                    '--toastColor': 'white',
+                }
+            });
+        } catch (error) {
+            console.error('Error submitting translation:', error);
+            toast.push('Failed to add translation', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+        } finally {
+            submitting[key] = false;
+            submitting = {...submitting}; // Trigger reactivity
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -263,7 +333,26 @@
                                     {#if translation.translatedValue}
                                         {translation.translatedValue}
                                     {:else}
-                                        <span class="text-gray-400 italic">No translation</span>
+                                        <div class="flex items-center space-x-2">
+                                            <input 
+                                                type="text" 
+                                                class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                placeholder="Add translation"
+                                                bind:value={newTranslations[translation.key]}
+                                            />
+                                            <button 
+                                                class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                on:click={() => submitTranslation(translation.key)}
+                                                disabled={submitting[translation.key]}
+                                            >
+                                                {#if submitting[translation.key]}
+                                                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                                    Saving
+                                                {:else}
+                                                    Add
+                                                {/if}
+                                            </button>
+                                        </div>
                                     {/if}
                                 </td>
                             </tr>
@@ -294,7 +383,26 @@
                                             {#if translation.translatedValue}
                                                 {translation.translatedValue}
                                             {:else}
-                                                <span class="text-gray-400 italic">No translation</span>
+                                                <div class="flex items-center space-x-2">
+                                                    <input 
+                                                        type="text" 
+                                                        class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                        placeholder="Add translation"
+                                                        bind:value={newTranslations[translation.key]}
+                                                    />
+                                                    <button 
+                                                        class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                        on:click={() => submitTranslation(translation.key)}
+                                                        disabled={submitting[translation.key]}
+                                                    >
+                                                        {#if submitting[translation.key]}
+                                                            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                                            Saving
+                                                        {:else}
+                                                            Add
+                                                        {/if}
+                                                    </button>
+                                                </div>
                                             {/if}
                                         </td>
                                     </tr>

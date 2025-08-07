@@ -34,6 +34,7 @@ export class TranslationEntryService {
     }
 
     public async create(translationEntry: ITranslationEntry): Promise<void> {
+        translationEntry.id = undefined;
         await this.httpService.post('TranslationEntry', translationEntry);
     }
 }
