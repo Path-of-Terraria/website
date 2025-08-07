@@ -1,41 +1,75 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { TranslationEntryService } from '$lib/services/translation-entry-service';
-    import type { IEnglishTranslation } from '$lib/models/localization';
+    import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
 
-    let translations: IEnglishTranslation[] = [];
+    // Available languages for translation
+    const availableLanguages = [
+        { code: 'es-ES', name: 'Spanish' },
+        { code: 'fr-FR', name: 'French' },
+        { code: 'it-IT', name: 'Italian' },
+        { code: 'de-DE', name: 'German' },
+        { code: 'pt-BR', name: 'Portuguese' },
+        { code: 'ru-RU', name: 'Russian' },
+        { code: 'zh-Hans', name: 'Chinese' },
+        { code: 'pl-PL', name: 'Polish' }
+    ];
+
+    let selectedLanguage: string = '';
+    let englishTranslations: IEnglishTranslation[] = [];
+    let languageTranslations: ITranslationEntry[] = [];
     let categories: string[] = [];
     let categorizedTranslations: Record<string, IEnglishTranslation[]> = {};
     let activeCategory: string = '';
     let expandedGroups: Set<string> = new Set();
-    
+    let showTranslationTable: boolean = false;
+
     const translationService = new TranslationEntryService();
 
     onMount(async () => {
-        await fetchTranslations();
+        // Only fetch English translations on mount
+        await fetchEnglishTranslations();
     });
 
     /**
-     * Fetches translation entries from the API and processes them
+     * Fetches English translation entries from the API
      */
-    async function fetchTranslations() {
-        translations = await translationService.getEnglishTranslations();
+    async function fetchEnglishTranslations() {
+        englishTranslations = await translationService.getEnglishTranslations();
+    }
+    
+    /**
+     * Fetches translations for the selected language and processes all translations
+     */
+    async function fetchLanguageTranslations() {
+        if (!selectedLanguage) return;
+        
+        languageTranslations = await translationService.getByLanguage(selectedLanguage);
         processTranslations();
+        showTranslationTable = true;
+        
         if (categories.length > 0) {
             activeCategory = categories[0];
         }
     }
 
     /**
-     * Processes the raw translations into categories
+     * Processes the English translations and language-specific translations into categories
      * Extracts the category from each translation key (the first word after Mods.PathOfTerraria)
-     * and groups translations by category
+     * and groups translations by category, merging with language-specific translations if available
      */
     function processTranslations() {
         categorizedTranslations = {};
+        
+        // Create a map of language translations for quick lookup
+        const languageTranslationsMap = new Map<string, string>();
+        languageTranslations.forEach(translation => {
+            languageTranslationsMap.set(translation.key, translation.value);
+        });
+        
         // Group translations by category (the first word after Mods.PathOfTerraria.)
-        translations.forEach(translation => {
-            const parts = translation.key.split('.');
+        englishTranslations.forEach(englishTranslation => {
+            const parts = englishTranslation.key.split('.');
             if (parts.length >= 3 && parts[0] === 'Mods' && parts[1] === 'PathOfTerraria') {
                 const category = parts[2];
                 
@@ -43,7 +77,14 @@
                     categorizedTranslations[category] = [];
                 }
                 
-                categorizedTranslations[category].push(translation);
+                // Create a new translation object that includes both English and language-specific values
+                const mergedTranslation = {
+                    key: englishTranslation.key,
+                    value: englishTranslation.value,
+                    translatedValue: languageTranslationsMap.get(englishTranslation.key) || ''
+                };
+                
+                categorizedTranslations[category].push(mergedTranslation);
             }
         });
         
@@ -72,9 +113,9 @@
      * @param categoryTranslations The translations for the current category
      * @returns An object with grouped and non-grouped translations
      */
-    function getGroupedTranslations(categoryTranslations: IEnglishTranslation[]) {
-        const result: Record<string, IEnglishTranslation[]> = {};
-        const nonGrouped: IEnglishTranslation[] = [];
+    function getGroupedTranslations(categoryTranslations: any[]) {
+        const result: Record<string, any[]> = {};
+        const nonGrouped: any[] = [];
         
         categoryTranslations.forEach(translation => {
             const groupKey = getGroupKey(translation.key);
@@ -137,11 +178,52 @@
 <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-6">Terraria Mod Localization</h1>
     
-    {#if categories.length === 0}
+    <!-- Language Selection -->
+    {#if !showTranslationTable}
+        <div class="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Select a Language</h2>
+            <p class="mb-4">Please select a language to view and edit translations:</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {#each availableLanguages as language}
+                    <button 
+                        class="p-3 border rounded-md hover:bg-blue-50 transition-colors {selectedLanguage === language.code ? 'bg-blue-100 border-blue-500' : 'border-gray-300'}"
+                        on:click={() => selectedLanguage = language.code}
+                    >
+                        {language.name}
+                    </button>
+                {/each}
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!selectedLanguage}
+                    on:click={fetchLanguageTranslations}
+                >
+                    Continue
+                </button>
+            </div>
+        </div>
+    {:else if categories.length === 0}
         <div class="flex justify-center items-center h-64">
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
     {:else}
+        <!-- Header with language info and back button -->
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <span class="text-lg font-medium">Selected language: </span>
+                <span class="text-lg font-bold">{availableLanguages.find(l => l.code === selectedLanguage)?.name}</span>
+            </div>
+            <button 
+                class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 flex items-center"
+                on:click={() => showTranslationTable = false}
+            >
+                <span class="mr-1">←</span> Change Language
+            </button>
+        </div>
+        
         <!-- Category Tabs -->
         <div class="mb-4 border-b border-gray-200">
             <ul class="flex flex-wrap -mb-px">
@@ -164,7 +246,8 @@
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
-                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">English</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{availableLanguages.find(l => l.code === selectedLanguage)?.name || 'Translation'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -176,6 +259,13 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="py-2 px-4 border-b border-gray-200">{getDisplayKey(translation.key)}</td>
                                 <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
+                                <td class="py-2 px-4 border-b border-gray-200">
+                                    {#if translation.translatedValue}
+                                        {translation.translatedValue}
+                                    {:else}
+                                        <span class="text-gray-400 italic">No translation</span>
+                                    {/if}
+                                </td>
                             </tr>
                         {/each}
                         
@@ -189,7 +279,7 @@
                                         {formatGroupName(groupKey)}
                                     </div>
                                 </td>
-                                <td class="py-2 px-4 border-b border-gray-200">
+                                <td class="py-2 px-4 border-b border-gray-200" colspan="2">
                                     {groupTranslations.length} entries
                                 </td>
                             </tr>
@@ -200,6 +290,13 @@
                                     <tr class="bg-gray-50 hover:bg-gray-100">
                                         <td class="py-2 px-4 border-b border-gray-200 pl-8">{getDisplayKey(translation.key, groupKey)}</td>
                                         <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
+                                        <td class="py-2 px-4 border-b border-gray-200">
+                                            {#if translation.translatedValue}
+                                                {translation.translatedValue}
+                                            {:else}
+                                                <span class="text-gray-400 italic">No translation</span>
+                                            {/if}
+                                        </td>
                                     </tr>
                                 {/each}
                             {/if}

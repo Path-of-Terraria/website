@@ -1,5 +1,5 @@
 import { HttpService } from "$lib/services/http-service";
-import type {IEnglishTranslation} from "$lib/models/localization";
+import type {IEnglishTranslation, ITranslationEntry} from "$lib/models/localization";
 
 export class TranslationEntryService {
     httpService = HttpService.getInstance();
@@ -15,5 +15,25 @@ export class TranslationEntryService {
             return translationsArray;
         }
         return [];
+    }
+
+    public async getByLanguage(language: string): Promise<ITranslationEntry[]> {
+        let response = await this.httpService.get(`TranslationEntry/Language/${language}`);
+        if (response) {
+            return response.data as ITranslationEntry[];
+        }
+        return [];
+    }
+
+    public async update(translationEntry: ITranslationEntry): Promise<void> {
+        await this.httpService.put(`TranslationEntry/${translationEntry.id}`, translationEntry);
+    }
+
+    public async delete(id: string): Promise<void> {
+        await this.httpService.delete(`TranslationEntry/${id}`);
+    }
+
+    public async create(translationEntry: ITranslationEntry): Promise<void> {
+        await this.httpService.post('TranslationEntry', translationEntry);
     }
 }
