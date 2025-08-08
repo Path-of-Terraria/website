@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { TranslationEntryService } from '$lib/services/translation-entry-service';
+    import { HjsonParserService } from '$lib/services/hjson-parser-service';
     import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
     import { toast } from '@zerodevx/svelte-toast';
 
@@ -26,8 +27,16 @@
     let showTranslationTable: boolean = false;
     let newTranslations: Record<string, string> = {};
     let submitting: Record<string, boolean> = {};
+    
+    // HJSON import related variables
+    let hjsonContent: string = '';
+    let importedTranslations: Record<string, string> = {};
+    let importStats = { total: 0, added: 0, skipped: 0 };
+    let isImporting: boolean = false;
+    let selectedImportCategory: string = '';
 
     const translationService = new TranslationEntryService();
+    const hjsonParserService = new HjsonParserService();
 
     onMount(async () => {
         // Only fetch English translations on mount
@@ -243,6 +252,85 @@
             submitting = {...submitting}; // Trigger reactivity
         }
     }
+    
+    /**
+     * Parses HJSON content and imports translations
+     * This function handles the import of HJSON content and fills in missing translations
+     */
+    async function importHjsonTranslations() {
+        if (!hjsonContent.trim()) {
+            toast.push('Please enter HJSON content', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+            return;
+        }
+        
+        if (!selectedImportCategory) {
+            toast.push('Please select a category', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+            return;
+        }
+        
+        try {
+            isImporting = true;
+            importStats = { total: 0, added: 0, skipped: 0 };
+            
+            // Create a set of existing translations for quick lookup
+            const existingTranslationsSet = new Set<string>();
+            languageTranslations.forEach(translation => {
+                existingTranslationsSet.add(translation.key);
+            });
+            
+            // Parse the HJSON content using the service
+            const parsedTranslations = hjsonParserService.parseHjsonContent(hjsonContent, selectedImportCategory);
+            
+            // Create translation entries from the parsed content
+            const result = hjsonParserService.createTranslationEntries(
+                parsedTranslations,
+                selectedLanguage,
+                selectedImportCategory,
+                existingTranslationsSet
+            );
+            
+            // Update import statistics
+            importStats = result.stats;
+            
+            // Submit all new translations
+            for (const translation of result.translationsToAdd) {
+                await translationService.create(translation);
+            }
+            
+            // Update the UI with the new translations
+            if (result.translationsToAdd.length > 0) {
+                languageTranslations = [...languageTranslations, ...result.translationsToAdd];
+                processTranslations();
+            }
+            
+            toast.push(`Imported ${importStats.added} translations successfully`, {
+                theme: {
+                    '--toastBackground': '#48BB78',
+                    '--toastColor': 'white',
+                }
+            });
+        } catch (error) {
+            console.error('Error importing HJSON:', error);
+            toast.push('Failed to import HJSON content', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+        } finally {
+            isImporting = false;
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -286,12 +374,85 @@
                 <span class="text-lg font-medium">Selected language: </span>
                 <span class="text-lg font-bold">{availableLanguages.find(l => l.code === selectedLanguage)?.name}</span>
             </div>
-            <button 
-                class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 flex items-center"
-                on:click={() => showTranslationTable = false}
-            >
-                <span class="mr-1">←</span> Change Language
-            </button>
+            <div class="flex space-x-2">
+                <button 
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                    on:click={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
+                >
+                    Import HJSON
+                </button>
+                <button 
+                    class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 flex items-center"
+                    on:click={() => showTranslationTable = false}
+                >
+                    <span class="mr-1">←</span> Change Language
+                </button>
+            </div>
+        </div>
+        
+        <!-- HJSON Import Modal -->
+        <div id="hjsonImportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                <h2 class="text-xl font-semibold mb-4">Import HJSON Translations</h2>
+                <p class="mb-4">Paste your HJSON content below. This will fill in missing translations for the selected language ({availableLanguages.find(l => l.code === selectedLanguage)?.name}).</p>
+                
+                <textarea 
+                    class="w-full h-64 p-2 border rounded-md mb-4 font-mono text-sm"
+                    placeholder="Paste your HJSON content here..."
+                    bind:value={hjsonContent}
+                ></textarea>
+                
+                <div class="mb-4">
+                    <label for="categorySelect" class="block text-sm font-medium text-gray-700 mb-1">Select Category</label>
+                    <select 
+                        id="categorySelect"
+                        class="w-full p-2 border rounded-md"
+                        bind:value={selectedImportCategory}
+                        required
+                    >
+                        <option value="" disabled>Select a category</option>
+                        {#each categories as category}
+                            <option value={category}>{category}</option>
+                        {/each}
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">All imported translations will be assigned to this category.</p>
+                    {#if categories.length === 0}
+                        <p class="mt-1 text-sm text-red-500">No categories available. Please select a language first.</p>
+                    {/if}
+                </div>
+                
+                {#if importStats.total > 0}
+                    <div class="mb-4 p-3 bg-blue-50 rounded-md">
+                        <p>Import results:</p>
+                        <ul class="list-disc pl-5">
+                            <li>Total entries: {importStats.total}</li>
+                            <li>Added translations: {importStats.added}</li>
+                            <li>Skipped (already translated): {importStats.skipped}</li>
+                        </ul>
+                    </div>
+                {/if}
+                
+                <div class="flex justify-end space-x-2">
+                    <button 
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                        on:click={() => document.getElementById('hjsonImportModal')?.classList.add('hidden')}
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                        on:click={importHjsonTranslations}
+                        disabled={!hjsonContent.trim() || !selectedImportCategory || isImporting}
+                    >
+                        {#if isImporting}
+                            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Importing...
+                        {:else}
+                            Import
+                        {/if}
+                    </button>
+                </div>
+            </div>
         </div>
         
         <!-- Category Tabs -->
