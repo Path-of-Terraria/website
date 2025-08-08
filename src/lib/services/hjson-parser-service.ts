@@ -6,7 +6,7 @@ import type { ITranslationEntry } from '$lib/models/localization';
  * This service handles the parsing of HJSON content in the format:
  * 
  * ```
- * # Each Affix comes with a standard, pre-generated line:
+ * # Each entry comes with a standard, pre-generated line:
  * # "{1}{0} to stat"
  * IncreasedDamageAffix: {
  *     Description: "{1}{0}% урона"
@@ -16,7 +16,7 @@ import type { ITranslationEntry } from '$lib/models/localization';
  * }
  * ```
  * 
- * It extracts the affix names and their properties to create translation entries.
+ * It extracts the entry names and their properties to create translation entries.
  */
 export class HjsonParserService {
     /**
@@ -38,7 +38,7 @@ export class HjsonParserService {
         // }
         
         const lines = hjsonContent.split('\n');
-        let currentAffix = '';
+        let entry = '';
         let parsedTranslations: Record<string, string> = {};
         
         for (let line of lines) {
@@ -49,16 +49,16 @@ export class HjsonParserService {
                 continue;
             }
             
-            // Check if this is an affix definition line (ends with colon and opening brace)
-            if (line.includes(':') && line.includes('{') && !currentAffix) {
-                currentAffix = line.split(':')[0].trim();
+            // Check if this is an entry definition line (ends with colon and opening brace)
+            if (line.includes(':') && line.includes('{') && !entry) {
+                entry = line.split(':')[0].trim();
             }
-            // Check if this is a closing brace, which means end of current affix
+            // Check if this is a closing brace, which means end of current entry
             else if (line === '}') {
-                currentAffix = '';
+                entry = '';
             }
-            // Check if this is a property inside an affix
-            else if (currentAffix && line.includes(':')) {
+            // Check if this is a property inside an entry
+            else if (entry && line.includes(':')) {
                 const parts = line.split(':', 2); // Split only on the first colon
                 const property = parts[0].trim();
                 
@@ -83,7 +83,7 @@ export class HjsonParserService {
                 }
                 
                 // Create the full key with the selected category
-                const fullKey = `Mods.PathOfTerraria.${category}.${currentAffix}.${property}`;
+                const fullKey = `Mods.PathOfTerraria.${category}.${entry}.${property}`;
                 
                 parsedTranslations[fullKey] = value;
             }
