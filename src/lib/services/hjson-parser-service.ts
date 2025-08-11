@@ -27,70 +27,70 @@ export class HjsonParserService {
      * @returns A record mapping translation keys to their values
      */
     public parseHjsonContent(hjsonContent: string, category: string): Record<string, string> {
-        if (!hjsonContent.trim() || !category) {
-            return {};
-        }
+        if (!hjsonContent.trim() || !category) return {};
 
-        // Parse the HJSON content
-        // The format is expected to be like:
-        // IncreasedDamageAffix: {
-        //     Description: "{1}{0}% урона"
-        // }
-        
+        const parsedTranslations: Record<string, string> = {};
+        const path: string[] = []; // holds things like ["BubbleDialogue", "Day"]
+
+        // Simple tokenizer for line-based Hjson-ish content
         const lines = hjsonContent.split('\n');
-        let entry = '';
-        let parsedTranslations: Record<string, string> = {};
-        
-        for (let line of lines) {
-            line = line.trim();
-            
-            // Skip comments and empty lines
-            if (line.startsWith('#') || line === '') {
+
+        // Regex: captures (possibly quoted) key OR numeric key, and the remainder after the colon
+        const kvRe = /^\s*(?:"([^"]+)"|([\w.-]+))\s*:\s*(.*)\s*$/;
+
+        for (let raw of lines) {
+            let line = raw.trim();
+
+            // Skip blank lines and comments (# or //)
+            if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+
+            // Handle closing braces. There may be multiple on one line (e.g., "}, }")
+            if (/^\}+[,]*$/.test(line)) {
+                // Pop one level for each '}' found
+                const closes = line.replace(/[^}]/g, '').length;
+                for (let i = 0; i < closes; i++) {
+                    if (path.length > 0) path.pop();
+                }
                 continue;
             }
-            
-            // Check if this is an entry definition line (ends with colon and opening brace)
-            if (line.includes(':') && line.includes('{') && !entry) {
-                entry = line.split(':')[0].trim();
+
+            const m = kvRe.exec(line);
+            if (!m) continue;
+
+            const keyPart = (m[1] ?? m[2] ?? '').trim(); // group 1: quoted, group 2: unquoted
+            let rest = m[3].trim();
+
+            // Strip a trailing comma from the remainder, if present
+            if (rest.endsWith(',')) rest = rest.slice(0, -1).trim();
+
+            const opensObject = rest === '{';
+
+            if (opensObject) {
+                // Opening a nested object: push key segment
+                path.push(keyPart);
+                continue;
             }
-            // Check if this is a closing brace, which means end of current entry
-            else if (line === '}') {
-                entry = '';
+
+            // Leaf value
+            // If value is quoted, remove the surrounding quotes; otherwise keep as-is
+            let value = rest;
+            if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+                value = value.slice(1, -1);
             }
-            // Check if this is a property inside an entry
-            else if (entry && line.includes(':')) {
-                const parts = line.split(':', 2); // Split only on the first colon
-                const property = parts[0].trim();
-                
-                // Get everything after the first colon
-                let value = line.substring(line.indexOf(':') + 1).trim();
-                
-                // Handle different formats of values
-                // Remove trailing comma if present
-                if (value.endsWith(',')) {
-                    value = value.slice(0, -1).trim();
-                }
-                
-                // Remove surrounding quotes if present
-                if (value.startsWith('"') && value.endsWith('"')) {
-                    value = value.slice(1, -1);
-                }
-                
-                // Handle HJSON format where values might be wrapped in braces
-                if (value.startsWith('{') && value.endsWith('}')) {
-                    // Keep the braces as they might be part of the format string
-                    // For example: "{1}{0}% урона"
-                }
-                
-                // Create the full key with the selected category
-                const fullKey = `Mods.PathOfTerraria.${category}.${entry}.${property}`;
-                
-                parsedTranslations[fullKey] = value;
-            }
+
+            // Compose full key: Mods.PathOfTerraria.<category>.<path...>.<keyPart>
+            const fullKey =
+                ['Mods', 'PathOfTerraria', category]
+                    .concat(path)
+                    .concat(keyPart)
+                    .join('.');
+
+            parsedTranslations[fullKey] = value;
         }
-        
+
         return parsedTranslations;
     }
+
 
     /**
      * Creates translation entries from parsed HJSON content
