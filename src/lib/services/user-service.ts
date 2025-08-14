@@ -6,6 +6,7 @@ import type {IPlayer} from "$lib/services/player-service";
 export class UserService {
     httpService = HttpService.getInstance();
     user: IUser | null = null;
+    roles: string[] = [];
 
     public async getUserProfile() {
         if (!GetJwtToken()) {
@@ -28,6 +29,22 @@ export class UserService {
             return null;
         }
         return null;
+    }
+
+    public async getRoles() {
+        let response = await this.httpService.get('User/Roles');
+        if (response) {
+            this.roles = response.data;
+            return response.data;
+        }
+        return [];
+    }
+
+    public async hasRole(role: string) {
+        if (!this.roles.length) {
+            await this.getRoles();
+        }
+        return this.roles.includes(role);
     }
 
     public async login(email: string, password: string) {

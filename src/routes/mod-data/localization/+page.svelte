@@ -4,6 +4,7 @@
     import {HjsonParserService} from '$lib/services/hjson-parser-service';
     import type {IEnglishTranslation, ITranslationEntry} from '$lib/models/localization';
     import {toast} from '@zerodevx/svelte-toast';
+    import {UserService} from '$lib/services/user-service';
 
     // Available languages for translation
     const availableLanguages = [
@@ -30,6 +31,11 @@
 
     // Filter options
     let hideTranslatedEntries: boolean = false;
+    
+    // Edit related variables
+    let editingTranslations: Record<string, boolean> = {};
+    let editedTranslations: Record<string, string> = {};
+    let updatingTranslations: Record<string, boolean> = {};
 
     // HJSON import related variables
     let hjsonContent: string = '';
@@ -40,10 +46,17 @@
 
     const translationService = new TranslationEntryService();
     const hjsonParserService = new HjsonParserService();
+    const userService = new UserService();
+    
+    // Flag to track if user has edit permissions
+    let canEditTranslations = false;
 
     onMount(async () => {
         // Only fetch English translations on mount
         await fetchEnglishTranslations();
+        
+        // Check if user has EditTranslations role
+        canEditTranslations = await userService.hasRole("EditTranslations");
     });
 
     /**
@@ -76,10 +89,14 @@
     function processTranslations() {
         categorizedTranslations = {};
 
-        // Create a map of language translations for quick lookup
+        // Create maps of language translations for quick lookup
         const languageTranslationsMap = new Map<string, string>();
+        const translationIdsMap = new Map<string, string>();
         languageTranslations.forEach(translation => {
             languageTranslationsMap.set(translation.key, translation.value);
+            if (translation.id) {
+                translationIdsMap.set(translation.key, translation.id);
+            }
         });
 
         // Group translations by category (the first word after Mods.PathOfTerraria.)
@@ -96,7 +113,8 @@
                 const mergedTranslation = {
                     key: englishTranslation.key,
                     value: englishTranslation.value,
-                    translatedValue: languageTranslationsMap.get(englishTranslation.key) || ''
+                    translatedValue: languageTranslationsMap.get(englishTranslation.key) || '',
+                    id: translationIdsMap.get(englishTranslation.key) || undefined
                 };
 
                 categorizedTranslations[category].push(mergedTranslation);
@@ -268,6 +286,100 @@
             submitting[key] = false;
             submitting = {...submitting}; // Trigger reactivity
         }
+    }
+    
+    /**
+     * Updates an existing translation
+     *
+     * @param translationEntry The translation entry to update
+     */
+    async function updateTranslation(translationEntry: ITranslationEntry) {
+        if (!editedTranslations[translationEntry.key] || editedTranslations[translationEntry.key].trim() === '') {
+            toast.push('Please enter a translation', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+            return;
+        }
+
+        try {
+            updatingTranslations[translationEntry.key] = true;
+            updatingTranslations = {...updatingTranslations}; // Trigger reactivity
+
+            // Create updated translation entry
+            const updatedTranslation: ITranslationEntry = {
+                ...translationEntry,
+                id: translationEntry.id, // Explicitly include the ID
+                value: editedTranslations[translationEntry.key]
+            };
+
+            await translationService.update(updatedTranslation);
+
+            // Update the UI to show the updated translation
+            const updatedTranslations = languageTranslations.map(t => 
+                t.key === translationEntry.key ? updatedTranslation : t
+            );
+            languageTranslations = updatedTranslations;
+
+            // Update the categorized translations
+            processTranslations();
+
+            // Exit edit mode
+            editingTranslations[translationEntry.key] = false;
+            editingTranslations = {...editingTranslations}; // Trigger reactivity
+            
+            // Clear the edited value
+            delete editedTranslations[translationEntry.key];
+            editedTranslations = {...editedTranslations}; // Trigger reactivity
+
+            toast.push('Translation updated successfully', {
+                theme: {
+                    '--toastBackground': '#48BB78',
+                    '--toastColor': 'white',
+                }
+            });
+        } catch (error) {
+            console.error('Error updating translation:', error);
+            toast.push('Failed to update translation', {
+                theme: {
+                    '--toastBackground': '#F56565',
+                    '--toastColor': 'white',
+                }
+            });
+        } finally {
+            updatingTranslations[translationEntry.key] = false;
+            updatingTranslations = {...updatingTranslations}; // Trigger reactivity
+        }
+    }
+    
+    /**
+     * Starts editing a translation
+     *
+     * @param translationEntry The translation entry to edit
+     */
+    function startEditing(translationEntry: ITranslationEntry) {
+        editingTranslations[translationEntry.key] = true;
+        editingTranslations = {...editingTranslations}; // Trigger reactivity
+        
+        // Initialize the edited value with the current translated value (not the English one)
+        editedTranslations[translationEntry.key] = translationEntry.translatedValue;
+        editedTranslations = {...editedTranslations}; // Trigger reactivity
+    }
+    
+    /**
+     * Cancels editing a translation
+     *
+     * @param key The key of the translation being edited
+     */
+    function cancelEditing(key: string) {
+        editingTranslations[key] = false;
+        editingTranslations = {...editingTranslations}; // Trigger reactivity
+        
+        // Clear the edited value
+        delete editedTranslations[key];
+        editedTranslations = {...editedTranslations}; // Trigger reactivity
     }
 
     /**
@@ -531,7 +643,46 @@
                             <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
                             <td class="py-2 px-4 border-b border-gray-200">
                                 {#if translation.translatedValue}
-                                    {translation.translatedValue}
+                                    {#if canEditTranslations && editingTranslations[translation.key]}
+                                        <div class="flex items-center space-x-2">
+                                            <input
+                                                    type="text"
+                                                    class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                    placeholder="Edit translation"
+                                                    bind:value={editedTranslations[translation.key]}
+                                            />
+                                            <button
+                                                    class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                    on:click={() => updateTranslation(translation)}
+                                                    disabled={updatingTranslations[translation.key]}
+                                            >
+                                                {#if updatingTranslations[translation.key]}
+                                                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                                    Saving
+                                                {:else}
+                                                    Save
+                                                {/if}
+                                            </button>
+                                            <button
+                                                    class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
+                                                    on:click={() => cancelEditing(translation.key)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    {:else}
+                                        <div class="flex items-center justify-between">
+                                            <span>{translation.translatedValue}</span>
+                                            {#if canEditTranslations}
+                                                <button
+                                                        class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
+                                                        on:click={() => startEditing(translation)}
+                                                >
+                                                    Edit
+                                                </button>
+                                            {/if}
+                                        </div>
+                                    {/if}
                                 {:else}
                                     <div class="flex items-center space-x-2">
                                         <input
@@ -584,7 +735,46 @@
                                         <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
                                         <td class="py-2 px-4 border-b border-gray-200">
                                             {#if translation.translatedValue}
-                                                {translation.translatedValue}
+                                                {#if canEditTranslations && editingTranslations[translation.key]}
+                                                    <div class="flex items-center space-x-2">
+                                                        <input
+                                                                type="text"
+                                                                class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                                placeholder="Edit translation"
+                                                                bind:value={editedTranslations[translation.key]}
+                                                        />
+                                                        <button
+                                                                class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                                on:click={() => updateTranslation(translation)}
+                                                                disabled={updatingTranslations[translation.key]}
+                                                        >
+                                                            {#if updatingTranslations[translation.key]}
+                                                                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                                                Saving
+                                                            {:else}
+                                                                Save
+                                                            {/if}
+                                                        </button>
+                                                        <button
+                                                                class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
+                                                                on:click={() => cancelEditing(translation.key)}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                {:else}
+                                                    <div class="flex items-center justify-between">
+                                                        <span>{translation.translatedValue}</span>
+                                                        {#if canEditTranslations}
+                                                            <button
+                                                                    class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
+                                                                    on:click={() => startEditing(translation)}
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                        {/if}
+                                                    </div>
+                                                {/if}
                                             {:else}
                                                 <div class="flex items-center space-x-2">
                                                     <input

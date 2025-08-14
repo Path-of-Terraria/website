@@ -26,7 +26,7 @@ export class TranslationEntryService {
     }
 
     public async update(translationEntry: ITranslationEntry): Promise<void> {
-        await this.httpService.put(`TranslationEntry/${translationEntry.id}`, translationEntry);
+        await this.httpService.patch(`TranslationEntry`, translationEntry);
     }
 
     public async delete(id: string): Promise<void> {
