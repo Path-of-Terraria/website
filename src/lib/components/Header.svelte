@@ -51,6 +51,7 @@
         <NavLi href="https://wiki.pathofterraria.com" target="_blank">Wiki</NavLi>
         {#if isDebug}
             <NavLi href="/mod-data">Mod Data</NavLi>
+            <NavLi href="/admin">Admin</NavLi>
         {/if}
     </NavUl>
 
