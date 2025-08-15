@@ -5,6 +5,7 @@
     import type {IEnglishTranslation, ITranslationEntry} from '$lib/models/localization';
     import {toast} from '@zerodevx/svelte-toast';
     import {UserService} from '$lib/services/user-service';
+    import {IsLoggedIn} from "$lib/services/session-service";
 
     // Available languages for translation
     const availableLanguages = [
@@ -227,6 +228,11 @@
      * @param key The translation key
      */
     async function submitTranslation(key: string) {
+        if (!key) return;
+        if (!IsLoggedIn()) {
+            toast.push('Please log in to add translations', {})
+            return;
+        }
         if (!newTranslations[key] || newTranslations[key].trim() === '') {
             toast.push('Please enter a translation', {
                 theme: {

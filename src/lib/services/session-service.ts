@@ -5,6 +5,10 @@ export function GetJwtToken() {
     return localStorage.getItem('jwt_token');
 }
 
+export function IsLoggedIn() {
+    return GetJwtToken() !== null;
+}
+
 export function SetJwtToken(value: string) {
     if (typeof localStorage === 'undefined') {
         return null;
