@@ -6,6 +6,7 @@ import type {IPlayer} from "$lib/services/player-service";
 export class UserService {
     httpService = HttpService.getInstance();
     user: IUser | null = null;
+    roles: string[] = [];
 
     public async getUserProfile() {
         if (!GetJwtToken()) {
@@ -28,6 +29,22 @@ export class UserService {
             return null;
         }
         return null;
+    }
+
+    public async getRoles() {
+        let response = await this.httpService.get('User/Roles');
+        if (response) {
+            this.roles = response.data;
+            return response.data;
+        }
+        return [];
+    }
+
+    public async hasRole(role: string) {
+        if (!this.roles.length) {
+            await this.getRoles();
+        }
+        return this.roles.includes(role);
     }
 
     public async login(email: string, password: string) {
@@ -78,11 +95,35 @@ export class UserService {
         return null;
     }
 
+    public async getUser(profileName: string): Promise<IUser | null> {
+        let response = await this.httpService.get(`User/${profileName}`);
+        if (response) {
+            return response.data as IUser;
+        }
+        return null;
+    }
+
     public async getPlayers(profileName: string): Promise<IPlayer[]> {
         let response = await this.httpService.get(`User/${profileName}/Players`);
         if (response) {
             return response.data as IPlayer[];
         }
         return [];
+    }
+
+    public async updateUser(user: IUser) {
+        let response = await this.httpService.put('User', user);
+        if (response) {
+            return response;
+        }
+        return null;
+    }
+
+    public async updateUserRoles(user: IUser) {
+        let response = await this.httpService.patch(`User/${user.id}/Roles`, user);
+        if (response) {
+            return response;
+        }
+        return null;
     }
 }

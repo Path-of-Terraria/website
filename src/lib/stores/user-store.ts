@@ -6,6 +6,7 @@ export interface IUser {
     email: string;
     steamId: string;
     profileName: string;
+    roles: string[];
 }
 
 function createUserStore() {
