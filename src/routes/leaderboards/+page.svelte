@@ -1,11 +1,40 @@
 <script lang="ts">
-    import {Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell} from 'flowbite-svelte';
+    import {
+        Table,
+        TableBody,
+        TableBodyCell,
+        TableBodyRow,
+        TableHead,
+        TableHeadCell,
+        Button,
+        Select,
+        Label
+    } from 'flowbite-svelte';
 	import {type IPlayer, PlayerService} from "$lib/services/player-service";
 	let playerService = new PlayerService();
 
-	let leaderboardsPromise: Promise<IPlayer[]> = getLeaderboards();
-	async function getLeaderboards() {
-		return await playerService.getTop50Players();
+	let count: number = 50;
+	let skip: number = 0;
+	let lastResultLength: number = 0;
+
+    async function refreshLeaderboards(): Promise<IPlayer[]> {
+        let data = await playerService.getLeaderboards(count, skip);
+        lastResultLength = data.length;
+        return data;
+    }
+
+    let leaderboardsPromise: Promise<IPlayer[]> = refreshLeaderboards();
+
+	function nextPage() {
+		if (lastResultLength >= count) {
+			skip += count;
+			leaderboardsPromise = refreshLeaderboards();
+		}
+	}
+
+	function prevPage() {
+		skip = Math.max(0, skip - count);
+		leaderboardsPromise = refreshLeaderboards();
 	}
 </script>
 
@@ -58,4 +87,20 @@
 			{/await}
 		</TableBody>
 	</Table>
+	<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4">
+		<div class="flex items-center gap-2">
+            <Select id="page-size" size="sm" class="w-40" bind:value={count} on:change={() => { count = +count; skip = 0; leaderboardsPromise = refreshLeaderboards(); }}>
+                <option value={1}>1</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+            </Select>
+		</div>
+		<div class="flex items-center gap-3">
+			<Button outline size="sm" on:click={prevPage} disabled={skip === 0}>Previous</Button>
+			<span class="text-sm text-gray-700 dark:text-gray-300">Showing {skip + (lastResultLength ? 1 : 0)}–{skip + lastResultLength}</span>
+			<Button outline size="sm" on:click={nextPage} disabled={lastResultLength < count}>Next</Button>
+		</div>
+	</div>
 </div>
