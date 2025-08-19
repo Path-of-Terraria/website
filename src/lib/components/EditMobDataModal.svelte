@@ -60,7 +60,7 @@
                         <span slot="header">
                             {selectedMob?.friendlyName} Entry {index + 1} - {entry.prefix}
                         </span>
-                        <div class="mb-4 border p-2 rounded">
+                        <div class="mb-4 border p-2 rounded-sm">
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Prefix</label>
                                 <input type="text" class="block w-full mt-1" bind:value={entry.prefix} on:input={(e) => updateEntry(index, 'prefix', e.target?.value)} />

@@ -83,7 +83,7 @@
             type="text" 
             bind:value={filter.name} 
             placeholder="Search by item name..." 
-            class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"
+            class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
         />
     </div>
     
@@ -104,7 +104,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-1">Item Type</label>
                 <select 
                     bind:value={filter.type} 
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 >
                     <option value={undefined}>Any</option>
                     {#each itemTypes as type}
@@ -120,7 +120,7 @@
                     type="text" 
                     bind:value={filter.typeName} 
                     placeholder="e.g. Sword, Helmet..." 
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 />
             </div>
             
@@ -129,7 +129,7 @@
                 <label class="block text-sm font-medium text-gray-300 mb-1">Rarity</label>
                 <select 
                     bind:value={filter.rarity} 
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"
+                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 >
                     <option value={undefined}>Any</option>
                     {#each rarityOptions as option}
@@ -146,13 +146,13 @@
 <!--                        type="number" -->
 <!--                        bind:value={filter.minStack} -->
 <!--                        placeholder="Min" -->
-<!--                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"-->
+<!--                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"-->
 <!--                    />-->
 <!--                    <input -->
 <!--                        type="number" -->
 <!--                        bind:value={filter.maxStack} -->
 <!--                        placeholder="Max" -->
-<!--                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"-->
+<!--                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"-->
 <!--                    />-->
 <!--                </div>-->
 <!--            </div>-->
@@ -165,7 +165,7 @@
 <!--                        <input -->
 <!--                            type="checkbox" -->
 <!--                            bind:checked={filter.isCorrupted} -->
-<!--                            class="form-checkbox h-4 w-4 text-yellow-500 rounded focus:ring-yellow-500 border-gray-600 bg-gray-700"-->
+<!--                            class="form-checkbox h-4 w-4 text-yellow-500 rounded-sm focus:ring-yellow-500 border-gray-600 bg-gray-700"-->
 <!--                        />-->
 <!--                        <span class="ml-2 text-gray-300">Corrupted</span>-->
 <!--                    </label>-->
@@ -173,7 +173,7 @@
 <!--                        <input -->
 <!--                            type="checkbox" -->
 <!--                            bind:checked={filter.isMirrored} -->
-<!--                            class="form-checkbox h-4 w-4 text-yellow-500 rounded focus:ring-yellow-500 border-gray-600 bg-gray-700"-->
+<!--                            class="form-checkbox h-4 w-4 text-yellow-500 rounded-sm focus:ring-yellow-500 border-gray-600 bg-gray-700"-->
 <!--                        />-->
 <!--                        <span class="ml-2 text-gray-300">Mirrored</span>-->
 <!--                    </label>-->
@@ -187,7 +187,7 @@
 <!--                    type="text" -->
 <!--                    bind:value={filter.affixName} -->
 <!--                    placeholder="e.g. of Power, Sharpness..." -->
-<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"-->
+<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"-->
 <!--                />-->
 <!--            </div>-->
 <!--            -->
@@ -199,7 +199,7 @@
 <!--                    bind:value={filter.affixMinTier} -->
 <!--                    placeholder="1-5" -->
 <!--                    min="1"-->
-<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"-->
+<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"-->
 <!--                />-->
 <!--            </div>-->
 <!--            -->
@@ -211,7 +211,7 @@
 <!--                    bind:value={filter.affixMinValue} -->
 <!--                    placeholder="Min value" -->
 <!--                    step="0.1"-->
-<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-none"-->
+<!--                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"-->
 <!--                />-->
 <!--            </div>-->
         </div>
