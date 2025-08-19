@@ -18,8 +18,9 @@ export interface IPlayerStats {
 export class PlayerService {
     httpService = HttpService.getInstance();
 
-    public async getTop50Players(): Promise<IPlayer[]> {
-        let response = await this.httpService.get('Player/Leaderboard?count=50&skip=0');
+    public async getLeaderboards(count: number = 50, skip: number = 0): Promise<IPlayer[]> {
+        const url = `Player/Leaderboard?count=${encodeURIComponent(count)}&skip=${encodeURIComponent(skip)}`;
+        const response = await this.httpService.get(url);
         if (response) {
             return response.data as IPlayer[];
         }
