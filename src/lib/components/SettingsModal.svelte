@@ -8,6 +8,7 @@
     import {toast} from "@zerodevx/svelte-toast";
     import type {IUser} from "$lib/stores/user-store";
     import steamSignin from "$lib/images/steam-signin.png";
+
     let userService = new UserService();
 
     let email = ""
@@ -43,11 +44,9 @@
         {:else }
             <span class="block text-sm">
                 Steam Account {currentUser.steamId} Linked
-                <div>
-                    <Button type="button" on:click={() => unlinkSteam()}>
-                        Unlink Steam
-                    </Button>
-                </div>
+                <Button class="block" type="button" onclick={() => unlinkSteam()}>
+                    Unlink Steam
+                </Button>
             </span>
         {/if}
         <svelte:fragment slot="footer">
