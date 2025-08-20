@@ -41,7 +41,7 @@
 	<div class="pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-gradient-to-br from-fuchsia-500/20 via-purple-500/20 to-indigo-500/30 blur-3xl"></div>
 
 	<div class="relative container mx-auto px-4 py-24 text-center">
-		<Heading tag="h1" class="mb-6 font-extrabold text-4xl md:text-6xl lg:text-7xl tracking-tight">
+		<Heading tag="h1" class="mt-12 mb-6 font-extrabold text-4xl md:text-6xl lg:text-7xl tracking-tight">
 			<span class="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent">
 				Path of Terraria
 			</span>
@@ -49,7 +49,7 @@
 		<p class="mx-auto max-w-3xl text-base md:text-xl text-gray-300">
 			A game-changing mod that brings the ARPG experience into Terraria
 		</p>
-		<div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+		<div class="my-10 flex flex-col sm:flex-row items-center justify-center gap-4">
 			<a href="#features" class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-emerald-500 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/10 ring-1 ring-white/10 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-400">
 				Explore Features
 			</a>

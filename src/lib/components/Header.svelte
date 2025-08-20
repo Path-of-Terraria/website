@@ -65,6 +65,7 @@
 			Path of Terraria
 		</span>
     </NavBrand>
+    <style>ul {gap: 16px; }</style>
     <NavUl>
         <NavLi href="/" class={navLinkClass}>Home</NavLi>
         <NavLi href="/leaderboards" class={navLinkClass}>Leaderboards</NavLi>
@@ -76,7 +77,7 @@
         {/if}
     </NavUl>
 
-    <div class="flex items-center md:order-2">
+    <div class="flex items-center md:order-2" style="width: 194px;">
         {#if !currentUser}
             <LoginModal/>
         {:else}
