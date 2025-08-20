@@ -511,13 +511,13 @@
             </div>
             <div class="flex space-x-2">
                 <button
-                        class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+                        class="px-3 py-1 bg-blue-500 text-white rounded-sm hover:bg-blue-600 flex items-center"
                         on:click={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
                 >
                     Import HJSON
                 </button>
                 <button
-                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 flex items-center"
+                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300 flex items-center"
                         on:click={() => showTranslationTable = false}
                 >
                     <span class="mr-1">←</span> Change Language
@@ -653,7 +653,7 @@
                                         <div class="flex items-center space-x-2">
                                             <input
                                                     type="text"
-                                                    class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                    class="grow px-2 py-1 border rounded-md text-sm"
                                                     placeholder="Edit translation"
                                                     bind:value={editedTranslations[translation.key]}
                                             />
@@ -693,7 +693,7 @@
                                     <div class="flex items-center space-x-2">
                                         <input
                                                 type="text"
-                                                class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                class="grow px-2 py-1 border rounded-md text-sm"
                                                 placeholder="Add translation"
                                                 bind:value={newTranslations[translation.key]}
                                         />
@@ -745,7 +745,7 @@
                                                     <div class="flex items-center space-x-2">
                                                         <input
                                                                 type="text"
-                                                                class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                                class="grow px-2 py-1 border rounded-md text-sm"
                                                                 placeholder="Edit translation"
                                                                 bind:value={editedTranslations[translation.key]}
                                                         />
@@ -785,7 +785,7 @@
                                                 <div class="flex items-center space-x-2">
                                                     <input
                                                             type="text"
-                                                            class="flex-grow px-2 py-1 border rounded-md text-sm"
+                                                            class="grow px-2 py-1 border rounded-md text-sm"
                                                             placeholder="Add translation"
                                                             bind:value={newTranslations[translation.key]}
                                                     />

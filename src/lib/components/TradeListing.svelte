@@ -48,7 +48,7 @@
 
 <div class="trade-listing-card bg-gray-800 rounded-lg shadow-md flex p-4 gap-4">
     <!-- Left Section: Item Image -->
-    <div class="flex-shrink-0 flex items-center">
+    <div class="shrink-0 flex items-center">
         <img
                 src="{placeholder}"
                 alt="{listing?.itemData.name}"
@@ -57,7 +57,7 @@
     </div>
 
     <!-- Middle Section: Item Details -->
-    <div class="flex-grow text-center">
+    <div class="grow text-center">
         <h3 class="text-lg font-semibold text-yellow-300">
             {listing?.itemData.name}
         </h3>
@@ -91,10 +91,10 @@
         <div class="mt-4 flex gap-2">
             <button
                     on:click={() => requestBuy()}
-                    class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded">
+                    class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">
                 Buy
             </button>
-            <button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded">
+            <button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">
                 Offer
             </button>
         </div>

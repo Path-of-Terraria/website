@@ -88,7 +88,7 @@
 
 <div class="container mx-auto p-4">
     <div class="flex items-center mb-4">
-        <a href="/Admin" class="text-blue-600 hover:underline mr-2">← Back to Admin</a>
+        <a href="/admin" class="text-blue-600 hover:underline mr-2">← Back to Admin</a>
         <h1 class="text-2xl font-bold">User Management</h1>
     </div>
     
@@ -110,7 +110,7 @@
     </div>
     
     {#if user}
-        <Card class="max-w-md mx-auto">
+        <Card class="max-w-md mx-auto p-4 sm:p-6 md:p-8">
             <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">User Details</h5>
             <div class="space-y-2">
                 <div class="flex justify-between">
@@ -137,7 +137,7 @@
                             <div class="flex items-center">
                                 <Checkbox 
                                     checked={selectedRoles.includes(role)}
-                                    on:change={() => toggleRole(role)}
+                                    onchange={() => toggleRole(role)}
                                 />
                                 <span class="ml-2">{role}</span>
                             </div>
@@ -149,7 +149,7 @@
                             color="blue" 
                             size="sm" 
                             disabled={saveLoading} 
-                            on:click={saveRoles}
+                            onclick={saveRoles}
                         >
                             {saveLoading ? 'Saving...' : 'Save Roles'}
                         </Button>
