@@ -32,6 +32,7 @@
 
     // Filter options
     let hideTranslatedEntries: boolean = false;
+    let searchQuery: string = '';
     
     // Edit related variables
     let editingTranslations: Record<string, boolean> = {};
@@ -168,17 +169,24 @@
     }
 
     /**
-     * Filters translations based on the hideTranslatedEntries setting
+     * Filters translations based on the hideTranslatedEntries setting and search query
      *
      * @param translations The translations to filter
      * @returns Filtered translations array
      */
     function filterTranslations(translations: any[]): any[] {
-        if (!hideTranslatedEntries) {
-            return translations;
+        let result = translations;
+
+        if (hideTranslatedEntries) {
+            result = result.filter(t => !t.translatedValue);
         }
 
-        return translations.filter(translation => !translation.translatedValue);
+        const q = searchQuery?.trim().toLowerCase();
+        if (q) {
+            result = result.filter(t => t.key.toLowerCase().includes(q));
+        }
+
+        return result;
     }
 
     /**
@@ -612,7 +620,7 @@
         </div>
 
         <!-- Filter Options -->
-        <div class="mb-4 flex items-center">
+        <div class="mb-4 flex items-center justify-between gap-4 flex-wrap">
             <label class="flex items-center">
                 <input
                         type="checkbox"
@@ -621,6 +629,15 @@
                 />
                 <span class="text-sm text-gray-700">Hide already translated entries</span>
             </label>
+            <div class="w-full sm:w-auto">
+                <input
+                        type="text"
+                        class="mt-2 sm:mt-0 px-2 py-1 border rounded-md text-sm w-full sm:w-64"
+                        placeholder="Search by key..."
+                        bind:value={searchQuery}
+                        aria-label="Search by key"
+                />
+            </div>
         </div>
 
         <!-- Translation Table -->
