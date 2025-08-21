@@ -89,7 +89,7 @@
 	</Table>
 	<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4">
 		<div class="flex items-center gap-2">
-            <Select id="page-size" size="sm" class="w-40" bind:value={count} on:change={() => { count = +count; skip = 0; leaderboardsPromise = refreshLeaderboards(); }}>
+            <Select id="page-size" size="sm" class="w-40" bind:value={count} onchange={() => { count = +count; skip = 0; leaderboardsPromise = refreshLeaderboards(); }}>
                 <option value={1}>1</option>
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -98,9 +98,9 @@
             </Select>
 		</div>
 		<div class="flex items-center gap-3">
-			<Button outline size="sm" on:click={prevPage} disabled={skip === 0}>Previous</Button>
+			<Button outline size="sm" onclick={prevPage} disabled={skip === 0}>Previous</Button>
 			<span class="text-sm text-gray-700 dark:text-gray-300">Showing {skip + (lastResultLength ? 1 : 0)}–{skip + lastResultLength}</span>
-			<Button outline size="sm" on:click={nextPage} disabled={lastResultLength < count}>Next</Button>
+			<Button outline size="sm" onclick={nextPage} disabled={lastResultLength < count}>Next</Button>
 		</div>
 	</div>
 </div>

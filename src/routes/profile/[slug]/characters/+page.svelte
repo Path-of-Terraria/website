@@ -81,7 +81,7 @@
                             <TableBodyCell>{player.stats.dexterity}</TableBodyCell>
                             <TableBodyCell>{player.stats.intelligence}</TableBodyCell>
                             <TableBodyCell>
-                                <Button on:click={() => (openDeleteModal(player.name, player.id))}>Delete</Button>
+                                <Button onclick={() => (openDeleteModal(player.name, player.id))}>Delete</Button>
                             </TableBodyCell>
                         </TableBodyRow>
                     {/each}
@@ -99,10 +99,10 @@
     </p>
     <svelte:fragment slot="footer">
         <div class="flex justify-end w-full">
-            <Button color="alternative" on:click={() => deleteModalOpen = false} class="mr-6">
+            <Button color="alternative" onclick={() => deleteModalOpen = false} class="mr-6">
                 Cancel
             </Button>
-            <Button color="red" on:click={confirmDelete}>
+            <Button color="red" onclick={confirmDelete}>
                 Delete
             </Button>
         </div>

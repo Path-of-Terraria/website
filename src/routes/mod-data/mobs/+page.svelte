@@ -81,7 +81,7 @@
                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-gray-400 focus:ring-3 focus:ring-blue-300 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
             />
         </div>
-        <Button color="green" on:click={exportMobData}>
+        <Button color="green" onclick={exportMobData}>
             Export
         </Button>
     </div>
