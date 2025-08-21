@@ -24,28 +24,24 @@
     let userService = new UserService();
     const isDebug = import.meta.env.VITE_DEBUG === 'true';
 
-    let currentUser: IUser;
-    let settingsOpen = false;
+    let currentUser: IUser | null = $state(null);
+    let settingsOpen = $state(false);
 
-    // Determine if we're on the home page
-    $: isHome = $page.url?.pathname === '/';
+    // Determine if we're on the home page (runes)
+    let isHome = $derived($page?.url?.pathname === '/');
 
-    // Classes depending on route
-    $: navbarClass = isHome
-        ? 'bg-transparent fixed top-0 left-0 right-0 z-50 backdrop-blur-sm'
-        : 'bg-primary-100 dark:bg-primary-700';
+    // Classes depending on route (runes)
+    let navbarClass = $derived(
+        isHome
+            ? 'bg-transparent fixed top-0 left-0 right-0 z-50 backdrop-blur-sm'
+            : 'bg-primary-100 dark:bg-primary-700'
+    );
 
-    $: brandTextClass = isHome
-        ? 'text-white'
-        : 'text-primary-700';
+    let brandTextClass = $derived(isHome ? 'text-white' : 'text-primary-700');
 
-    $: navLinkClass = isHome
-        ? 'text-white hover:text-gray-200'
-        : '';
+    let navLinkClass = $derived(isHome ? 'text-white hover:text-gray-200' : '');
 
-    $: hamburgerClass = isHome
-        ? 'text-white'
-        : '';
+    let hamburgerClass = $derived(isHome ? 'text-white' : '');
 
     const unsubscribe = user.subscribe(value => {
         // @ts-ignore

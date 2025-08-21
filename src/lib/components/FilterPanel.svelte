@@ -8,8 +8,8 @@
     }>();
     
     // Filter state
-    let isExpanded = false;
-    let filter: GearFilter = {
+    let isExpanded = $state(false);
+    let filter: GearFilter = $state({
         name: '',
         typeName: '',
         rarity: undefined,
@@ -21,7 +21,7 @@
         affixName: '',
         affixMinTier: undefined,
         affixMinValue: undefined
-    };
+    });
     
     // Item types (placeholder - replace with actual types from backend)
     const itemTypes = [

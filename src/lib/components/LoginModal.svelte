@@ -1,17 +1,17 @@
 <script lang="ts">
     import {Button, Modal, Label, Input} from 'flowbite-svelte';
 
-    let modalOpen = false;
+    let modalOpen = $state(false);
 
     import {UserService} from "$lib/services/user-service";
-    import {toast} from '@zerodevx/svelte-toast'
+    import { toast } from '$lib/toast'
 
     let userService = new UserService();
 
-    let email = "";
-    let password = "";
-    let profileName = "";
-    let view = "login";
+    let email = $state("");
+    let password = $state("");
+    let profileName = $state("");
+    let view = $state("login");
 
     async function signup() {
         await userService.signup(email, password, profileName);
@@ -30,7 +30,7 @@
 </script>
 
 <Button onclick={() => (modalOpen = true)}>Login</Button>
-<form on:submit={async (e) => {
+<form onsubmit={async (e) => {
    if (view === 'login') {
        await login();
     } else if (view === 'register') {
@@ -39,8 +39,8 @@
         await forgotPassword();
     }
 }}>
-    <Modal title="Login / Signup" bind:open={modalOpen} autoclose={false}>
-        { #if view === 'register'}
+    <Modal title="Login / Signup" bind:open={modalOpen} autoclose={false} form>
+        {#if view === 'register'}
             <div class="mb-4">
                 <Label for="small-input" class="block mb-2">Profile Name</Label>
                 <Input id="small-input" size="sm" placeholder="DrBibbityBob" bind:value={profileName}/>
@@ -50,13 +50,13 @@
             <Label for="small-input" class="block mb-2">Email</Label>
             <Input id="small-input" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
         </div>
-        { #if view !== 'forgot-password'}
+        {#if view !== 'forgot-password'}
             <div class="mb-6">
                 <Label for="small-input" class="block mb-2">Password</Label>
                 <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={password}/>
             </div>
         {/if}
-        <svelte:fragment slot="footer">
+        {#snippet footer()}
             <div class="flex justify-between w-full">
                 <div class="inline-flex">
                     <Button color="alternative" onclick={() => view = 'forgot-password'}>
@@ -64,7 +64,7 @@
                     </Button>
                 </div>
                 <div class="inline-flex">
-                    {#if view === 'login' }
+                    {#if view === 'login'}
                         <Button color="alternative" onclick={() => view = 'register'}>
                             Register Instead
                         </Button>
@@ -88,6 +88,6 @@
                     {/if}
                 </div>
             </div>
-        </svelte:fragment>
+        {/snippet}
     </Modal>
 </form>

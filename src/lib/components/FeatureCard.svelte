@@ -1,11 +1,13 @@
 <script lang="ts">
     import { Card, Button } from 'flowbite-svelte';
     import { ArrowRightOutline } from 'flowbite-svelte-icons';
-    export let title: string = "title";
-    export let target: string = "_blank";
-    export let description: string = "description";
-    export let link: string = "#";
-    export let linkText: string = "Read more";
+    let { 
+        title = "title",
+        target = "_blank",
+        description = "description",
+        link = "#",
+        linkText = "Read more"
+    } = $props<{ title?: string; target?: string; description?: string; link?: string; linkText?: string }>();
 </script>
 
 <Card class="p-4 sm:p-6 md:p-8">

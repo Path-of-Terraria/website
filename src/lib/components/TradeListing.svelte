@@ -1,14 +1,14 @@
 <script lang="ts">
     import {type ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
     import placeholder from '$lib/images/item-placeholder.png';
-    import {toast} from "@zerodevx/svelte-toast";
+    import { toast } from "$lib/toast";
     import {UserService} from "$lib/services/user-service";
     import {TradeListingService} from "$lib/services/trade-listing-service";
 
     let userService = new UserService();
     let tradeListingService = new TradeListingService();
 
-    export let listing: ITradeListing;
+    let { listing } = $props<{ listing: ITradeListing }>();
 
     const currencyNames = [
         "Glittering Shard", // GlitteringShard = 0

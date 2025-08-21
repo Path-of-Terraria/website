@@ -3,7 +3,7 @@
     import {TranslationEntryService} from '$lib/services/translation-entry-service';
     import {HjsonParserService} from '$lib/services/hjson-parser-service';
     import type {IEnglishTranslation, ITranslationEntry} from '$lib/models/localization';
-    import {toast} from '@zerodevx/svelte-toast';
+    import { toast } from '$lib/toast';
     import {UserService} from '$lib/services/user-service';
     import {IsLoggedIn} from "$lib/services/session-service";
 
