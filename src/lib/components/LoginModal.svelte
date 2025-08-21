@@ -29,7 +29,7 @@
     }
 </script>
 
-<Button on:click={() => (modalOpen = true)}>Login</Button>
+<Button onclick={() => (modalOpen = true)}>Login</Button>
 <form on:submit={async (e) => {
    if (view === 'login') {
        await login();
@@ -59,27 +59,27 @@
         <svelte:fragment slot="footer">
             <div class="flex justify-between w-full">
                 <div class="inline-flex">
-                    <Button color="alternative" on:click={() => view = 'forgot-password'}>
+                    <Button color="alternative" onclick={() => view = 'forgot-password'}>
                         Forgot Password
                     </Button>
                 </div>
                 <div class="inline-flex">
                     {#if view === 'login' }
-                        <Button color="alternative" on:click={() => view = 'register'}>
+                        <Button color="alternative" onclick={() => view = 'register'}>
                             Register Instead
                         </Button>
                         <Button type="submit" disabled={!email || !password}>
                             Login
                         </Button>
                     {:else if view === 'register'}
-                        <Button color="alternative" on:click={() => view = 'login'}>
+                        <Button color="alternative" onclick={() => view = 'login'}>
                             Signin Instead
                         </Button>
                         <Button type="submit" disabled={!email || !password || !profileName}>
                             Signup
                         </Button>
                     {:else}
-                        <Button color="alternative" on:click={() => view = 'login'}>
+                        <Button color="alternative" onclick={() => view = 'login'}>
                             Back to Login
                         </Button>
                         <Button type="submit" disabled={!email}>
