@@ -25,11 +25,48 @@
     
     // Item types (placeholder - replace with actual types from backend)
     const itemTypes = [
-        { id: 0, name: 'Weapon' },
-        { id: 1, name: 'Armor' },
-        { id: 2, name: 'Accessory' },
-        { id: 3, name: 'Consumable' }
+        { id: 0, name: 'None' },
+        { id: 1, name: 'Sword' },
+        { id: 2, name: 'Spear' },
+        { id: 4, name: 'Bow' },
+        { id: 8, name: 'Gun' },
+        { id: 16, name: 'Staff' },
+        { id: 32, name: 'Tome' },
+        { id: 64, name: 'Helmet' },
+        { id: 128, name: 'Chestplate' },
+        { id: 256, name: 'Leggings' },
+        { id: 512, name: 'Ring' },
+        { id: 1024, name: 'Charm' },
+        { id: 2048, name: 'Wand' },
+        { id: 4096, name: 'Jewel' },
+        { id: 8192, name: 'Map' },
+        { id: 16384, name: 'Boomerang' },
+        { id: 32768, name: 'MeleeFlail' },
+        { id: 65536, name: 'RangedFlail' },
+        { id: 131072, name: 'Launcher' },
+        { id: 262144, name: 'Javelin' },
+        { id: 524288, name: 'Whip' },
+        { id: 1048576, name: 'WarShield' },
+        { id: 2097152, name: 'Grimoire' },
+        { id: 4194304, name: 'Battleaxe' },
+        { id: 8388608, name: 'Amulet' },
+        { id: 16777216, name: 'Shield' },
+
+        // composite groups
+        { id: 64 | 128 | 256, name: 'Armor' },
+        { id: 8388608 | 1024 | 512, name: 'Accessories' },
+        { id: (8388608 | 1024 | 512) | (64 | 128 | 256), name: 'Equipment' },
+        { id: 16777216, name: 'Offhand' },
+        { id: 4194304 | 1048576 | 32768 | 2 | 1, name: 'Melee' },
+        { id: 2048 | 32 | 16, name: 'Magic' },
+        { id: 262144 | 131072 | 65536 | 16384 | 8 | 4, name: 'Ranged' },
+        { id: 2097152 | 524288, name: 'Summoner' },
+        { id: (475148 | 2096 | 5249155 | 524288), name: 'Weapon' },
+        { id: (6289215 | 8389568), name: 'AllGear' },
+        { id: (14678783 | 4096), name: 'AllNoMap' },
+        { id: (14682879 | 8192), name: 'All' }
     ];
+
     
     // Rarity options
     const rarityOptions = [
