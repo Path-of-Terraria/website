@@ -52,7 +52,7 @@
             <TableHeadCell>Intelligence</TableHeadCell>
             <TableHeadCell>Actions</TableHeadCell>
         </TableHead>
-        <TableBody tableBodyClass="divide-y">
+        <TableBody class="divide-y">
             {#await playerPromise}
                 <TableBodyRow>
                     <TableBodyCell>Fetching...</TableBodyCell>

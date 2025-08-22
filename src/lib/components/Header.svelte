@@ -19,7 +19,7 @@
     import LoginModal from "$lib/components/LoginModal.svelte";
     import {UserService} from "$lib/services/user-service";
     import SettingsModal from "$lib/components/SettingsModal.svelte";
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
 
     let userService = new UserService();
     const isDebug = import.meta.env.VITE_DEBUG === 'true';
@@ -28,7 +28,7 @@
     let settingsOpen = $state(false);
 
     // Determine if we're on the home page (runes)
-    let isHome = $derived($page?.url?.pathname === '/');
+    let isHome = $derived(page?.url?.pathname === '/');
 
     // Classes depending on route (runes)
     let navbarClass = $derived(
@@ -44,7 +44,6 @@
     let hamburgerClass = $derived(isHome ? 'text-white' : '');
 
     const unsubscribe = user.subscribe(value => {
-        // @ts-ignore
         currentUser = value;
     });
 

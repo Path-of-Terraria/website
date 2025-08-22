@@ -22,15 +22,15 @@ export class HttpService {
             console.log('response error', error);
             if (error.response) {
                 if (error.response.status === 401) {
-                    toast.push('Unauthorized');
+                    toast.push(error?.response?.data?.message ?? 'Unauthorized');
                     return Promise.reject(error);
                 }
                 if (error.response.status === 403) {
-                    toast.push('Forbidden');
+                    toast.push(error?.response?.data?.message ?? 'Forbidden');
                     return Promise.reject(error);
                 }
                 if (error.response.status === 404) {
-                    toast.push('Not Found');
+                    toast.push(error?.response?.data?.message ?? 'Not Found');
                     return Promise.reject(error);
                 }
                 if (error.response.data.message) {
