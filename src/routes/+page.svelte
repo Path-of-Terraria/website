@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Heading } from "flowbite-svelte";
 	import { onMount } from 'svelte';
-	import { toast } from '@zerodevx/svelte-toast';
+ import { toast } from '$lib/toast';
 	import { WandMagicSparklesSolid, AnnotationSolid, MapPinAltSolid, AdjustmentsVerticalSolid } from 'flowbite-svelte-icons';
 
 	import { user } from "$lib/stores/user-store";

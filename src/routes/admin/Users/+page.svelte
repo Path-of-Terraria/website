@@ -5,19 +5,19 @@
     import type {IUser} from "$lib/stores/user-store";
     
     let userService = new UserService();
-    let profileName = "";
-    let user: IUser | null = null;
-    let loading = false;
-    let error = "";
-    let saveLoading = false;
-    let saveSuccess = false;
-    let saveError = "";
+    let profileName = $state("");
+    let user: IUser | null = $state(null);
+    let loading = $state(false);
+    let error = $state("");
+    let saveLoading = $state(false);
+    let saveSuccess = $state(false);
+    let saveError = $state("");
     
     // Available roles
     const availableRoles = ["ViewAdminPanel", "EditTranslations"];
     
     // Selected roles
-    let selectedRoles: string[] = [];
+    let selectedRoles: string[] = $state([]);
     
     async function searchUser() {
         if (!profileName.trim()) {

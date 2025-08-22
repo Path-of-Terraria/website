@@ -3,7 +3,7 @@
     import { createEventDispatcher } from 'svelte';
     import { Accordion, AccordionItem } from 'flowbite-svelte';
 
-    export let selectedMob: IMobData | null = null;
+    let { selectedMob = null } = $props<{ selectedMob?: IMobData | null }>();
     const dispatch = createEventDispatcher();
 
     function closeModal() {

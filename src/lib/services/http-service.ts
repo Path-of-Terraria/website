@@ -1,6 +1,6 @@
 import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import { GetJwtToken } from './session-service';
-import { toast } from "@zerodevx/svelte-toast";
+import { toast } from "$lib/toast";
 
 export class HttpService {
     private static instance: HttpService;

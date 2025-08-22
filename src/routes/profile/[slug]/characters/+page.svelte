@@ -5,7 +5,7 @@
     import {UserService} from "$lib/services/user-service";
     let userService = new UserService();
     let playerService = new PlayerService();
-    import {toast} from "@zerodevx/svelte-toast";
+    import { toast } from "$lib/toast";
 
     let { data }: { data: PageData } = $props();
 
@@ -97,7 +97,8 @@
     <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
         Are you sure you want to delete {playerNameToDelete}? This action cannot be undone.
     </p>
-    <svelte:fragment slot="footer">
+
+    {#snippet footer()}
         <div class="flex justify-end w-full">
             <Button color="alternative" onclick={() => deleteModalOpen = false} class="mr-6">
                 Cancel
@@ -106,5 +107,5 @@
                 Delete
             </Button>
         </div>
-    </svelte:fragment>
+    {/snippet}
 </Modal>

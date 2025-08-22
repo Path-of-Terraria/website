@@ -2,7 +2,7 @@
     import { Heading, Label, Input, Button } from 'flowbite-svelte';
 
     import {UserService} from "$lib/services/user-service";
-    import { toast } from '@zerodevx/svelte-toast'
+    import { toast } from '$lib/toast'
     import {onMount} from "svelte";
     import {goto} from "$app/navigation";
 
