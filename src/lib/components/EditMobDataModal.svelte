@@ -51,7 +51,7 @@
 
         {#if selectedMob}
             <div class="mb-4">
-                <button class="text-blue-500 hover:underline" on:click={addEntry}>Add Entry</button>
+                <button class="text-blue-500 hover:underline" onclick={addEntry}>Add Entry</button>
             </div>
 
             <Accordion>
@@ -81,7 +81,7 @@
                                 <label class="block text-sm font-medium text-gray-700">Requirements</label>
                                 <input type="text" class="block w-full mt-1" bind:value={entry.requirements} on:input={(e) => updateEntry(index, 'requirements', e.target?.value)} />
                             </div>
-                            <button class="text-red-500 hover:underline" on:click={() => deleteEntry(index)}>Delete Entry</button>
+                            <button class="text-red-500 hover:underline" onclick={() => deleteEntry(index)}>Delete Entry</button>
                         </div>
                     </AccordionItem>
                 {/each}
@@ -89,8 +89,8 @@
         {/if}
 
         <div class="mt-4 flex justify-end space-x-4">
-            <button class="text-blue-500 hover:underline" on:click={closeModal}>Cancel</button>
-            <button class="text-blue-500 hover:underline" on:click={saveChanges}>Save</button>
+            <button class="text-blue-500 hover:underline" onclick={closeModal}>Cancel</button>
+            <button class="text-blue-500 hover:underline" onclick={saveChanges}>Save</button>
         </div>
     </div>
 </div>

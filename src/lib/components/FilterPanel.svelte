@@ -126,7 +126,7 @@
     
     <!-- Collapsible section toggle -->
     <button 
-        on:click={toggleExpand} 
+        onclick={toggleExpand}
         class="flex items-center justify-between w-full p-2 bg-gray-700 text-white rounded-md mb-4 hover:bg-gray-600"
     >
         <span class="font-medium">Advanced Filters</span>
@@ -256,13 +256,13 @@
         <!-- Filter action buttons -->
         <div class="filter-actions flex justify-end space-x-2">
             <button 
-                on:click={resetFilter} 
+                onclick={resetFilter}
                 class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
             >
                 Reset
             </button>
             <button 
-                on:click={applyFilter} 
+                onclick={applyFilter}
                 class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
             >
                 Apply Filters

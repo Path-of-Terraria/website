@@ -489,7 +489,7 @@
                 {#each availableLanguages as language}
                     <button
                             class="p-3 border rounded-md hover:bg-blue-50 transition-colors {selectedLanguage === language.code ? 'bg-blue-100 border-blue-500' : 'border-gray-300'}"
-                            on:click={() => selectedLanguage = language.code}
+                            onclick={() => selectedLanguage = language.code}
                     >
                         {language.name}
                     </button>
@@ -500,7 +500,7 @@
                 <button
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={!selectedLanguage}
-                        on:click={fetchLanguageTranslations}
+                        onclick={fetchLanguageTranslations}
                 >
                     Continue
                 </button>
@@ -520,13 +520,13 @@
             <div class="flex space-x-2">
                 <button
                         class="px-3 py-1 bg-blue-500 text-white rounded-sm hover:bg-blue-600 flex items-center"
-                        on:click={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
+                        onclick={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
                 >
                     Import HJSON
                 </button>
                 <button
                         class="px-3 py-1 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300 flex items-center"
-                        on:click={() => showTranslationTable = false}
+                        onclick={() => showTranslationTable = false}
                 >
                     <span class="mr-1">←</span> Change Language
                 </button>
@@ -583,13 +583,13 @@
                 <div class="flex justify-end space-x-2">
                     <button
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                            on:click={() => document.getElementById('hjsonImportModal')?.classList.add('hidden')}
+                            onclick={() => document.getElementById('hjsonImportModal')?.classList.add('hidden')}
                     >
                         Cancel
                     </button>
                     <button
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                            on:click={importHjsonTranslations}
+                            onclick={importHjsonTranslations}
                             disabled={!hjsonContent.trim() || !selectedImportCategory || isImporting}
                     >
                         {#if isImporting}
@@ -610,7 +610,7 @@
                     <li class="mr-2">
                         <button
                                 class="inline-block p-4 rounded-t-lg {activeCategory === category ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-gray-600 hover:border-gray-300'}"
-                                on:click={() => activeCategory = category}
+                                onclick={() => activeCategory = category}
                         >
                             {category}
                         </button>
@@ -676,7 +676,7 @@
                                             />
                                             <button
                                                     class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                                                    on:click={() => updateTranslation(translation)}
+                                                    onclick={() => updateTranslation(translation)}
                                                     disabled={updatingTranslations[translation.key]}
                                             >
                                                 {#if updatingTranslations[translation.key]}
@@ -688,7 +688,7 @@
                                             </button>
                                             <button
                                                     class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
-                                                    on:click={() => cancelEditing(translation.key)}
+                                                    onclick={() => cancelEditing(translation.key)}
                                             >
                                                 Cancel
                                             </button>
@@ -699,7 +699,7 @@
                                             {#if canEditTranslations}
                                                 <button
                                                         class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
-                                                        on:click={() => startEditing(translation)}
+                                                        onclick={() => startEditing(translation)}
                                                 >
                                                     Edit
                                                 </button>
@@ -716,7 +716,7 @@
                                         />
                                         <button
                                                 class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                                                on:click={() => submitTranslation(translation.key)}
+                                                onclick={() => submitTranslation(translation.key)}
                                                 disabled={submitting[translation.key]}
                                         >
                                             {#if submitting[translation.key]}
@@ -738,7 +738,7 @@
                         {#if filteredGroupTranslations.length > 0}
                             <!-- Group header -->
                             <tr class="bg-gray-100 hover:bg-gray-200 cursor-pointer"
-                                on:click={() => toggleGroup(groupKey)}>
+                                onclick={() => toggleGroup(groupKey)}>
                                 <td class="py-2 px-4 border-b border-gray-200 font-medium">
                                     <div class="flex items-center">
                                         <span class="mr-2">{expandedGroups.has(groupKey) ? '▼' : '►'}</span>
@@ -768,7 +768,7 @@
                                                         />
                                                         <button
                                                                 class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                                                                on:click={() => updateTranslation(translation)}
+                                                                onclick={() => updateTranslation(translation)}
                                                                 disabled={updatingTranslations[translation.key]}
                                                         >
                                                             {#if updatingTranslations[translation.key]}
@@ -780,7 +780,7 @@
                                                         </button>
                                                         <button
                                                                 class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
-                                                                on:click={() => cancelEditing(translation.key)}
+                                                                onclick={() => cancelEditing(translation.key)}
                                                         >
                                                             Cancel
                                                         </button>
@@ -791,7 +791,7 @@
                                                         {#if canEditTranslations}
                                                             <button
                                                                     class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
-                                                                    on:click={() => startEditing(translation)}
+                                                                    onclick={() => startEditing(translation)}
                                                             >
                                                                 Edit
                                                             </button>
@@ -808,7 +808,7 @@
                                                     />
                                                     <button
                                                             class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                                                            on:click={() => submitTranslation(translation.key)}
+                                                            onclick={() => submitTranslation(translation.key)}
                                                             disabled={submitting[translation.key]}
                                                     >
                                                         {#if submitting[translation.key]}

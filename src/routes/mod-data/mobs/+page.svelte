@@ -141,7 +141,7 @@
                             <td class="px-6 py-4">
                                 <button
                                     class="text-blue-500 hover:underline"
-                                    on:click={() => openEditModal(mob)}
+                                    onclick={() => openEditModal(mob)}
                                 >
                                     Edit
                                 </button>

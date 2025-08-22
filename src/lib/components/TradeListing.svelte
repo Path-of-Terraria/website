@@ -4,6 +4,7 @@
     import { toast } from "$lib/toast";
     import {UserService} from "$lib/services/user-service";
     import {TradeListingService} from "$lib/services/trade-listing-service";
+    import {Button} from "flowbite-svelte";
 
     let userService = new UserService();
     let tradeListingService = new TradeListingService();
@@ -89,14 +90,12 @@
         </div>
 
         <div class="mt-4 flex gap-2">
-            <button
-                    on:click={() => requestBuy()}
-                    class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">
+            <Button class="cursor-pointer" type="button" onclick={() => requestBuy()} color="green">
                 Buy
-            </button>
-            <button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">
-                Offer
-            </button>
+            </Button>
+<!--            <Button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">-->
+<!--                Offer-->
+<!--            </Button>-->
         </div>
     </div>
 </div>
