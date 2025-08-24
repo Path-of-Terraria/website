@@ -195,13 +195,14 @@
      * @param groupKey The key of the group to toggle
      */
     function toggleGroup(groupKey: string) {
-        if (expandedGroups.has(groupKey)) {
-            expandedGroups.delete(groupKey);
+        // Reassign a new Set instance to trigger Svelte 5 runes reactivity for Set mutations
+        const next = new Set(expandedGroups);
+        if (next.has(groupKey)) {
+            next.delete(groupKey);
         } else {
-            expandedGroups.add(groupKey);
+            next.add(groupKey);
         }
-        console.log('expanded');
-        expandedGroups = expandedGroups; // Trigger reactivity
+        expandedGroups = next;
     }
 
     /**
