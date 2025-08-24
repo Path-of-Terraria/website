@@ -37,7 +37,7 @@
     <Heading tag="h2" class="text-center">
         Reset Password
     </Heading>
-    <form on:submit={async (e) => {
+    <form onsubmit={async (e) => {
        await resetPassword();
     }}>
         <div class="mb-6">

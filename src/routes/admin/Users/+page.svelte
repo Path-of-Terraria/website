@@ -19,7 +19,9 @@
     // Selected roles
     let selectedRoles: string[] = $state([]);
     
-    async function searchUser() {
+    async function searchUser(event: SubmitEvent) {
+        event.preventDefault();
+
         if (!profileName.trim()) {
             error = "Please enter a profile name";
             return;
@@ -93,7 +95,7 @@
     </div>
     
     <div class="max-w-md mx-auto mb-8">
-        <form on:submit|preventDefault={searchUser} class="flex flex-col gap-4">
+        <form onsubmit={searchUser} class="flex flex-col gap-4">
             <div>
                 <Label for="profileName" class="mb-2">Search User by Profile Name</Label>
                 <div class="flex">

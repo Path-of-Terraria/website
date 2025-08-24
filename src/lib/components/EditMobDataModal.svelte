@@ -63,23 +63,23 @@
                         <div class="mb-4 border p-2 rounded-sm">
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Prefix</label>
-                                <input type="text" class="block w-full mt-1" bind:value={entry.prefix} on:input={(e) => updateEntry(index, 'prefix', e.target?.value)} />
+                                <input type="text" class="block w-full mt-1" bind:value={entry.prefix} oninput={(e) => updateEntry(index, 'prefix', e.target?.value)} />
                             </div>
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Weight</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.weight} on:input={(e) => updateEntry(index, 'weight', e.target?.value)} />
+                                <input type="number" class="block w-full mt-1" bind:value={entry.weight} oninput={(e) => updateEntry(index, 'weight', e.target?.value)} />
                             </div>
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Level</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.level} on:input={(e) => updateEntry(index, 'stats.level', e.target?.value)} />
+                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.level} oninput={(e) => updateEntry(index, 'stats.level', e.target?.value)} />
                             </div>
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Experience</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.experience} on:input={(e) => updateEntry(index, 'stats.experience', e.target?.value)} />
+                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.experience} oninput={(e) => updateEntry(index, 'stats.experience', e.target?.value)} />
                             </div>
                             <div class="mb-2">
                                 <label class="block text-sm font-medium text-gray-700">Requirements</label>
-                                <input type="text" class="block w-full mt-1" bind:value={entry.requirements} on:input={(e) => updateEntry(index, 'requirements', e.target?.value)} />
+                                <input type="text" class="block w-full mt-1" bind:value={entry.requirements} oninput={(e) => updateEntry(index, 'requirements', e.target?.value)} />
                             </div>
                             <button class="text-red-500 hover:underline" onclick={() => deleteEntry(index)}>Delete Entry</button>
                         </div>
