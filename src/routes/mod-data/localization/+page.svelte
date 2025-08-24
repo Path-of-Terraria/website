@@ -6,6 +6,7 @@
     import { toast } from '$lib/toast';
     import {UserService} from '$lib/services/user-service';
     import {IsLoggedIn} from "$lib/services/session-service";
+    import { Button } from 'flowbite-svelte';
 
     // Available languages for translation
     const availableLanguages = [
@@ -19,39 +20,38 @@
         {code: 'pl-PL', name: 'Polish'}
     ];
 
-    let selectedLanguage: string = '';
+    let selectedLanguage: string = $state('');
     let englishTranslations: IEnglishTranslation[] = [];
     let languageTranslations: ITranslationEntry[] = [];
-    let categories: string[] = [];
-    let categorizedTranslations: Record<string, IEnglishTranslation[]> = {};
-    let activeCategory: string = '';
-    let expandedGroups: Set<string> = new Set();
-    let showTranslationTable: boolean = false;
-    let newTranslations: Record<string, string> = {};
-    let submitting: Record<string, boolean> = {};
+    let categories: string[] = $state([]);
+    let categorizedTranslations: Record<string, IEnglishTranslation[]> = $state({});
+    let activeCategory: string = $state('');
+    let expandedGroups: Set<string> = $state(new Set());
+    let showTranslationTable: boolean = $state(false);
+    let newTranslations: Record<string, string> = $state({});
+    let submitting: Record<string, boolean> = $state({});
 
     // Filter options
-    let hideTranslatedEntries: boolean = false;
-    let searchQuery: string = '';
-    
+    let hideTranslatedEntries: boolean = $state(false);
+    let searchQuery: string = $state('');
+
     // Edit related variables
-    let editingTranslations: Record<string, boolean> = {};
-    let editedTranslations: Record<string, string> = {};
-    let updatingTranslations: Record<string, boolean> = {};
+    let editingTranslations: Record<string, boolean> = $state({});
+    let editedTranslations: Record<string, string> = $state({});
+    let updatingTranslations: Record<string, boolean> = $state({});
 
     // HJSON import related variables
-    let hjsonContent: string = '';
-    let importedTranslations: Record<string, string> = {};
-    let importStats = {total: 0, added: 0, skipped: 0};
-    let isImporting: boolean = false;
-    let selectedImportCategory: string = '';
+    let hjsonContent: string = $state('');
+    let importStats = $state({total: 0, added: 0, skipped: 0});
+    let isImporting: boolean = $state(false);
+    let selectedImportCategory: string = $state('');
 
     const translationService = new TranslationEntryService();
     const hjsonParserService = new HjsonParserService();
     const userService = new UserService();
     
     // Flag to track if user has edit permissions
-    let canEditTranslations = false;
+    let canEditTranslations = $state(false);
 
     onMount(async () => {
         // Only fetch English translations on mount
@@ -200,6 +200,7 @@
         } else {
             expandedGroups.add(groupKey);
         }
+        console.log('expanded');
         expandedGroups = expandedGroups; // Trigger reactivity
     }
 
@@ -487,12 +488,13 @@
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {#each availableLanguages as language}
-                    <button
-                            class="p-3 border rounded-md hover:bg-blue-50 transition-colors {selectedLanguage === language.code ? 'bg-blue-100 border-blue-500' : 'border-gray-300'}"
-                            onclick={() => selectedLanguage = language.code}
+                    <Button
+                       class="cursor-pointer"
+                       onclick={() => selectedLanguage = language.code}
+                       type="button"
                     >
                         {language.name}
-                    </button>
+                    </Button>
                 {/each}
             </div>
 
