@@ -36,7 +36,7 @@
         { id: 128, name: 'Chestplate' },
         { id: 256, name: 'Leggings' },
         { id: 512, name: 'Ring' },
-        { id: 1024, name: 'Charm' },
+        //{ id: 1024, name: 'Charm' },
         { id: 2048, name: 'Wand' },
         { id: 4096, name: 'Jewel' },
         { id: 8192, name: 'Map' },
