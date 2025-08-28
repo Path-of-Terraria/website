@@ -104,4 +104,8 @@
     .text-green-300 {
         color: oklch(0.871 0.15 154.449);
     }
+
+    .text-blue-300 {
+        color: oklch(0.871 0.15 210.449);
+    }
 </style>
