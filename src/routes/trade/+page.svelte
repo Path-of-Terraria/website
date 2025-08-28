@@ -8,9 +8,9 @@
 
     let tradeListingService = new TradeListingService();
     let currentFilter: GearFilter = {};
-    let isFiltering = false;
+    let isFiltering = $state(false);
 
-    let tradesPromise: Promise<ITradeListing[]> = getTradeListings();
+    let tradesPromise: Promise<ITradeListing[]> = $state(getTradeListings());
     
     async function getTradeListings() {
         if (isFiltering) {
