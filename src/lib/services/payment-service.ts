@@ -9,9 +9,13 @@ export interface LeaguePacksResponse {
     marketingFeatures?: string[];
 }
 
+export interface CreateCheckoutRequest {
+     productId: string
+}
+
 export enum LeaguePackType {
-    Subscription = "Subscription",
-    OneTime = "OneTime",
+    Subscription = 0,
+    OneTime = 1,
 }
 
 export class PaymentService {
@@ -24,5 +28,16 @@ export class PaymentService {
             return response.data as LeaguePacksResponse[];
         }
         return [];
+    }
+
+    public async createCheckout(productId: string): Promise<string> {
+        const url = `Payments`;
+        const response = await this.httpService.post(url, { productId });
+
+        if (response) {
+            return response.data as string;
+        }
+
+        return "";
     }
 }

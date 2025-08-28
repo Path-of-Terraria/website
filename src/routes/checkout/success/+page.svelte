@@ -39,7 +39,7 @@
             A receipt has been sent to
             <span class="font-medium">
                 {currentUser?.email}
-            </span>.
+            </span>
         </p>
     </div>
 </div>

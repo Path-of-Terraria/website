@@ -6,6 +6,7 @@
         MapPinAltSolid,
         AdjustmentsVerticalSolid
     } from "flowbite-svelte-icons";
+    import logo from '$lib/images/logo.png';
 </script>
 
 
@@ -22,11 +23,9 @@
     <div class="pointer-events-none absolute -bottom-32 -right-24 h-96 w-96 rounded-full bg-gradient-to-br from-fuchsia-500/20 via-purple-500/20 to-indigo-500/30 blur-3xl"></div>
 
     <div class="relative container mx-auto px-4 py-24 text-center">
-        <Heading tag="h1" class="mt-12 mb-6 font-extrabold text-4xl md:text-6xl lg:text-7xl tracking-tight">
-			<span class="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent">
-				Path of Terraria
-			</span>
-        </Heading>
+        <div class="flex flex-col md:flex-row items-center justify-center mb-6">
+            <img class="me-3" src={logo} alt="Path of Terraria" style="height: 50vh"/>
+        </div>
         <p class="mx-auto max-w-3xl text-base md:text-xl text-gray-300">
             A game-changing mod that brings the ARPG experience into Terraria
         </p>
@@ -40,14 +39,6 @@
                 Read the Wiki
             </a>
         </div>
-    </div>
-
-    <!-- Divider -->
-    <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-16">
-        <svg class="h-full w-full" viewBox="0 0 1440 80" preserveAspectRatio="none" fill="currentColor">
-            <path class="text-gray-800"
-                  d="M0,32L60,26.7C120,21,240,11,360,26.7C480,43,600,85,720,85.3C840,85,960,43,1080,32C1200,21,1320,43,1380,53.3L1440,64L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"></path>
-        </svg>
     </div>
 </section>
 

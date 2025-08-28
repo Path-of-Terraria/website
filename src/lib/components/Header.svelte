@@ -54,7 +54,7 @@
 </script>
 <Navbar class={navbarClass}>
     <NavBrand href="/">
-        <img class="me-3 h-6 sm:h-9" src={logo} alt="Logo"/>
+        <img class="me-3 h-6 sm:h-9" src={logo} alt="Logo" style="height: 72px;"/>
 
         <span class={`self-center text-xl font-semibold whitespace-nowrap ${brandTextClass}`}>
 			Path of Terraria
