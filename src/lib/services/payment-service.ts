@@ -13,6 +13,11 @@ export interface CreateCheckoutRequest {
      productId: string
 }
 
+export interface ICreateCheckoutResponse
+{
+    url: string;
+}
+
 export enum LeaguePackType {
     Subscription = 0,
     OneTime = 1,
@@ -30,14 +35,14 @@ export class PaymentService {
         return [];
     }
 
-    public async createCheckout(productId: string): Promise<string> {
+    public async createCheckout(productId: string): Promise<ICreateCheckoutResponse | null> {
         const url = `Payments`;
         const response = await this.httpService.post(url, { productId });
 
         if (response) {
-            return response.data as string;
+            return response.data as ICreateCheckoutResponse;
         }
 
-        return "";
+        return null;
     }
 }

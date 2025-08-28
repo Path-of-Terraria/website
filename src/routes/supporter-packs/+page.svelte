@@ -8,12 +8,33 @@
     let oneTimePacks = $state<LeaguePacksResponse[]>([]);
     let loading = $state(true);
     let error = $state<string | null>(null);
+    let checkoutLoading = $state<string | null>(null); // Track which pack is being processed
 
     const paymentService = new PaymentService();
 
     // Format price from cents to dollars (e.g., 2499 -> $24.99)
     function formatPrice(priceInCents: number): string {
         return `$${(priceInCents / 100).toFixed(2)}`;
+    }
+
+    // Handle purchase/subscription click
+    async function handleCheckout(packId: string, packName: string) {
+        try {
+            checkoutLoading = packId;
+            const checkoutResponse = await paymentService.createCheckout(packId);
+            
+            if (checkoutResponse) {
+                // Redirect to the checkout URL
+                window.location.href = checkoutResponse.url;
+            } else {
+                throw new Error('No checkout URL returned');
+            }
+        } catch (err) {
+            console.error(`Error creating checkout for ${packName}:`, err);
+            alert(`Failed to start checkout for ${packName}. Please try again.`);
+        } finally {
+            checkoutLoading = null;
+        }
     }
 
     onMount(async () => {
@@ -73,8 +94,12 @@
                                         {/each}
                                     </ul>
                                 {/if}
-                                <Button class="w-full cursor-pointer">
-                                    Purchase
+                                <Button 
+                                    class="w-full cursor-pointer" 
+                                    onclick={() => handleCheckout(pack.id, pack.name)}
+                                    disabled={checkoutLoading === pack.id}
+                                >
+                                    {checkoutLoading === pack.id ? 'Processing...' : 'Purchase'}
                                 </Button>
                             </Card>
                         {/each}
@@ -103,8 +128,12 @@
                                         {/each}
                                     </ul>
                                 {/if}
-                                <Button class="w-full cursor-pointer">
-                                    Subscribe
+                                <Button 
+                                    class="w-full cursor-pointer" 
+                                    onclick={() => handleCheckout(pack.id, pack.name)}
+                                    disabled={checkoutLoading === pack.id}
+                                >
+                                    {checkoutLoading === pack.id ? 'Processing...' : 'Subscribe'}
                                 </Button>
                             </Card>
                         {/each}
