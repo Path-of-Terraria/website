@@ -13,9 +13,9 @@
 	import {type IPlayer, PlayerService} from "$lib/services/player-service";
 	let playerService = new PlayerService();
 
-	let count: number = 50;
-	let skip: number = 0;
-	let lastResultLength: number = 0;
+    let count = $state(50);
+    let skip = $state(0);
+    let lastResultLength = $state(0);
 
     async function refreshLeaderboards(): Promise<IPlayer[]> {
         let data = await playerService.getLeaderboards(count, skip);
@@ -23,7 +23,7 @@
         return data;
     }
 
-    let leaderboardsPromise: Promise<IPlayer[]> = refreshLeaderboards();
+    let leaderboardsPromise: Promise<IPlayer[]> = $state(refreshLeaderboards());
 
 	function nextPage() {
 		if (lastResultLength >= count) {
