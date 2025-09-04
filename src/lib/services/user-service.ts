@@ -130,4 +130,12 @@ export class UserService {
     public async linkDiscord(oauthCode: string) {
         let response = await this.httpService.post(`User/Discord?oauthCode=${oauthCode}`, {});
     }
+
+    public async unlinkDiscord() {
+        let response = await this.httpService.delete('User/UnlinkDiscord');
+        if (response) {
+            await this.getUserProfile();
+        }
+        return null;
+    }
 }

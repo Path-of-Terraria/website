@@ -21,41 +21,68 @@
         toast.push("Steam Account Unlinked");
     }
 
+    async function unlinkDiscord() {
+        await userService.unlinkDiscord();
+        toast.push("Discord Account Unlinked");
+    }
+
 </script>
 
 <form onsubmit={async (e) => {
    await updateUser();
 }}>
     <Modal title="Settings" bind:open={open} autoclose={false} form>
-        <div class="mb-9">
+        <!-- Profile Settings Section -->
+        <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3">Profile Settings</h3>
             <Label for="small-input" class="block mb-2">Profile Name</Label>
             <Input id="small-input" size="sm" placeholder="DrBibbityBob" bind:value={currentUser.profileName}/>
         </div>
-        {#if !currentUser.steamId}
-            <span class="block text-sm">Link Steam Account (This is required for Leaderboards)</span>
-            <a href="{import.meta.env.VITE_API_BASE_URL}LoginWithSteam?userId={currentUser.id}">
-                <img src={steamSignin} alt="steam signing">
-            </a>
-        {:else}
-            <span class="block text-sm">
-                Steam Account {currentUser.steamId} Linked
-                <Button class="block" type="button" onclick={() => unlinkSteam()}>
-                    Unlink Steam
-                </Button>
-            </span>
-        {/if}
 
-        <div class="mt-6">
-            <span class="block text-sm mb-2">Link Discord</span>
-            <Button 
-                type="button" 
-                onclick={() => {
-                    const redirectUri = encodeURIComponent(import.meta.env.VITE_BASE_URL + 'discord');
-                    window.location.href = `https://discord.com/oauth2/authorize?client_id=1089695863217074227&response_type=code&redirect_uri=${redirectUri}&scope=identify`;
-                }}
-                class="bg-[#5865F2] hover:bg-[#4752C4] text-white">
-                Connect Discord
-            </Button>
+        <!-- Account Linking Section -->
+        <div class="mb-6 p-4 border border-gray-200 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4">Account Linking</h3>
+            
+            <!-- Steam Linking -->
+            <div class="mb-4">
+                {#if !currentUser.steamId}
+                    <span class="block text-sm mb-2">Link Steam Account (This is required for Leaderboards)</span>
+                    <a href="{import.meta.env.VITE_API_BASE_URL}LoginWithSteam?userId={currentUser.id}">
+                        <img src={steamSignin} alt="steam signing">
+                    </a>
+                {:else}
+                    <span class="block text-sm mb-2">
+                        Steam Account {currentUser.steamId} Linked
+                    </span>
+                    <Button type="button" onclick={() => unlinkSteam()} color="red" size="sm">
+                        Unlink Steam
+                    </Button>
+                {/if}
+            </div>
+
+            <!-- Discord Linking -->
+            <div>
+                {#if !currentUser.discordId}
+                    <span class="block text-sm mb-2">Link Discord Account</span>
+                    <Button 
+                        type="button" 
+                        onclick={() => {
+                            const redirectUri = encodeURIComponent(import.meta.env.VITE_BASE_URL + 'discord');
+                            window.location.href = `https://discord.com/oauth2/authorize?client_id=1089695863217074227&response_type=code&redirect_uri=${redirectUri}&scope=identify`;
+                        }}
+                        class="bg-[#5865F2] hover:bg-[#4752C4] text-white"
+                        size="sm">
+                        Connect Discord
+                    </Button>
+                {:else}
+                    <span class="block text-sm mb-2">
+                        Discord Account {currentUser.discordId} Linked
+                    </span>
+                    <Button type="button" onclick={() => unlinkDiscord()} color="red" size="sm">
+                        Unlink Discord
+                    </Button>
+                {/if}
+            </div>
         </div>
 
         {#snippet footer()}
