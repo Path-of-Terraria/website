@@ -45,6 +45,19 @@
             </span>
         {/if}
 
+        <div class="mt-6">
+            <span class="block text-sm mb-2">Link Discord</span>
+            <Button 
+                type="button" 
+                onclick={() => {
+                    const redirectUri = encodeURIComponent(import.meta.env.VITE_BASE_URL + 'discord');
+                    window.location.href = `https://discord.com/oauth2/authorize?client_id=1089695863217074227&response_type=code&redirect_uri=${redirectUri}&scope=identify`;
+                }}
+                class="bg-[#5865F2] hover:bg-[#4752C4] text-white">
+                Connect Discord
+            </Button>
+        </div>
+
         {#snippet footer()}
             <div class="text-right">
                 <Button type="submit">

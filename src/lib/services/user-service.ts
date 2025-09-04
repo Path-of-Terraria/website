@@ -126,4 +126,8 @@ export class UserService {
         }
         return null;
     }
+
+    public async linkDiscord(oauthCode: string) {
+        let response = await this.httpService.post(`User/Discord?oauthCode=${oauthCode}`, {});
+    }
 }

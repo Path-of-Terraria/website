@@ -4,6 +4,7 @@ export interface IUser {
     id: string;
     name: string;
     email: string;
+    discordId: string;
     steamId: string;
     profileName: string;
     roles: string[];
