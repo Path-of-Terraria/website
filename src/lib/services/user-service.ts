@@ -3,6 +3,11 @@ import {GetJwtToken, SetJwtToken, ClearStorageItem} from "$lib/services/session-
 import {type IUser, user} from "$lib/stores/user-store";
 import type {IPlayer} from "$lib/services/player-service";
 
+interface UpdateBenefitsRequest {
+    supporterPacks: string[],
+    subscription: string
+}
+
 export class UserService {
     httpService = HttpService.getInstance();
     user: IUser | null = null;
@@ -121,6 +126,14 @@ export class UserService {
 
     public async updateUserRoles(user: IUser) {
         let response = await this.httpService.patch(`User/${user.id}/Roles`, user);
+        if (response) {
+            return response;
+        }
+        return null;
+    }
+
+    public async updateBenefits(userId: string, request: UpdateBenefitsRequest) {
+        let response = await this.httpService.patch(`User/${userId}/Benefits`, request);
         if (response) {
             return response;
         }

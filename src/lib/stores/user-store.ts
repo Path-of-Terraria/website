@@ -8,6 +8,8 @@ export interface IUser {
     steamId: string;
     profileName: string;
     roles: string[];
+    supporterPacks: string[];
+    supporterSubscription: string;
 }
 
 function createUserStore() {
