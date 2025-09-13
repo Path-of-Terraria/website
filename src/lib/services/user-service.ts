@@ -1,11 +1,16 @@
 import {HttpService} from "$lib/services/http-service";
 import {GetJwtToken, SetJwtToken, ClearStorageItem} from "$lib/services/session-service";
-import {type IUser, user} from "$lib/stores/user-store";
+import {type IChosenBenefits, type IUpdateMyBenefitsRequest, type IUser, user} from "$lib/stores/user-store";
 import type {IPlayer} from "$lib/services/player-service";
 
-interface UpdateBenefitsRequest {
+interface IUpdateBenefitsRequest {
     supporterPacks: string[],
     subscription: string
+}
+
+interface IAvailableBenefitsResponse {
+    icons: string[],
+    colors: string[]
 }
 
 export class UserService {
@@ -132,7 +137,23 @@ export class UserService {
         return null;
     }
 
-    public async updateBenefits(userId: string, request: UpdateBenefitsRequest) {
+    public async getMyBenefits(userId: string) {
+        let response = await this.httpService.get(`User/Benefits`);
+        if (response) {
+            return response;
+        }
+        return null;
+    }
+
+    public async updateMyBenefits(userId: string, request: IUpdateMyBenefitsRequest) {
+        let response = await this.httpService.patch(`User/Benefits`, request);
+        if (response) {
+            return response;
+        }
+        return null;
+    }
+
+    public async updateBenefits(userId: string, request: IUpdateBenefitsRequest) {
         let response = await this.httpService.patch(`User/${userId}/Benefits`, request);
         if (response) {
             return response;

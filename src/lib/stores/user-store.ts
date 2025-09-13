@@ -10,6 +10,22 @@ export interface IUser {
     roles: string[];
     supporterPacks: string[];
     supporterSubscription: string;
+    chosenBenefits: IChosenBenefits;
+}
+
+export interface IChosenBenefits {
+    chatIcon: {
+        value: string;
+    };
+    chatColor: {
+        value: string;
+    };
+}
+
+
+export interface IUpdateMyBenefitsRequest {
+    chatIcon: string;
+    chatColor: string;
 }
 
 function createUserStore() {

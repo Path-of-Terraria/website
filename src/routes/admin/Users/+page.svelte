@@ -71,14 +71,16 @@
         loading = true;
         try {
             user = await userService.getUser(profileName);
-            console.log('user', user);
             if (!user) {
                 error = `User with profile name "${profileName}" not found`;
             } else {
                 selectedRoles = user.roles || [];
                 selectedSupporterPacks = user.supporterPacks || [];
-                selectedSubscription = findMatchingSubscription();
-                console.log(selectedSubscription);
+                selectedSubscription = findMatchingSubscription(
+                    user.supporterSubscription,
+                    availableBenefits.subscriptions
+                );
+                console.log("Selected subscription:", selectedSubscription);
             }
         } catch (e) {
             error = "Error fetching user data";
@@ -225,7 +227,6 @@
                     </div>
                 {/if}
 
-                <!-- Role Management Section -->
                 <div class="mt-6 pt-4 border-t border-gray-200">
                     <h6 class="mb-3 text-lg font-medium text-gray-500 dark:text-gray-400">Role Management</h6>
 

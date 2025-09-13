@@ -96,6 +96,9 @@
                 <DropdownItem href="profile/{currentUser.profileName}/characters">
                     Characters
                 </DropdownItem>
+                <DropdownItem href="profile/benefits">
+                    Benefits
+                </DropdownItem>
                 <DropdownDivider/>
                 <DropdownItem onclick={() => userService.signout()}>
                     Sign out
