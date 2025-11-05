@@ -14,6 +14,7 @@
     } from 'flowbite-svelte';
     import logo from '$lib/images/logo.png';
     import avatar from '$lib/images/avatar.png';
+    import discord from '$lib/images/discord.png';
     import {type IUser, user} from "$lib/stores/user-store";
     import {onDestroy} from "svelte";
     import LoginModal from "$lib/components/LoginModal.svelte";
@@ -78,6 +79,10 @@
         {:else}
             <Avatar id="avatar-menu" src={avatar} class="cursor-pointer"/>
         {/if}
+
+        <a href="https://discord.gg/5c2GrFQReE" target="_blank" class="ms-4">
+            <Avatar id="avatar-menu" src={discord} class="cursor-pointer"/>
+        </a>
 
         <NavHamburger class={`w-full sm:flex md:w-auto md:order-1 md:hidden ${hamburgerClass}`}/>
     </div>

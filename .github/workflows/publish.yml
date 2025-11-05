@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
 
 env:
   CONTAINER_REGISTRY: registry.digitalocean.com
@@ -20,22 +21,32 @@ jobs:
           run: |
             if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
               echo "IMAGE_REPOSITORY=path-of-terraria/website" >> $GITHUB_ENV
-            elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-              echo "IMAGE_REPOSITORY=path-of-terraria/main-qa" >> $GITHUB_ENV
+            elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+              echo "IMAGE_REPOSITORY=path-of-terraria/website-qa" >> $GITHUB_ENV
             fi
+
+
+      - name: Set BUILD_CONFIG based on branch
+        id: set_build_config
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "NODE_ENV=production" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "NODE_ENV=staging" >> $GITHUB_ENV
+          fi
 
       -   name: Checkout code
           uses: actions/checkout@v4
           with:
             fetch-depth: 0
 
-      -   name: Use Node.js 20.x
-          uses: actions/setup-node@v4
-          with:
-            node-version: '22'
-
       -   name: Setup pnpm
           uses: pnpm/action-setup@v4
+
+      -   name: Use Node.js 24.x
+          uses: actions/setup-node@v5
+          with:
+            node-version: '24'
 
       -   name: Run pnpm install
           run: pnpm i
