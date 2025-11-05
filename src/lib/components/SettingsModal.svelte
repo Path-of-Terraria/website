@@ -1,5 +1,6 @@
 <script lang="ts">
     import {Button, Modal, Label, Input, DropdownItem} from 'flowbite-svelte';
+    import { env } from '$env/dynamic/public';
 
     let { open = $bindable(false), currentUser = $bindable(undefined as unknown as IUser) } = $props<{ open: boolean; currentUser: IUser }>();
 
@@ -42,7 +43,7 @@
         <!-- Account Linking Section -->
         <div class="mb-6 p-4 border border-gray-200 rounded-lg">
             <h3 class="text-lg font-semibold mb-4">Account Linking</h3>
-            
+
             <!-- Steam Linking -->
             <div class="mb-4">
                 {#if !currentUser.steamId}
@@ -64,10 +65,10 @@
             <div>
                 {#if !currentUser.discordId}
                     <span class="block text-sm mb-2">Link Discord Account</span>
-                    <Button 
-                        type="button" 
+                    <Button
+                        type="button"
                         onclick={() => {
-                            const redirectUri = encodeURIComponent(import.meta.env.VITE_BASE_URL + 'discord');
+                            const redirectUri = encodeURIComponent(env.PUBLIC_BASE_URL + 'discord');
                             window.location.href = `https://discord.com/oauth2/authorize?client_id=1089695863217074227&response_type=code&redirect_uri=${redirectUri}&scope=identify`;
                         }}
                         class="bg-[#5865F2] hover:bg-[#4752C4] text-white"

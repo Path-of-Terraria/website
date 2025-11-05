@@ -1,12 +1,13 @@
 import axios, {type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import { GetJwtToken } from './session-service';
 import { toast } from "$lib/toast";
+import { env } from '$env/dynamic/public';
 
 export class HttpService {
     private static instance: HttpService;
 
     private constructor() {
-        axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
+        axios.defaults.baseURL = env.PUBLIC_BASE_URL;
         axios.interceptors.request.use((config) => {
             if (GetJwtToken()) {
                 config.headers['Authorization'] = `Bearer ${GetJwtToken()}`;
