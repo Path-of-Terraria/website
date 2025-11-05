@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {Button, Modal, Label, Input, DropdownItem} from 'flowbite-svelte';
+    import {Button, Modal, Label, Input} from 'flowbite-svelte';
     import { env } from '$env/dynamic/public';
 
     let { open = $bindable(false), currentUser = $bindable(undefined as unknown as IUser) } = $props<{ open: boolean; currentUser: IUser }>();
@@ -10,6 +10,8 @@
     import steamSignin from "$lib/images/steam-signin.png";
 
     let userService = new UserService();
+
+    const baseUrl = env.PUBLIC_API_BASE_URL;
 
     async function updateUser() {
         await userService.updateProfile(currentUser.profileName);
@@ -29,7 +31,7 @@
 
 </script>
 
-<form onsubmit={async (e) => {
+<form onsubmit={async () => {
    await updateUser();
 }}>
     <Modal title="Settings" bind:open={open} autoclose={false} form>
@@ -48,7 +50,7 @@
             <div class="mb-4">
                 {#if !currentUser.steamId}
                     <span class="block text-sm mb-2">Link Steam Account (This is required for Leaderboards)</span>
-                    <a href="{import.meta.env.VITE_API_BASE_URL}LoginWithSteam?userId={currentUser.id}">
+                    <a href="{baseUrl}LoginWithSteam?userId={currentUser.id}">
                         <img src={steamSignin} alt="steam signing">
                     </a>
                 {:else}
