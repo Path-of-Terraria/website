@@ -31,11 +31,11 @@
     async function onaction() {
         console.log('test');
         if (view === 'login') {
-            await login();
+            return await login();
         } else if (view === 'register') {
-            await signup();
+            return await signup();
         } else {
-            await forgotPassword();
+            return await forgotPassword();
         }
     }
 </script>
@@ -51,12 +51,12 @@
     {/if}
     <div class="mb-6">
         <Label for="email" class="block mb-2">Email</Label>
-        <Input id="email" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
+        <Input required id="email" type="email" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
     </div>
     {#if view !== 'forgot-password'}
         <div class="mb-6">
             <Label for="password" class="block mb-2">Password</Label>
-            <Input type="password" id="password" size="sm" placeholder="password123" bind:value={password}/>
+            <Input required type="password" id="password" size="sm" placeholder="password123" bind:value={password}/>
         </div>
     {/if}
     {#snippet footer()}
