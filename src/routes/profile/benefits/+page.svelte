@@ -1,7 +1,8 @@
 <script lang="ts">
     import { UserService } from "$lib/services/user-service";
     import {onDestroy, onMount} from "svelte";
-    import { Button, Card, Label, Select, P } from "flowbite-svelte";
+    import { Button, Card, Label, Select, P, Dropdown, DropdownItem } from "flowbite-svelte";
+    import { ChevronDownOutline } from "flowbite-svelte-icons";
     import {type IUser, user} from "$lib/stores/user-store";
 
     let userService = new UserService();
@@ -14,6 +15,7 @@
     let availableBenefits = $state({ icons: [], colors: [] });
     let selectedIcon = $state("");
     let selectedColor = $state("");
+    let colorDropdownOpen = $state(false);
     let currentUser: IUser | null = $state(null);
 
     const unsubscribe = user.subscribe(value => {
@@ -126,22 +128,33 @@
 
                 <!-- Color Selector -->
                 <div>
-                    <Label for="color" class="mb-2">Chat Color</Label>
-                    <Select
-                        id="color"
-                        bind:value={selectedColor}
-                        placeholder="Select a color"
-                        disabled={availableBenefits.colors.length === 0}
-                    >
-                        <option value="">None</option>
+                    <Label for="color-button" class="mb-2">Chat Color</Label>
+                    <Button id="color-button" color="light" class="w-full justify-between font-normal border-gray-300 dark:border-gray-600" disabled={availableBenefits.colors.length === 0}>
+                        <div class="flex items-center">
+                            {#if selectedColor}
+                                <div class="w-4 h-4 rounded-sm mr-2 border border-gray-200" style="background-color: {selectedColor}"></div>
+                                {selectedColor}
+                            {:else}
+                                Select a color
+                            {/if}
+                        </div>
+                        <ChevronDownOutline class="w-4 h-4 ml-2 text-gray-500" />
+                    </Button>
+                    <Dropdown triggeredBy="#color-button" bind:isOpen={colorDropdownOpen} class="max-h-60 overflow-y-auto">
+                        <DropdownItem onclick={() => { selectedColor = ""; colorDropdownOpen = false; }}>None</DropdownItem>
                         {#if availableBenefits.colors.length === 0}
-                            <option value="" disabled>No colors available</option>
+                            <DropdownItem disabled>No colors available</DropdownItem>
                         {:else}
                             {#each availableBenefits.colors as color}
-                                <option value={color}>{color}</option>
+                                <DropdownItem onclick={() => { selectedColor = color; colorDropdownOpen = false; }}>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded-sm mr-2 border border-gray-200" style="background-color: {color}"></div>
+                                        {color}
+                                    </div>
+                                </DropdownItem>
                             {/each}
                         {/if}
-                    </Select>
+                    </Dropdown>
                     {#if availableBenefits.colors.length === 0}
                         <p class="text-gray-500 text-sm mt-1">No color benefits available to you</p>
                     {/if}
