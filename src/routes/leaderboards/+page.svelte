@@ -74,7 +74,14 @@
 				{:else}
 					{#each leaders as leader}
 						<TableBodyRow>
-							<TableBodyCell>{leader.name}</TableBodyCell>
+							<TableBodyCell>
+								{#if leader.user?.chosenBenefits?.chatIcon?.value}
+									<i class={leader.user.chosenBenefits.chatIcon.value}></i>
+								{/if}
+								<span style="color: {leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}">
+									{leader.name}
+								</span>
+							</TableBodyCell>
 							<TableBodyCell>{leader.stats.level}</TableBodyCell>
 							<TableBodyCell>{leader.stats.strength}</TableBodyCell>
 							<TableBodyCell>{leader.stats.dexterity}</TableBodyCell>
