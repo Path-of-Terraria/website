@@ -1,9 +1,11 @@
 import { HttpService } from "$lib/services/http-service";
+import type { IUser } from "$lib/stores/user-store";
 
 export interface IPlayer {
     id: string;
     name: string;
     stats: IPlayerStats;
+    user?: IUser;
 }
 
 export interface IPlayerStats {
