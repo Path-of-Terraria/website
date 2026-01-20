@@ -6,12 +6,12 @@
     let modDataService = new ModDataService();
     import type { IMobData } from '$lib/models/mob-data';
 
-    let mobData: IMobData[] = [];
-    let filteredMobData: IMobData[] = [];
-    let searchQuery: string = '';
-    let error: string | null = null;
-    let isEditModalOpen = false;
-    let selectedMob: IMobData | null = null;
+    let mobData: IMobData[] = $state([]);
+    let filteredMobData: IMobData[] = $state([]);
+    let searchQuery: string = $state('');
+    let error: string | null = $state(null);
+    let isEditModalOpen = $state(false);
+    let selectedMob: IMobData | null = $state(null);
 
     onMount(() => {
         // Load mob data
@@ -99,6 +99,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-3">Net ID</th>
                         <th scope="col" class="px-6 py-3">Name</th>
+                        <th scope="col" class="px-6 py-3">Global Damage</th>
                         <th scope="col" class="px-6 py-3">Entries</th>
                         <th scope="col" class="px-6 py-3">Actions</th>
                     </tr>
@@ -109,9 +110,31 @@
                             <td class="px-6 py-4">{mob.netId}</td>
                             <td class="px-6 py-4">{mob.friendlyName}</td>
                             <td class="px-6 py-4">
+                                {#if mob.damage && mob.damage.length > 0}
+                                    <ul class="text-xs">
+                                        {#each mob.damage as damage}
+                                            <li class="mb-1 p-1 border rounded bg-gray-50 dark:bg-gray-700">
+                                                <div class="font-bold">Min Lvl: {damage.minLevel}</div>
+                                                {#if damage.fire}
+                                                    <div class="text-red-600">Fire: +{damage.fire.added}, {damage.fire.conversion * 100}% conv</div>
+                                                {/if}
+                                                {#if damage.lightning}
+                                                    <div class="text-yellow-600">Light: +{damage.lightning.added}, {damage.lightning.conversion * 100}% conv</div>
+                                                {/if}
+                                                {#if damage.cold}
+                                                    <div class="text-blue-600">Cold: +{damage.cold.added}, {damage.cold.conversion * 100}% conv</div>
+                                                {/if}
+                                            </li>
+                                        {/each}
+                                    </ul>
+                                {:else}
+                                    <span class="text-gray-400 italic">None</span>
+                                {/if}
+                            </td>
+                            <td class="px-6 py-4">
                                 <ul>
                                     {#each mob.entries as entry}
-                                        <li class="my-2">
+                                        <li class="my-2 p-2 border rounded bg-white dark:bg-gray-800">
                                             <div>
                                                 <strong>Prefix:</strong> {entry.prefix || 'N/A'}
                                             </div>
@@ -124,6 +147,21 @@
                                             <div>
                                                 <strong>Requirements:</strong> {entry.requirements}
                                             </div>
+                                            {#if entry.damageOverrides && entry.damageOverrides.length > 0}
+                                                <div class="mt-1 pt-1 border-t">
+                                                    <strong>Damage Overrides:</strong>
+                                                    <ul class="text-xs">
+                                                        {#each entry.damageOverrides as damage}
+                                                            <li>
+                                                                Lvl {damage.minLevel}:
+                                                                {#if damage.fire} <span class="text-red-600">F</span> {/if}
+                                                                {#if damage.lightning} <span class="text-yellow-600">L</span> {/if}
+                                                                {#if damage.cold} <span class="text-blue-600">C</span> {/if}
+                                                            </li>
+                                                        {/each}
+                                                    </ul>
+                                                </div>
+                                            {/if}
                                             {#if entry.affixes?.length > 0}
                                                 <div>
                                                     <strong>Affixes:</strong>
