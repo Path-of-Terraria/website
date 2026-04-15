@@ -66,6 +66,7 @@
         <NavLi href="/" class={navLinkClass}>Home</NavLi>
         <NavLi href="/leaderboards" class={navLinkClass}>Leaderboards</NavLi>
         <NavLi href="/trade" class={navLinkClass}>Trade</NavLi>
+        <NavLi href="/tools" class={navLinkClass}>Tools</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank" class={navLinkClass}>Wiki</NavLi>
         {#if isDebug}
             <NavLi href="/mod-data" class={navLinkClass}>Mod Data</NavLi>
