@@ -19,7 +19,7 @@
 
 <!-- Hero Section -->
 <section
-        class="relative overflow-hidden bg-[radial-gradient(circle_at_top,rgba(151,255,120,0.10),transparent_30%),linear-gradient(180deg,#090c12_0%,#111827_42%,#1f2937_100%)] text-white"
+        class="relative -mt-20 overflow-hidden bg-[radial-gradient(circle_at_top,rgba(151,255,120,0.10),transparent_30%),linear-gradient(180deg,#090c12_0%,#111827_42%,#1f2937_100%)] pt-20 text-white"
 >
     <div class="pointer-events-none absolute inset-0 transition duration-200 hero-cursor-glow"></div>
     <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 [mask-image:linear-gradient(180deg,rgba(0,0,0,0.8),transparent_85%)]"></div>

@@ -39,7 +39,7 @@
 <div class="app">
 	<Header />
 	
-	<main>
+	<main class="pt-20">
 		<slot />
 	</main>
 </div>

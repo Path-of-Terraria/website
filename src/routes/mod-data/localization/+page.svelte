@@ -478,8 +478,8 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Terraria Mod Localization</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <h1 class="mb-6 text-3xl font-black tracking-tight text-white">Terraria Mod Localization</h1>
 
     <!-- Language Selection -->
     {#if !showTranslationTable}

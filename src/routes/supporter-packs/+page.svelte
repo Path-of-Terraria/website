@@ -59,7 +59,7 @@
     });
 </script>
 
-<div class="container mx-auto py-16 px-4">
+<div class="container mx-auto px-4 py-24 text-white">
     {#if loading}
         <div class="flex items-center justify-center">
             <Spinner class="mr-3" size="4" />
@@ -71,24 +71,24 @@
         </div>
     {:else}
         <div class="max-w-6xl mx-auto">
-            <Heading tag="h1" class="text-center mb-8">Supporter Packs</Heading>
+            <Heading tag="h1" class="mb-8 text-center text-white">Supporter Packs</Heading>
 
             <!-- One-Time League Purchases Section -->
             {#if oneTimePacks.length > 0}
                 <section class="mb-12">
-                    <Heading tag="h2" class="mb-6">League Packs</Heading>
+                    <Heading tag="h2" class="mb-6 text-white">League Packs</Heading>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each oneTimePacks as pack}
-                            <Card class="p-6">
-                                <Heading tag="h3" class="mb-3">{pack.name}</Heading>
-                                <P class="mb-4" color="text-gray-600">{pack.description}</P>
+                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                                <Heading tag="h3" class="mb-3 text-white">{pack.name}</Heading>
+                                <P class="mb-4 text-gray-300">{pack.description}</P>
                                 {#if pack.price}
-                                    <P class="mb-4 text-lg font-semibold" color="green">
+                                    <P class="mb-4 text-lg font-semibold text-emerald-300">
                                         {formatPrice(pack.price)}
                                     </P>
                                 {/if}
                                 {#if pack.marketingFeatures && pack.marketingFeatures.length > 0}
-                                    <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-400 mb-4">
+                                    <ul class="mb-4 list-disc list-inside text-sm text-gray-300">
                                         {#each pack.marketingFeatures as feature}
                                             <li>{feature}</li>
                                         {/each}
@@ -110,19 +110,19 @@
             <!-- Subscription Packs Section -->
             {#if subscriptionPacks.length > 0}
                 <section>
-                    <Heading tag="h2" class="mb-6">Subscriptions</Heading>
+                    <Heading tag="h2" class="mb-6 text-white">Subscriptions</Heading>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each subscriptionPacks as pack}
-                            <Card class="p-6">
-                                <Heading tag="h3" class="mb-3 text-2xl">{pack.name}</Heading>
-                                <P class="mb-4" color="text-gray-600">{pack.description}</P>
+                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                                <Heading tag="h3" class="mb-3 text-2xl text-white">{pack.name}</Heading>
+                                <P class="mb-4 text-gray-300">{pack.description}</P>
                                 {#if pack.price}
-                                    <P class="mb-4 text-lg font-semibold" color="green">
+                                    <P class="mb-4 text-lg font-semibold text-emerald-300">
                                         {formatPrice(pack.price)}/month
                                     </P>
                                 {/if}
                                 {#if pack.marketingFeatures && pack.marketingFeatures.length > 0}
-                                    <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-400 mb-4">
+                                    <ul class="mb-4 list-disc list-inside text-sm text-gray-300">
                                         {#each pack.marketingFeatures as feature}
                                             <li>{feature}</li>
                                         {/each}
@@ -143,7 +143,7 @@
 
             {#if subscriptionPacks.length === 0 && oneTimePacks.length === 0}
                 <div class="text-center">
-                    <P color="text-gray-500">No supporter packs available at the moment.</P>
+                    <P class="text-gray-400">No supporter packs available at the moment.</P>
                 </div>
             {/if}
         </div>

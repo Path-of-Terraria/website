@@ -20,33 +20,16 @@
     import LoginModal from "$lib/components/LoginModal.svelte";
     import {UserService} from "$lib/services/user-service";
     import SettingsModal from "$lib/components/SettingsModal.svelte";
-    import { page } from '$app/state';
-
     let userService = new UserService();
     const isDebug = import.meta.env.VITE_DEBUG === 'true';
 
     let currentUser: IUser | null = $state(null);
     let settingsOpen = $state(false);
 
-    // Determine if we're on a page that should use the transparent hero navbar
-    let isHeroNavPage = $derived(page?.url?.pathname === '/' || page?.url?.pathname === '/leaderboards');
-
-    // Classes depending on route (runes)
-    let navbarClass = $derived(
-        isHeroNavPage
-            ? 'bg-transparent fixed top-0 left-0 right-0 z-50 backdrop-blur-sm'
-            : 'bg-primary-100 dark:bg-primary-700'
-    );
-
-    let brandTextClass = $derived(isHeroNavPage ? 'text-white' : 'text-primary-700');
-
-    let navLinkClass = $derived(
-        isHeroNavPage
-            ? 'text-gray-900 hover:text-primary-700 md:text-white md:hover:text-gray-200'
-            : 'text-gray-900 hover:text-primary-700'
-    );
-
-    let hamburgerClass = $derived(isHeroNavPage ? 'text-white' : '');
+    let navbarClass = 'fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-transparent backdrop-blur-sm';
+    let brandTextClass = 'text-white';
+    let navLinkClass = 'text-white hover:text-gray-200';
+    let hamburgerClass = 'text-white';
 
     const unsubscribe = user.subscribe(value => {
         currentUser = value;
@@ -92,7 +75,7 @@
         <NavHamburger class={`shrink-0 md:order-1 md:hidden ${hamburgerClass}`}/>
     </div>
     {#if currentUser}
-        <Dropdown simple triggeredBy="#avatar-menu">
+        <Dropdown simple triggeredBy="#avatar-menu" class="border border-white/10 bg-[#111827] text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
             <DropdownHeader>
                 <span class="block text-sm">{currentUser.profileName}</span>
                 <span class="block truncate text-sm font-medium">{currentUser.email}</span>

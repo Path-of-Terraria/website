@@ -194,10 +194,10 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <div class="flex items-center mb-4">
-        <a href="/admin" class="text-blue-600 hover:underline mr-2">← Back to Admin</a>
-        <h1 class="text-2xl font-bold">User Management</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <div class="mb-4 flex items-center">
+        <a href="/admin" class="mr-3 text-sm font-semibold text-sky-300 hover:underline">← Back to Admin</a>
+        <h1 class="text-3xl font-black tracking-tight text-white">User Management</h1>
     </div>
 
     <div class="max-w-md mx-auto mb-8">

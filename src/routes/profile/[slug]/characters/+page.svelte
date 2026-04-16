@@ -39,9 +39,9 @@
     }
 </script>
 
-<div class="container mx-auto">
-    <Table striped={true} hoverable={true}>
-        <caption class="p-5 text-lg font-semibold text-left text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+<div class="container mx-auto px-4 py-24">
+    <Table striped={true} hoverable={true} class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a1016] text-gray-200 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+        <caption class="border-b border-white/10 bg-white/[0.04] p-5 text-left text-lg font-semibold text-white">
             {data.slug}'s Characters
         </caption>
         <TableHead>

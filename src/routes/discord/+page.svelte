@@ -27,9 +27,9 @@
     });
 </script>
 
-<div class="flex items-center justify-center min-h-screen">
+<div class="flex min-h-screen items-center justify-center px-4 text-white">
     <div class="text-center">
-        <h1 class="text-2xl font-bold mb-4">Linking Discord Account...</h1>
-        <p class="text-gray-600">Please wait while we link your Discord account.</p>
+        <h1 class="mb-4 text-2xl font-bold">Linking Discord Account...</h1>
+        <p class="text-gray-300">Please wait while we link your Discord account.</p>
     </div>
 </div>
