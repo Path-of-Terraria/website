@@ -40,7 +40,11 @@
 
     let brandTextClass = $derived(isHome ? 'text-white' : 'text-primary-700');
 
-    let navLinkClass = $derived(isHome ? 'text-white hover:text-gray-200' : '');
+    let navLinkClass = $derived(
+        isHome
+            ? 'text-gray-900 hover:text-primary-700 md:text-white md:hover:text-gray-200'
+            : 'text-gray-900 hover:text-primary-700'
+    );
 
     let hamburgerClass = $derived(isHome ? 'text-white' : '');
 
@@ -53,11 +57,11 @@
         unsubscribe();
     });
 </script>
-<Navbar class={navbarClass}>
-    <NavBrand href="/">
-        <img class="me-3 h-6 sm:h-9" src={logo} alt="Logo" style="height: 72px;"/>
+<Navbar class={`${navbarClass} flex-nowrap`}>
+    <NavBrand href="/" class="min-w-0 shrink">
+        <img class="me-2 h-12 w-auto shrink-0 sm:h-14" src={logo} alt="Logo"/>
 
-        <span class={`self-center text-xl font-semibold whitespace-nowrap ${brandTextClass}`}>
+        <span class={`hidden self-center whitespace-nowrap text-xl font-semibold md:inline ${brandTextClass}`}>
 			Path of Terraria
 		</span>
     </NavBrand>
@@ -74,18 +78,18 @@
         {/if}
     </NavUl>
 
-    <div class="flex items-center md:order-2" style="width: 194px;">
+    <div class="ml-2 flex shrink-0 items-center justify-end gap-2 md:order-2 md:min-w-[194px] md:gap-4">
         {#if !currentUser}
             <LoginModal/>
         {:else}
-            <Avatar id="avatar-menu" src={avatar} class="cursor-pointer"/>
+            <Avatar id="avatar-menu" src={avatar} class="h-10 w-10 shrink-0 cursor-pointer"/>
         {/if}
 
-        <a href="https://discord.gg/5c2GrFQReE" target="_blank" class="ms-4">
-            <Avatar id="avatar-menu" src={discord} class="cursor-pointer"/>
+        <a href="https://discord.gg/5c2GrFQReE" target="_blank" class="shrink-0">
+            <Avatar src={discord} class="h-10 w-10 shrink-0 cursor-pointer"/>
         </a>
 
-        <NavHamburger class={`w-full sm:flex md:w-auto md:order-1 md:hidden ${hamburgerClass}`}/>
+        <NavHamburger class={`shrink-0 md:order-1 md:hidden ${hamburgerClass}`}/>
     </div>
     {#if currentUser}
         <Dropdown simple triggeredBy="#avatar-menu">
