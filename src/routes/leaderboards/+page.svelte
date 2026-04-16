@@ -53,16 +53,16 @@
 
     <section class="relative">
         <div class="mx-auto max-w-4xl text-center">
-            <h1 class="mt-5 text-3xl font-black tracking-tight text-white md:text-4xl pt-32 pb-8">
+            <h1 class="mt-5 text-3xl font-black tracking-tight text-white md:text-4xl pt-32">
                 Path of Terraria Leaderboards
             </h1>
         </div>
 
-        <div class="relative container mx-auto px-4 py-10 md:py-14">
+        <div class="relative container mx-auto px-4 py-8 md:py-12">
             <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm md:p-6">
+                <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
                     <div class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
-                        <div class="hidden grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] gap-4 border-b border-white/10 bg-white/[0.04] px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-300 md:grid">
+                        <div class="hidden grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] gap-4 border-b border-white/10 bg-white/[0.04] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-300 md:grid">
                             <div>Character Name</div>
                             <div>Level</div>
                             <div>Strength</div>
@@ -71,10 +71,10 @@
                         </div>
 
                         {#await leaderboardsPromise}
-                            <div class="space-y-3 p-4 md:p-5">
+                            <div class="space-y-2.5 p-3 md:p-4">
                                 {#each Array(6) as _}
-                                    <div class="rounded-2xl border border-white/8 bg-white/[0.035] px-4 py-4 animate-pulse">
-                                        <div class="grid gap-4 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center">
+                                    <div class="rounded-2xl border border-white/8 bg-white/[0.035] px-3 py-3 animate-pulse md:px-4">
+                                        <div class="grid gap-3 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center md:gap-4">
                                             <div class="h-4 w-40 rounded bg-white/10"></div>
                                             <div class="h-4 w-12 rounded bg-white/10"></div>
                                             <div class="h-4 w-14 rounded bg-white/10"></div>
@@ -91,23 +91,23 @@
                                     <p class="mt-2 text-sm text-gray-400">Try a different page size or check back later.</p>
                                 </div>
                             {:else}
-                                <div class="space-y-3 p-4 md:p-5">
+                                <div class="space-y-2.5 p-3 md:p-4">
                                     {#each leaders as leader, index}
-                                        <div class="group rounded-2xl border border-white/8 bg-white/[0.035] px-4 py-4 transition duration-300 hover:border-emerald-300/18 hover:bg-white/[0.06] hover:shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
-                                            <div class="grid gap-4 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center">
+                                        <div class="group rounded-2xl border border-white/8 bg-white/[0.035] px-3 py-3 transition duration-300 hover:border-emerald-300/18 hover:bg-white/[0.06] hover:shadow-[0_18px_40px_rgba(0,0,0,0.22)] md:px-4">
+                                            <div class="grid gap-3 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center md:gap-4">
                                                 <div class="min-w-0">
-                                                    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-200/75 md:hidden">Character</div>
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-amber-300/16 via-emerald-300/10 to-cyan-300/14 text-sm font-black text-white">
+                                                    <div class="flex items-start justify-between gap-3 md:block">
+                                                        <div class="flex min-w-0 items-center gap-3">
+                                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-amber-300/16 via-emerald-300/10 to-cyan-300/14 text-sm font-black text-white md:h-10 md:w-10">
                                                             {skip + index + 1}
                                                         </div>
-                                                        <div class="min-w-0">
-                                                            <div class="flex items-center gap-2">
+                                                            <div class="min-w-0">
+                                                                <div class="flex items-center gap-2">
                                                                 {#if leader.user?.chosenBenefits?.chatIcon?.value}
                                                                     <i class={leader.user.chosenBenefits.chatIcon.value}></i>
                                                                 {/if}
                                                                 <span
-                                                                        class="truncate text-base font-semibold text-white"
+                                                                        class="truncate text-sm font-semibold text-white md:text-base"
                                                                         style={`color: ${leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}`}
                                                                 >
                                                                     {leader.name}
@@ -115,27 +115,43 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                        <div class="md:hidden">
+                                                            <div class="inline-flex rounded-full border border-emerald-300/18 bg-emerald-300/10 px-2.5 py-1 text-xs font-semibold text-emerald-100">
+                                                                Lv {leader.stats.level}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-3 grid grid-cols-3 gap-2 md:hidden">
+                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
+                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-200/75">Str</div>
+                                                            <div class="mt-1 text-sm font-bold text-amber-100">{leader.stats.strength}</div>
+                                                        </div>
+                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
+                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-200/75">Dex</div>
+                                                            <div class="mt-1 text-sm font-bold text-sky-100">{leader.stats.dexterity}</div>
+                                                        </div>
+                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
+                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-fuchsia-200/75">Int</div>
+                                                            <div class="mt-1 text-sm font-bold text-fuchsia-100">{leader.stats.intelligence}</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div>
-                                                    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-200/75 md:hidden">Level</div>
+                                                <div class="hidden md:block">
                                                     <div class="inline-flex rounded-full border border-emerald-300/18 bg-emerald-300/10 px-3 py-1 text-sm font-semibold text-emerald-100">
                                                         {leader.stats.level}
                                                     </div>
                                                 </div>
 
-                                                <div>
-                                                    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-200/75 md:hidden">Strength</div>
+                                                <div class="hidden md:block">
                                                     <div class="text-lg font-bold text-amber-100">{leader.stats.strength}</div>
                                                 </div>
 
-                                                <div>
-                                                    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-sky-200/75 md:hidden">Dexterity</div>
+                                                <div class="hidden md:block">
                                                     <div class="text-lg font-bold text-sky-100">{leader.stats.dexterity}</div>
                                                 </div>
 
-                                                <div>
-                                                    <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-fuchsia-200/75 md:hidden">Intelligence</div>
+                                                <div class="hidden md:block">
                                                     <div class="text-lg font-bold text-fuchsia-100">{leader.stats.intelligence}</div>
                                                 </div>
                                             </div>
@@ -151,7 +167,7 @@
                         {/await}
                     </div>
 
-                    <div class="mt-6 flex flex-col gap-4 border-t border-white/10 pt-5 md:flex-row md:items-center md:justify-between">
+                    <div class="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4 md:flex-row md:items-center md:justify-between">
                         <div class="flex items-center gap-3">
                             <div class="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
                                 <div class="text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-200/80">Page Size</div>
