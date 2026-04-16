@@ -40,52 +40,61 @@
     }
 </script>
 
-<Button class="cursor-pointer" onclick={() => (modalOpen = true)}>Login</Button>
+<Button class="cursor-pointer border-white/10 bg-white/8 text-white hover:bg-white/12" onclick={() => (modalOpen = true)}>Login</Button>
 
-<Modal form title="Login / Signup" bind:open={modalOpen} {onaction}>
+<Modal
+    form
+    title="Login / Signup"
+    bind:open={modalOpen}
+    {onaction}
+    class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
+    headerClass="border-b border-white/10 bg-white/[0.03] text-white"
+    bodyClass="bg-transparent text-white"
+    footerClass="border-t border-white/10 bg-white/[0.02]"
+>
     {#if view === 'register'}
         <div class="mb-4">
-            <Label for="profile" class="block mb-2">Profile Name</Label>
-            <Input id="profile" size="sm" placeholder="DrBibbityBob" bind:value={profileName}/>
+            <Label for="profile" class="mb-2 block text-gray-300">Profile Name</Label>
+            <Input id="profile" size="sm" placeholder="DrBibbityBob" bind:value={profileName} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
     {/if}
     <div class="mb-6">
-        <Label for="email" class="block mb-2">Email</Label>
-        <Input required id="email" type="email" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
+        <Label for="email" class="mb-2 block text-gray-300">Email</Label>
+        <Input required id="email" type="email" size="sm" placeholder="imsocool@example.com" bind:value={email} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
     </div>
     {#if view !== 'forgot-password'}
         <div class="mb-6">
-            <Label for="password" class="block mb-2">Password</Label>
-            <Input required type="password" id="password" size="sm" placeholder="password123" bind:value={password}/>
+            <Label for="password" class="mb-2 block text-gray-300">Password</Label>
+            <Input required type="password" id="password" size="sm" placeholder="password123" bind:value={password} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
     {/if}
     {#snippet footer()}
         <div class="flex justify-between w-full">
             <div class="inline-flex">
-                <Button color="alternative" onclick={() => view = 'forgot-password'}>
+                <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'forgot-password'}>
                     Forgot Password
                 </Button>
             </div>
             <div class="inline-flex">
                 {#if view === 'login'}
-                    <Button color="alternative" onclick={() => view = 'register'}>
+                    <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'register'}>
                         Register Instead
                     </Button>
-                    <Button value="accept" type="submit" disabled={!email || !password}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password}>
                         Login
                     </Button>
                 {:else if view === 'register'}
-                    <Button color="alternative" onclick={() => view = 'login'}>
+                    <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Signin Instead
                     </Button>
-                    <Button value="accept" type="submit" disabled={!email || !password || !profileName}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || !profileName}>
                         Signup
                     </Button>
                 {:else}
-                    <Button color="alternative" onclick={() => view = 'login'}>
+                    <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Back to Login
                     </Button>
-                    <Button value="accept" type="submit" disabled={!email}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email}>
                         Send Reset Email
                     </Button>
                 {/if}

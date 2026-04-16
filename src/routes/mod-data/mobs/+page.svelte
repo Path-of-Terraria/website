@@ -64,11 +64,11 @@
     <h1 class="mb-4 text-3xl font-black tracking-tight text-white">Mob Data</h1>
 
     <!-- Search Input and Save Button -->
-    <div class="mb-4 flex items-center space-x-4">
+    <div class="mb-6 flex items-end space-x-4">
         <div class="grow">
             <label
                 for="search"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                class="mb-2 block text-sm font-medium text-gray-300"
             >
                 Search Mobs
             </label>
@@ -78,10 +78,10 @@
                 bind:value={searchQuery}
                 oninput={handleSearch}
                 placeholder="Type to search by name..."
-                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 dark:text-gray-400 focus:ring-3 focus:ring-blue-300 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                class="block w-full rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-sky-400 focus:outline-hidden focus:ring-2 focus:ring-sky-400/30"
             />
         </div>
-        <Button color="green" onclick={exportMobData}>
+        <Button class="bg-emerald-500 text-white hover:bg-emerald-400" onclick={exportMobData}>
             Export
         </Button>
     </div>
@@ -93,9 +93,9 @@
 
     <!-- Mob Data Table -->
     {#if filteredMobData.length > 0}
-        <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <div class="relative overflow-x-auto rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+            <table class="w-full text-left text-sm text-gray-300">
+                <thead class="bg-white/[0.04] text-xs uppercase text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">Net ID</th>
                         <th scope="col" class="px-6 py-3">Name</th>
@@ -106,23 +106,23 @@
                 </thead>
                 <tbody>
                     {#each filteredMobData as mob}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{mob.netId}</td>
-                            <td class="px-6 py-4">{mob.friendlyName}</td>
+                        <tr class="border-t border-white/8 align-top transition-colors duration-150 hover:bg-white/[0.025]">
+                            <td class="px-6 py-4 font-medium text-gray-200">{mob.netId}</td>
+                            <td class="px-6 py-4 font-semibold text-white">{mob.friendlyName}</td>
                             <td class="px-6 py-4">
                                 {#if mob.damage && mob.damage.length > 0}
                                     <ul class="text-xs">
                                         {#each mob.damage as damage}
-                                            <li class="mb-1 p-1 border rounded bg-gray-50 dark:bg-gray-700">
-                                                <div class="font-bold">Min Lvl: {damage.minLevel}</div>
+                                            <li class="mb-2 rounded-lg border border-white/8 bg-white/[0.035] p-2">
+                                                <div class="font-bold text-gray-100">Min Lvl: {damage.minLevel}</div>
                                                 {#if damage.fire}
-                                                    <div class="text-red-600">Fire: +{damage.fire.added}, {damage.fire.conversion * 100}% conv</div>
+                                                    <div class="text-red-300">Fire: +{damage.fire.added}, {damage.fire.conversion * 100}% conv</div>
                                                 {/if}
                                                 {#if damage.lightning}
-                                                    <div class="text-yellow-600">Light: +{damage.lightning.added}, {damage.lightning.conversion * 100}% conv</div>
+                                                    <div class="text-yellow-300">Light: +{damage.lightning.added}, {damage.lightning.conversion * 100}% conv</div>
                                                 {/if}
                                                 {#if damage.cold}
-                                                    <div class="text-blue-600">Cold: +{damage.cold.added}, {damage.cold.conversion * 100}% conv</div>
+                                                    <div class="text-sky-300">Cold: +{damage.cold.added}, {damage.cold.conversion * 100}% conv</div>
                                                 {/if}
                                             </li>
                                         {/each}
@@ -134,7 +134,7 @@
                             <td class="px-6 py-4">
                                 <ul>
                                     {#each mob.entries as entry}
-                                        <li class="my-2 p-2 border rounded bg-white dark:bg-gray-800">
+                                        <li class="my-2 rounded-lg border border-white/8 bg-white/[0.035] p-3">
                                             <div>
                                                 <strong>Prefix:</strong> {entry.prefix || 'N/A'}
                                             </div>
@@ -148,15 +148,15 @@
                                                 <strong>Requirements:</strong> {entry.requirements}
                                             </div>
                                             {#if entry.damageOverrides && entry.damageOverrides.length > 0}
-                                                <div class="mt-1 pt-1 border-t">
+                                                <div class="mt-2 border-t border-white/8 pt-2">
                                                     <strong>Damage Overrides:</strong>
                                                     <ul class="text-xs">
                                                         {#each entry.damageOverrides as damage}
                                                             <li>
                                                                 Lvl {damage.minLevel}:
-                                                                {#if damage.fire} <span class="text-red-600">F</span> {/if}
-                                                                {#if damage.lightning} <span class="text-yellow-600">L</span> {/if}
-                                                                {#if damage.cold} <span class="text-blue-600">C</span> {/if}
+                                                                {#if damage.fire} <span class="text-red-300">F</span> {/if}
+                                                                {#if damage.lightning} <span class="text-yellow-300">L</span> {/if}
+                                                                {#if damage.cold} <span class="text-sky-300">C</span> {/if}
                                                             </li>
                                                         {/each}
                                                     </ul>
@@ -178,7 +178,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <button
-                                    class="text-blue-500 hover:underline"
+                                    class="cursor-pointer text-sky-300 hover:text-sky-200 hover:underline"
                                     onclick={() => openEditModal(mob)}
                                 >
                                     Edit
@@ -190,7 +190,7 @@
             </table>
         </div>
     {:else}
-        <p class="text-gray-500 text-sm">No mobs found matching the search criteria.</p>
+        <p class="text-sm text-gray-400">No mobs found matching the search criteria.</p>
     {/if}
 </div>
 
