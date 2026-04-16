@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { toast } from '$lib/toast';
 	import {
 		applyChoiceSelection,
 		canAllocateNode,
@@ -9,6 +10,7 @@
 		getAnchorId,
 		getChoiceChildren,
 		getDisplayNode,
+		getFormattedTooltip,
 		getNodeRadius,
 		getSpentPoints,
 		isChoiceHub,
@@ -27,6 +29,19 @@
 	const defaultStartClass: PlannerStartClass = 'melee';
 	const defaultAnchorId = getAnchorId(defaultStartClass);
 	const storageKey = 'pot-passive-planner-state-v1';
+	const shareParamKey = 'build';
+	const startClassCodeMap: Record<PlannerStartClass, string> = {
+		melee: 'm',
+		ranged: 'r',
+		magic: 'g',
+		summon: 's'
+	};
+	const startClassFromCodeMap: Record<string, PlannerStartClass> = {
+		m: 'melee',
+		r: 'ranged',
+		g: 'magic',
+		s: 'summon'
+	};
 
 	let startClass = $state<PlannerStartClass>(defaultStartClass);
 	let currentLevel = $state(1);
@@ -41,6 +56,7 @@
 	let isHoveringTooltip = $state(false);
 	let treeScrollElement = $state<HTMLDivElement | null>(null);
 	let isDraggingTree = $state(false);
+	let zoomLevel = $state(1);
 	let dragStartX = 0;
 	let dragStartY = 0;
 	let dragScrollLeft = 0;
@@ -92,10 +108,12 @@
 			startClass,
 			currentLevel,
 			extraPoints,
-			selectedIds
+			selectedIds,
+			zoomLevel
 		};
 
 		localStorage.setItem(storageKey, JSON.stringify(state));
+		updateShareUrl(state);
 	});
 
 	function toggleNode(node: PlannerNode) {
@@ -246,20 +264,71 @@
 		isDraggingTree = false;
 	}
 
+	async function handleTreeWheel(event: WheelEvent) {
+		if (!event.ctrlKey || !treeScrollElement) {
+			return;
+		}
+
+		event.preventDefault();
+
+		const previousZoom = zoomLevel;
+		const nextZoom = clampZoom(previousZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+		if (nextZoom === previousZoom) {
+			return;
+		}
+
+		const rect = treeScrollElement.getBoundingClientRect();
+		const offsetX = event.clientX - rect.left;
+		const offsetY = event.clientY - rect.top;
+		const contentX = (treeScrollElement.scrollLeft + offsetX) / previousZoom;
+		const contentY = (treeScrollElement.scrollTop + offsetY) / previousZoom;
+
+		zoomLevel = nextZoom;
+		await tick();
+
+		treeScrollElement.scrollLeft = contentX * nextZoom - offsetX;
+		treeScrollElement.scrollTop = contentY * nextZoom - offsetY;
+	}
+
+	async function copyShareLink() {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			toast.push('Planner link copied', { type: 'success', duration: 2500 });
+		} catch {
+			toast.push('Failed to copy planner link', { type: 'error', duration: 3000 });
+		}
+	}
+
+	function updateShareUrl(state: { startClass: PlannerStartClass; currentLevel: number; extraPoints: number; selectedIds: number[] }) {
+		const url = new URL(window.location.href);
+		url.searchParams.set(shareParamKey, encodeBuildState(state));
+		window.history.replaceState({}, '', url);
+	}
+
 	onMount(() => {
+		const buildFromUrl = decodeBuildState(new URL(window.location.href).searchParams.get(shareParamKey));
 		const stored = localStorage.getItem(storageKey);
-		if (stored) {
+
+		if (buildFromUrl) {
+			startClass = buildFromUrl.startClass;
+			currentLevel = buildFromUrl.currentLevel;
+			extraPoints = buildFromUrl.extraPoints;
+			selectedIds = buildFromUrl.selectedIds;
+			focusedNodeId = buildFromUrl.selectedIds.at(-1) ?? getAnchorId(buildFromUrl.startClass);
+		} else if (stored) {
 			try {
 				const parsed = JSON.parse(stored) as {
 					startClass?: PlannerStartClass;
 					currentLevel?: number;
 					extraPoints?: number;
 					selectedIds?: number[];
+					zoomLevel?: number;
 				};
 
-				const nextStartClass = startClassOptions.some((option) => option.value === parsed.startClass)
-					? parsed.startClass
-					: defaultStartClass;
+				const nextStartClass: PlannerStartClass =
+					parsed.startClass && startClassOptions.some((option) => option.value === parsed.startClass)
+						? parsed.startClass
+						: defaultStartClass;
 				const nextAnchorId = getAnchorId(nextStartClass);
 				const nextSelectedIds = Array.isArray(parsed.selectedIds)
 					? [...new Set(parsed.selectedIds.filter((id): id is number => typeof id === 'number'))]
@@ -268,12 +337,14 @@
 				startClass = nextStartClass;
 				currentLevel = typeof parsed.currentLevel === 'number' && parsed.currentLevel > 0 ? Math.floor(parsed.currentLevel) : 1;
 				extraPoints = typeof parsed.extraPoints === 'number' && parsed.extraPoints >= 0 ? Math.floor(parsed.extraPoints) : 0;
+				zoomLevel = typeof parsed.zoomLevel === 'number' ? clampZoom(parsed.zoomLevel) : 1;
 				selectedIds = nextSelectedIds.includes(nextAnchorId) ? nextSelectedIds : [nextAnchorId, ...nextSelectedIds];
 				focusedNodeId = nextSelectedIds.at(-1) ?? nextAnchorId;
 			} catch {
 				startClass = defaultStartClass;
 				currentLevel = 1;
 				extraPoints = 0;
+				zoomLevel = 1;
 				selectedIds = [defaultAnchorId];
 				focusedNodeId = defaultAnchorId;
 			}
@@ -288,6 +359,65 @@
 			window.removeEventListener('mouseup', handleWindowMouseUp);
 		};
 	});
+
+	function encodeBuildState(state: {
+		startClass: PlannerStartClass;
+		currentLevel: number;
+		extraPoints: number;
+		selectedIds: number[];
+	}): string {
+		const anchorIdForClass = getAnchorId(state.startClass);
+		const encodedIds = [...new Set(state.selectedIds)]
+			.filter((id) => id !== anchorIdForClass)
+			.sort((left, right) => left - right)
+			.map((id) => id.toString(36))
+			.join('.');
+
+		return [
+			startClassCodeMap[state.startClass],
+			Math.max(1, Math.floor(state.currentLevel)).toString(36),
+			Math.max(0, Math.floor(state.extraPoints)).toString(36),
+			encodedIds
+		].join('~');
+	}
+
+	function decodeBuildState(value: string | null): {
+		startClass: PlannerStartClass;
+		currentLevel: number;
+		extraPoints: number;
+		selectedIds: number[];
+	} | null {
+		if (!value) {
+			return null;
+		}
+
+		const [classCode, levelPart, extraPart, idsPart = ''] = value.split('~');
+		const startClass = startClassFromCodeMap[classCode];
+		const currentLevelParsed = Number.parseInt(levelPart ?? '', 36);
+		const extraPointsParsed = Number.parseInt(extraPart ?? '', 36);
+
+		if (!startClass || Number.isNaN(currentLevelParsed) || Number.isNaN(extraPointsParsed)) {
+			return null;
+		}
+
+		const anchorIdForClass = getAnchorId(startClass);
+		const selectedIdsFromUrl = idsPart
+			.split('.')
+			.filter(Boolean)
+			.map((part) => Number.parseInt(part, 36))
+			.filter((id) => Number.isInteger(id) && plannerNodeMap.has(id));
+
+		return {
+			startClass,
+			currentLevel: Math.max(1, currentLevelParsed),
+			extraPoints: Math.max(0, extraPointsParsed),
+			selectedIds: [anchorIdForClass, ...new Set(selectedIdsFromUrl)]
+		};
+	}
+
+	function clampZoom(value: number): number {
+		return Math.min(1.8, Math.max(0.45, Math.round(value * 100) / 100));
+	}
 </script>
 
 <div class="planner-shell">
@@ -334,6 +464,7 @@
 
 		<div class="control-group actions">
 			<button type="button" class="action-button" onclick={resetTree}>Reset</button>
+			<button type="button" class="action-button secondary" onclick={copyShareLink}>Copy link</button>
 			<button type="button" class="action-button secondary" onclick={() => (drawerOpen = !drawerOpen)}>
 				{drawerOpen ? 'Hide panel' : 'Show panel'}
 			</button>
@@ -350,49 +481,55 @@
 				onmousemove={handleTreeDrag}
 				onmouseup={endTreeDrag}
 				onmouseleave={endTreeDrag}
+				onwheel={handleTreeWheel}
 			>
-				<div class={`tree-canvas ${treeOverdrawn ? 'warning' : ''}`} style={`width:${plannerCanvas.width}px;height:${plannerCanvas.height}px;`}>
-					<svg class="tree-lines" viewBox={`0 0 ${plannerCanvas.width} ${plannerCanvas.height}`}>
-						{#each plannerEdges as edge (edge.key)}
-							{#if plannerNodeMap.has(edge.from) && plannerNodeMap.has(edge.to) && !plannerNodeMap.get(edge.to)?.isHidden && !plannerNodeMap.get(edge.from)?.isHidden}
-								<line
-									x1={plannerNodeMap.get(edge.from)?.canvasX}
-									y1={plannerNodeMap.get(edge.from)?.canvasY}
-									x2={plannerNodeMap.get(edge.to)?.canvasX}
-									y2={plannerNodeMap.get(edge.to)?.canvasY}
-									class:active-edge={edgeIsActive(edge.from, edge.to)}
-									class:effects-edge={edge.effectsOnly}
-								/>
-							{/if}
-						{/each}
-					</svg>
+				<div class="tree-zoom-shell" style={`width:${plannerCanvas.width * zoomLevel}px;height:${plannerCanvas.height * zoomLevel}px;`}>
+					<div
+						class={`tree-canvas ${treeOverdrawn ? 'warning' : ''}`}
+						style={`width:${plannerCanvas.width}px;height:${plannerCanvas.height}px;transform:scale(${zoomLevel});`}
+					>
+						<svg class="tree-lines" viewBox={`0 0 ${plannerCanvas.width} ${plannerCanvas.height}`}>
+							{#each plannerEdges as edge (edge.key)}
+								{#if plannerNodeMap.has(edge.from) && plannerNodeMap.has(edge.to) && !plannerNodeMap.get(edge.to)?.isHidden && !plannerNodeMap.get(edge.from)?.isHidden}
+									<line
+										x1={plannerNodeMap.get(edge.from)?.canvasX}
+										y1={plannerNodeMap.get(edge.from)?.canvasY}
+										x2={plannerNodeMap.get(edge.to)?.canvasX}
+										y2={plannerNodeMap.get(edge.to)?.canvasY}
+										class:active-edge={edgeIsActive(edge.from, edge.to)}
+										class:effects-edge={edge.effectsOnly}
+									/>
+								{/if}
+							{/each}
+						</svg>
 
-					{#each visibleNodes as node (node.referenceId)}
-						{@const renderedNode = getRenderedNode(node)}
-						<button
-							type="button"
-							class={`tree-node ${node.group} ${getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''}`}
-							style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${getNodeRadius(node) * 2}px;height:${getNodeRadius(node) * 2}px;margin-left:-${getNodeRadius(node)}px;margin-top:-${getNodeRadius(node)}px;`}
-							aria-label={renderedNode.displayName}
-							onclick={() => toggleNode(node)}
-							oncontextmenu={(event) => {
-								event.preventDefault();
-								deallocateNode(node);
-							}}
-							onmouseenter={(event) => {
-								focusedNodeId = node.referenceId;
-								setHover(node.referenceId, event);
-							}}
-							onmouseleave={() => {
-								if (!isHoveringTooltip && pinnedTooltipNodeId === null) {
-									setHover(null);
-								}
-							}}
-							onmousemove={moveHover}
-						>
-							<img src={renderedNode.assetPath} alt={renderedNode.displayName} />
-						</button>
-					{/each}
+						{#each visibleNodes as node (node.referenceId)}
+							{@const renderedNode = getRenderedNode(node)}
+							<button
+								type="button"
+								class={`tree-node ${node.group} ${getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''}`}
+								style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${getNodeRadius(node) * 2}px;height:${getNodeRadius(node) * 2}px;margin-left:-${getNodeRadius(node)}px;margin-top:-${getNodeRadius(node)}px;`}
+								aria-label={renderedNode.displayName}
+								onclick={() => toggleNode(node)}
+								oncontextmenu={(event) => {
+									event.preventDefault();
+									deallocateNode(node);
+								}}
+								onmouseenter={(event) => {
+									focusedNodeId = node.referenceId;
+									setHover(node.referenceId, event);
+								}}
+								onmouseleave={() => {
+									if (!isHoveringTooltip && pinnedTooltipNodeId === null) {
+										setHover(null);
+									}
+								}}
+								onmousemove={moveHover}
+							>
+								<img src={renderedNode.assetPath} alt={renderedNode.displayName} />
+							</button>
+						{/each}
+					</div>
 				</div>
 			</div>
 		</section>
@@ -407,7 +544,7 @@
 					<section class="card">
 						<p class="eyebrow">Focused node</p>
 						<h2>{focusedNode.displayName}</h2>
-						<p class="muted">{focusedNode.displayTooltip || 'No localized tooltip found for this node yet.'}</p>
+						<p class="muted">{getFormattedTooltip(focusedNode) || 'No localized tooltip found for this node yet.'}</p>
 						<dl class="detail-grid">
 							<div>
 								<dt>Type</dt>
@@ -471,7 +608,7 @@
 											<img src={choice.assetPath} alt={choice.displayName} />
 											<div>
 												<strong>{choice.displayName}</strong>
-												<p>{choice.displayTooltip || 'No localized tooltip found for this mastery.'}</p>
+												<p>{getFormattedTooltip(choice) || 'No localized tooltip found for this mastery.'}</p>
 											</div>
 										</button>
 									{/each}
@@ -543,8 +680,8 @@
 					<button type="button" class="tooltip-pin" onclick={unpinTooltip}>Close</button>
 				{/if}
 			</div>
-			{#if hoveredNode.displayTooltip}
-				<p>{hoveredNode.displayTooltip}</p>
+			{#if getFormattedTooltip(hoveredNode)}
+				<p>{getFormattedTooltip(hoveredNode)}</p>
 			{/if}
 
 			{#if hoveredSourceNode?.isChoiceNode}
@@ -577,7 +714,7 @@
 								<img src={choice.assetPath} alt={choice.displayName} />
 								<div>
 									<strong>{choice.displayName}</strong>
-									<p>{choice.displayTooltip || 'No localized tooltip found for this mastery.'}</p>
+									<p>{getFormattedTooltip(choice) || 'No localized tooltip found for this mastery.'}</p>
 								</div>
 							</button>
 						{/each}
@@ -734,10 +871,15 @@
 
 	.tree-canvas {
 		position: relative;
+		transform-origin: top left;
 		border-radius: 24px;
 		background:
 			radial-gradient(circle at center, rgba(251, 191, 36, 0.08), transparent 44%),
 			radial-gradient(circle at center, rgba(15, 23, 42, 0.25) 0, rgba(15, 23, 42, 0.95) 74%);
+	}
+
+	.tree-zoom-shell {
+		position: relative;
 	}
 
 	.tree-canvas.warning {

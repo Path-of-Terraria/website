@@ -249,6 +249,10 @@ export function getSpentPoints(selectedIds: Set<number>): number {
 	return spent;
 }
 
+export function getFormattedTooltip(node: Pick<PlannerNode, 'displayTooltip' | 'value'>): string {
+	return formatTooltip(node.displayTooltip, node.value);
+}
+
 export function getNodeRadius(node: PlannerNode): number {
 	switch (node.group) {
 		case 'anchor':
