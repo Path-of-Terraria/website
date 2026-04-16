@@ -71,9 +71,9 @@
                         </div>
 
                         {#await leaderboardsPromise}
-                            <div class="space-y-2.5 p-3 md:p-4">
+                            <div class="divide-y divide-white/6 px-3 md:px-4">
                                 {#each Array(6) as _}
-                                    <div class="rounded-2xl border border-white/8 bg-white/[0.035] px-3 py-3 animate-pulse md:px-4">
+                                    <div class="animate-pulse py-3">
                                         <div class="grid gap-3 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center md:gap-4">
                                             <div class="h-4 w-40 rounded bg-white/10"></div>
                                             <div class="h-4 w-12 rounded bg-white/10"></div>
@@ -91,21 +91,21 @@
                                     <p class="mt-2 text-sm text-gray-400">Try a different page size or check back later.</p>
                                 </div>
                             {:else}
-                                <div class="space-y-2.5 p-3 md:p-4">
+                                <div class="divide-y divide-white/6 px-3 md:px-4">
                                     {#each leaders as leader, index}
-                                        <div class="group rounded-2xl border border-white/8 bg-white/[0.035] px-3 py-3 transition duration-300 hover:border-emerald-300/18 hover:bg-white/[0.06] hover:shadow-[0_18px_40px_rgba(0,0,0,0.22)] md:px-4">
+                                        <div class="py-3 transition-colors duration-200 hover:bg-white/[0.025]">
                                             <div class="grid gap-3 md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr] md:items-center md:gap-4">
                                                 <div class="min-w-0">
                                                     <div class="flex items-start justify-between gap-3 md:block">
                                                         <div class="flex min-w-0 items-center gap-3">
-                                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-amber-300/16 via-emerald-300/10 to-cyan-300/14 text-sm font-black text-white md:h-10 md:w-10">
+                                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/6 text-sm font-black text-white md:h-10 md:w-10">
                                                             {skip + index + 1}
                                                         </div>
                                                             <div class="min-w-0">
                                                                 <div class="flex items-center gap-2">
-                                                                {#if leader.user?.chosenBenefits?.chatIcon?.value}
-                                                                    <i class={leader.user.chosenBenefits.chatIcon.value}></i>
-                                                                {/if}
+                                                                <!--{#if leader.user?.chosenBenefits?.chatIcon?.value}-->
+                                                                <!--    <i class={leader.user.chosenBenefits.chatIcon.value}></i>-->
+                                                                <!--{/if}-->
                                                                 <span
                                                                         class="truncate text-sm font-semibold text-white md:text-base"
                                                                         style={`color: ${leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}`}
@@ -121,18 +121,18 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="mt-3 grid grid-cols-3 gap-2 md:hidden">
-                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
-                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-200/75">Str</div>
-                                                            <div class="mt-1 text-sm font-bold text-amber-100">{leader.stats.strength}</div>
+                                                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold uppercase tracking-[0.18em] md:hidden">
+                                                        <div class="flex items-baseline gap-1.5 text-amber-100">
+                                                            <span class="text-amber-200/70">Str</span>
+                                                            <span>{leader.stats.strength}</span>
                                                         </div>
-                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
-                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-200/75">Dex</div>
-                                                            <div class="mt-1 text-sm font-bold text-sky-100">{leader.stats.dexterity}</div>
+                                                        <div class="flex items-baseline gap-1.5 text-sky-100">
+                                                            <span class="text-sky-200/70">Dex</span>
+                                                            <span>{leader.stats.dexterity}</span>
                                                         </div>
-                                                        <div class="rounded-xl border border-white/8 bg-white/[0.035] px-2.5 py-2 text-center">
-                                                            <div class="text-[10px] font-semibold uppercase tracking-[0.18em] text-fuchsia-200/75">Int</div>
-                                                            <div class="mt-1 text-sm font-bold text-fuchsia-100">{leader.stats.intelligence}</div>
+                                                        <div class="flex items-baseline gap-1.5 text-fuchsia-100">
+                                                            <span class="text-fuchsia-200/70">Int</span>
+                                                            <span>{leader.stats.intelligence}</span>
                                                         </div>
                                                     </div>
                                                 </div>
