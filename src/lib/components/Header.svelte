@@ -28,25 +28,25 @@
     let currentUser: IUser | null = $state(null);
     let settingsOpen = $state(false);
 
-    // Determine if we're on the home page (runes)
-    let isHome = $derived(page?.url?.pathname === '/');
+    // Determine if we're on a page that should use the transparent hero navbar
+    let isHeroNavPage = $derived(page?.url?.pathname === '/' || page?.url?.pathname === '/leaderboards');
 
     // Classes depending on route (runes)
     let navbarClass = $derived(
-        isHome
+        isHeroNavPage
             ? 'bg-transparent fixed top-0 left-0 right-0 z-50 backdrop-blur-sm'
             : 'bg-primary-100 dark:bg-primary-700'
     );
 
-    let brandTextClass = $derived(isHome ? 'text-white' : 'text-primary-700');
+    let brandTextClass = $derived(isHeroNavPage ? 'text-white' : 'text-primary-700');
 
     let navLinkClass = $derived(
-        isHome
+        isHeroNavPage
             ? 'text-gray-900 hover:text-primary-700 md:text-white md:hover:text-gray-200'
             : 'text-gray-900 hover:text-primary-700'
     );
 
-    let hamburgerClass = $derived(isHome ? 'text-white' : '');
+    let hamburgerClass = $derived(isHeroNavPage ? 'text-white' : '');
 
     const unsubscribe = user.subscribe(value => {
         currentUser = value;

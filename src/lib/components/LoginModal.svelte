@@ -40,7 +40,7 @@
     }
 </script>
 
-<Button onclick={() => (modalOpen = true)}>Login</Button>
+<Button class="cursor-pointer" onclick={() => (modalOpen = true)}>Login</Button>
 
 <Modal form title="Login / Signup" bind:open={modalOpen} {onaction}>
     {#if view === 'register'}
