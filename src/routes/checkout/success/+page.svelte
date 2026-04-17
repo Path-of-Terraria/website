@@ -14,12 +14,12 @@
     });
 </script>
 
-<div class="flex items-center justify-center py-16 px-4">
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8 text-center">
+<div class="flex items-center justify-center px-4 py-24">
+    <div class="w-full max-w-lg rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-8 text-center text-white shadow-[0_24px_70px_rgba(0,0,0,0.32)]">
 
         <!-- Success Icon -->
-        <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-full bg-green-100">
-            <svg class="w-8 h-8 text-green-600"
+        <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-300/12">
+            <svg class="h-8 w-8 text-emerald-300"
                  xmlns="http://www.w3.org/2000/svg"
                  viewBox="0 0 24 24"
                  stroke="currentColor"
@@ -29,15 +29,15 @@
         </div>
 
         <!-- Title -->
-        <h1 class="mb-4 text-2xl font-bold text-gray-900">
+        <h1 class="mb-4 text-2xl font-bold text-white">
             Thank You for Your Support!
         </h1>
 
         <!-- Message -->
-        <p class="mb-6 text-gray-600">
+        <p class="mb-6 text-gray-300">
             Your order has been confirmed.
             A receipt has been sent to
-            <span class="font-medium">
+            <span class="font-medium text-white">
                 {currentUser?.email}
             </span>
         </p>

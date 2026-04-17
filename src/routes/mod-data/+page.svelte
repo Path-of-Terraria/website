@@ -2,12 +2,12 @@
     import FeatureCard from "$lib/components/FeatureCard.svelte";
 </script>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Mod Data</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <h1 class="mb-4 text-3xl font-black tracking-tight text-white">Mod Data</h1>
 
-    <div class="container mx-auto mt-12">
-        <div class="grid grid-cols-2 gap-4">
-            <div class="mx-auto">
+    <div class="container mx-auto mt-12 px-0">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="mx-auto w-full">
                 <FeatureCard
                         title="Edit Mob Data"
                         description="View and edit the mob data for the mod"
@@ -16,7 +16,7 @@
                         linkText="See Data"
                 ></FeatureCard>
             </div>
-            <div class="mx-auto">
+            <div class="mx-auto w-full">
                 <FeatureCard
                         title="Edit Localization"
                         description="View and edit the localization for the mod"

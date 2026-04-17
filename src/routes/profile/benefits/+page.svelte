@@ -1,7 +1,8 @@
 <script lang="ts">
     import { UserService } from "$lib/services/user-service";
     import {onDestroy, onMount} from "svelte";
-    import { Button, Card, Label, Select, P } from "flowbite-svelte";
+    import { Button, Card, Label, Select, P, Dropdown, DropdownItem } from "flowbite-svelte";
+    import { ChevronDownOutline } from "flowbite-svelte-icons";
     import {type IUser, user} from "$lib/stores/user-store";
 
     let userService = new UserService();
@@ -14,6 +15,7 @@
     let availableBenefits = $state({ icons: [], colors: [] });
     let selectedIcon = $state("");
     let selectedColor = $state("");
+    let colorDropdownOpen = $state(false);
     let currentUser: IUser | null = $state(null);
 
     const unsubscribe = user.subscribe(value => {
@@ -83,9 +85,9 @@
     });
 </script>
 
-<div class="container mx-auto p-4">
-    <div class="flex items-center mb-4">
-        <h1 class="text-2xl font-bold">Benefit Management</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <div class="mb-4 flex items-center">
+        <h1 class="text-3xl font-black tracking-tight text-white">Benefit Management</h1>
     </div>
 
     {#if loading}
@@ -97,8 +99,8 @@
             <P color="red">{error}</P>
         </div>
     {:else}
-        <Card class="max-w-md mx-auto p-4 sm:p-6 md:p-8">
-            <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">Manage Your Benefits</h5>
+        <Card class="mx-auto max-w-md border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:p-6 md:p-8">
+            <h5 class="mb-4 text-xl font-medium text-gray-300">Manage Your Benefits</h5>
 
             <div class="space-y-6">
                 <!-- Icon Selector -->
@@ -120,37 +122,48 @@
                         {/if}
                     </Select>
                     {#if availableBenefits.icons.length === 0}
-                        <p class="text-gray-500 text-sm mt-1">No icon benefits available to you</p>
+                        <p class="mt-1 text-sm text-gray-400">No icon benefits available to you</p>
                     {/if}
                 </div>
 
                 <!-- Color Selector -->
                 <div>
-                    <Label for="color" class="mb-2">Chat Color</Label>
-                    <Select
-                        id="color"
-                        bind:value={selectedColor}
-                        placeholder="Select a color"
-                        disabled={availableBenefits.colors.length === 0}
-                    >
-                        <option value="">None</option>
+                    <Label for="color-button" class="mb-2">Chat Color</Label>
+                    <Button id="color-button" class="w-full justify-between border-white/10 bg-white/8 font-normal text-white hover:bg-white/12" disabled={availableBenefits.colors.length === 0}>
+                        <div class="flex items-center">
+                            {#if selectedColor}
+                                <div class="w-4 h-4 rounded-sm mr-2 border border-gray-200" style="background-color: {selectedColor}"></div>
+                                {selectedColor}
+                            {:else}
+                                Select a color
+                            {/if}
+                        </div>
+                        <ChevronDownOutline class="ml-2 h-4 w-4 text-gray-400" />
+                    </Button>
+                    <Dropdown triggeredBy="#color-button" bind:isOpen={colorDropdownOpen} class="max-h-60 overflow-y-auto border border-white/10 bg-[#111827] text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+                        <DropdownItem onclick={() => { selectedColor = ""; colorDropdownOpen = false; }}>None</DropdownItem>
                         {#if availableBenefits.colors.length === 0}
-                            <option value="" disabled>No colors available</option>
+                            <DropdownItem disabled>No colors available</DropdownItem>
                         {:else}
                             {#each availableBenefits.colors as color}
-                                <option value={color}>{color}</option>
+                                <DropdownItem onclick={() => { selectedColor = color; colorDropdownOpen = false; }}>
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded-sm mr-2 border border-gray-200" style="background-color: {color}"></div>
+                                        {color}
+                                    </div>
+                                </DropdownItem>
                             {/each}
                         {/if}
-                    </Select>
+                    </Dropdown>
                     {#if availableBenefits.colors.length === 0}
-                        <p class="text-gray-500 text-sm mt-1">No color benefits available to you</p>
+                        <p class="mt-1 text-sm text-gray-400">No color benefits available to you</p>
                     {/if}
 
                     <!-- Color Preview -->
                     {#if selectedColor}
                         <div class="mt-2">
-                            <p class="text-sm text-gray-600">Preview:</p>
-                            <div class="flex items-center mt-1">
+                            <p class="text-sm text-gray-400">Preview:</p>
+                            <div class="mt-1 flex items-center">
                                 <div
                                     class="w-6 h-6 rounded border mr-2"
                                     style="background-color: {selectedColor};"
@@ -183,8 +196,8 @@
 
                 {#if availableBenefits.icons.length === 0 && availableBenefits.colors.length === 0}
                     <div class="text-center mt-4">
-                        <P class="text-gray-600">You don't have any benefits available at this time.</P>
-                        <P class="text-sm text-gray-500 mt-2">Consider upgrading to a supporter pack to unlock chat customization options!</P>
+                        <P class="text-gray-300">You don't have any benefits available at this time.</P>
+                        <P class="mt-2 text-sm text-gray-400">Consider upgrading to a supporter pack to unlock chat customization options!</P>
                     </div>
                 {/if}
             </div>

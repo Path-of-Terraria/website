@@ -1,7 +1,20 @@
 export interface IMobData {
     friendlyName: string;
-    netId: MobNetIdEnum;
+    netId: number;
+    damage?: IDamageConfiguration[];
     entries: IMobEntry[];
+}
+
+export interface IDamageConfiguration {
+    minLevel: number;
+    fire?: IDamageDetail;
+    lightning?: IDamageDetail;
+    cold?: IDamageDetail;
+}
+
+export interface IDamageDetail {
+    added?: number;
+    conversion?: number;
 }
 
 export interface IMobEntry {
@@ -11,6 +24,7 @@ export interface IMobEntry {
     stats: IMobStats;
     affixes: IMobEntryAffix[];
     requirements: string;
+    damageOverrides?: IDamageConfiguration[];
 }
 
 export interface IMobEntryAffix {

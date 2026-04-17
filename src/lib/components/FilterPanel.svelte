@@ -2,11 +2,11 @@
     import { createEventDispatcher } from 'svelte';
     import type { GearFilter } from '$lib/services/trade-listing-service';
     import { TradeListingItemDataRarity } from '$lib/models/trade-listing';
-    
+
     const dispatch = createEventDispatcher<{
         filter: GearFilter;
     }>();
-    
+
     // Filter state
     let isExpanded = $state(false);
     let filter: GearFilter = $state({
@@ -22,7 +22,7 @@
         affixMinTier: undefined,
         affixMinValue: undefined
     });
-    
+
     // Item types (placeholder - replace with actual types from backend)
     const itemTypes = [
         { id: 0, name: 'None' },
@@ -67,7 +67,7 @@
         { id: (14682879 | 8192), name: 'All' }
     ];
 
-    
+
     // Rarity options
     const rarityOptions = [
         { value: TradeListingItemDataRarity.Normal, label: 'Normal' },
@@ -75,25 +75,25 @@
         { value: TradeListingItemDataRarity.Rare, label: 'Rare' },
         { value: TradeListingItemDataRarity.Unique, label: 'Unique' }
     ];
-    
+
     function toggleExpand() {
         isExpanded = !isExpanded;
     }
-    
+
     function applyFilter() {
         // Clean up empty string values
         const cleanFilter = { ...filter };
-        
+
         // Remove empty string values
         Object.keys(cleanFilter).forEach(key => {
             if (cleanFilter[key] === '') {
                 cleanFilter[key] = undefined;
             }
         });
-        
+
         dispatch('filter', cleanFilter);
     }
-    
+
     function resetFilter() {
         filter = {
             name: '',
@@ -108,39 +108,49 @@
             affixMinTier: undefined,
             affixMinValue: undefined
         };
-        
+
         applyFilter();
     }
 </script>
 
 <div class="filter-panel bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-    <!-- Search bar (always visible) -->
-    <div class="search-bar mb-4">
-        <input 
-            type="text" 
-            bind:value={filter.name} 
-            placeholder="Search by item name..." 
-            class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
-        />
+    <!-- Top bar: Search and Toggle -->
+    <div class="flex flex-col md:flex-row gap-4 mb-4">
+        <!-- Search bar -->
+        <div class="search-bar flex-1 flex gap-2">
+            <input
+                type="text"
+                bind:value={filter.name}
+                onkeydown={(e) => e.key === 'Enter' && applyFilter()}
+                placeholder="Search by item name..."
+                class="flex-1 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+            />
+            <button
+                onclick={applyFilter}
+                class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+            >
+                Search
+            </button>
+        </div>
+
+        <!-- Collapsible section toggle -->
+        <button
+            onclick={toggleExpand}
+            class="flex items-center justify-between w-full md:w-auto md:min-w-[180px] p-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
+        >
+            <span class="font-medium">Advanced Filters</span>
+            <span class="transform transition-transform {isExpanded ? 'rotate-180' : ''}">▼</span>
+        </button>
     </div>
-    
-    <!-- Collapsible section toggle -->
-    <button 
-        onclick={toggleExpand}
-        class="flex items-center justify-between w-full p-2 bg-gray-700 text-white rounded-md mb-4 hover:bg-gray-600"
-    >
-        <span class="font-medium">Advanced Filters</span>
-        <span class="transform transition-transform {isExpanded ? 'rotate-180' : ''}">▼</span>
-    </button>
-    
+
     <!-- Collapsible filter section -->
     {#if isExpanded}
         <div class="filter-controls grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- Item Type -->
             <div class="filter-group">
                 <label class="block text-sm font-medium text-gray-300 mb-1">Item Type</label>
-                <select 
-                    bind:value={filter.type} 
+                <select
+                    bind:value={filter.type}
                     class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 >
                     <option value={undefined}>Any</option>
@@ -149,23 +159,23 @@
                     {/each}
                 </select>
             </div>
-            
+
             <!-- Type Name -->
             <div class="filter-group">
                 <label class="block text-sm font-medium text-gray-300 mb-1">Type Name</label>
-                <input 
-                    type="text" 
-                    bind:value={filter.typeName} 
-                    placeholder="e.g. Sword, Helmet..." 
+                <input
+                    type="text"
+                    bind:value={filter.typeName}
+                    placeholder="e.g. Sword, Helmet..."
                     class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 />
             </div>
-            
+
             <!-- Rarity -->
             <div class="filter-group">
                 <label class="block text-sm font-medium text-gray-300 mb-1">Rarity</label>
-                <select 
-                    bind:value={filter.rarity} 
+                <select
+                    bind:value={filter.rarity}
                     class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
                 >
                     <option value={undefined}>Any</option>
@@ -174,7 +184,7 @@
                     {/each}
                 </select>
             </div>
-            
+
             <!-- Stack Size -->
 <!--            <div class="filter-group">-->
 <!--                <label class="block text-sm font-medium text-gray-300 mb-1">Stack Size</label>-->
@@ -193,7 +203,7 @@
 <!--                    />-->
 <!--                </div>-->
 <!--            </div>-->
-            
+
             <!-- Item Properties -->
 <!--            <div class="filter-group">-->
 <!--                <label class="block text-sm font-medium text-gray-300 mb-1">Corrupted/Mirrored</label>-->
@@ -216,7 +226,7 @@
 <!--                    </label>-->
 <!--                </div>-->
 <!--            </div>-->
-            
+
             <!-- Affix Name -->
 <!--            <div class="filter-group">-->
 <!--                <label class="block text-sm font-medium text-gray-300 mb-1">Affix Name</label>-->
@@ -252,16 +262,16 @@
 <!--                />-->
 <!--            </div>-->
         </div>
-        
+
         <!-- Filter action buttons -->
         <div class="filter-actions flex justify-end space-x-2">
-            <button 
+            <button
                 onclick={resetFilter}
                 class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
             >
                 Reset
             </button>
-            <button 
+            <button
                 onclick={applyFilter}
                 class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
             >

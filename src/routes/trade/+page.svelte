@@ -33,14 +33,14 @@
     }
 </script>
 
-<div class="header">
-    <div class="container mx-auto mt-8">
-        <Heading tag="h1" class="mb-4" customSize="text-1xl font-extrabold  md:text-3xl lg:text-4xl">
+<div class="header text-white">
+    <div class="container mx-auto px-4 pt-24">
+        <Heading tag="h1" class="mb-4 text-3xl font-black tracking-tight text-white">
             Trade
         </Heading>
     </div>
 </div>
-<div class="container mx-auto mt-8">
+<div class="container mx-auto mt-12 px-4 text-gray-200">
     <!-- Filter Panel -->
     <FilterPanel on:filter={handleFilter} />
     

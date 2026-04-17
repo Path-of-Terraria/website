@@ -1,5 +1,6 @@
 <script lang="ts">
-    import {Button, Modal, Label, Input, DropdownItem} from 'flowbite-svelte';
+    import {Button, Modal, Label, Input} from 'flowbite-svelte';
+    import { env } from '$env/dynamic/public';
 
     let { open = $bindable(false), currentUser = $bindable(undefined as unknown as IUser) } = $props<{ open: boolean; currentUser: IUser }>();
 
@@ -9,6 +10,8 @@
     import steamSignin from "$lib/images/steam-signin.png";
 
     let userService = new UserService();
+
+    const baseUrl = env.PUBLIC_API_BASE_URL;
 
     async function updateUser() {
         await userService.updateProfile(currentUser.profileName);
@@ -28,33 +31,42 @@
 
 </script>
 
-<form onsubmit={async (e) => {
+<form onsubmit={async () => {
    await updateUser();
 }}>
-    <Modal title="Settings" bind:open={open} autoclose={false} form>
+    <Modal
+        title="Settings"
+        bind:open={open}
+        autoclose={false}
+        form
+        class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
+        headerClass="border-b border-white/10 bg-white/[0.03] text-white"
+        bodyClass="bg-transparent text-white"
+        footerClass="border-t border-white/10 bg-white/[0.02]"
+    >
         <!-- Profile Settings Section -->
-        <div class="mb-6 p-4 border border-gray-200 rounded-lg">
-            <h3 class="text-lg font-semibold mb-3">Profile Settings</h3>
-            <Label for="small-input" class="block mb-2">Profile Name</Label>
-            <Input id="small-input" size="sm" placeholder="DrBibbityBob" bind:value={currentUser.profileName}/>
+        <div class="mb-6 rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <h3 class="mb-3 text-lg font-semibold text-white">Profile Settings</h3>
+            <Label for="small-input" class="mb-2 block text-gray-300">Profile Name</Label>
+            <Input id="small-input" size="sm" placeholder="DrBibbityBob" bind:value={currentUser.profileName} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
 
         <!-- Account Linking Section -->
-        <div class="mb-6 p-4 border border-gray-200 rounded-lg">
-            <h3 class="text-lg font-semibold mb-4">Account Linking</h3>
-            
+        <div class="mb-6 rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <h3 class="mb-4 text-lg font-semibold text-white">Account Linking</h3>
+
             <!-- Steam Linking -->
             <div class="mb-4">
                 {#if !currentUser.steamId}
-                    <span class="block text-sm mb-2">Link Steam Account (This is required for Leaderboards)</span>
-                    <a href="{import.meta.env.VITE_API_BASE_URL}LoginWithSteam?userId={currentUser.id}">
+                    <span class="mb-2 block text-sm text-gray-300">Link Steam Account (This is required for Leaderboards)</span>
+                    <a href="{baseUrl}LoginWithSteam?userId={currentUser.id}">
                         <img src={steamSignin} alt="steam signing">
                     </a>
                 {:else}
-                    <span class="block text-sm mb-2">
+                    <span class="mb-2 block text-sm text-gray-300">
                         Steam Account {currentUser.steamId} Linked
                     </span>
-                    <Button type="button" onclick={() => unlinkSteam()} color="red" size="sm">
+                    <Button type="button" onclick={() => unlinkSteam()} class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" size="sm">
                         Unlink Steam
                     </Button>
                 {/if}
@@ -63,11 +75,11 @@
             <!-- Discord Linking -->
             <div>
                 {#if !currentUser.discordId}
-                    <span class="block text-sm mb-2">Link Discord Account</span>
-                    <Button 
-                        type="button" 
+                    <span class="mb-2 block text-sm text-gray-300">Link Discord Account</span>
+                    <Button
+                        type="button"
                         onclick={() => {
-                            const redirectUri = encodeURIComponent(import.meta.env.VITE_BASE_URL + 'discord');
+                            const redirectUri = encodeURIComponent(env.PUBLIC_BASE_URL + 'discord');
                             window.location.href = `https://discord.com/oauth2/authorize?client_id=1089695863217074227&response_type=code&redirect_uri=${redirectUri}&scope=identify`;
                         }}
                         class="bg-[#5865F2] hover:bg-[#4752C4] text-white"
@@ -75,10 +87,10 @@
                         Connect Discord
                     </Button>
                 {:else}
-                    <span class="block text-sm mb-2">
+                    <span class="mb-2 block text-sm text-gray-300">
                         Discord Account {currentUser.discordId} Linked
                     </span>
-                    <Button type="button" onclick={() => unlinkDiscord()} color="red" size="sm">
+                    <Button type="button" onclick={() => unlinkDiscord()} class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" size="sm">
                         Unlink Discord
                     </Button>
                 {/if}
@@ -87,7 +99,7 @@
 
         {#snippet footer()}
             <div class="text-right">
-                <Button type="submit">
+                <Button type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400">
                     Update
                 </Button>
             </div>

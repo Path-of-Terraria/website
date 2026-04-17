@@ -9,9 +9,9 @@
     let userService = new UserService();
 
     let tokenQueryParam: string | null = '';
-    let email = "";
-    let password = "";
-    let confirmPassword = "";
+    let email = $state("");
+    let password = $state("");
+    let confirmPassword = $state("");
 
     onMount(() => {
         tokenQueryParam = new URLSearchParams(window.location.search).get('token');
@@ -33,29 +33,32 @@
     }
 </script>
 
-<div class="container mx-auto mt-16">
-    <Heading tag="h2" class="text-center">
+<div class="container mx-auto mt-16 px-4 py-24 text-white">
+    <div class="mx-auto max-w-lg rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.32)] sm:p-8">
+    <Heading tag="h2" class="text-center text-white">
         Reset Password
     </Heading>
-    <form onsubmit={async (e) => {
+    <form class="mt-8" onsubmit={async (e) => {
+       e.preventDefault();
        await resetPassword();
     }}>
         <div class="mb-6">
-            <Label for="small-input" class="block mb-2">Email</Label>
-            <Input id="small-input" size="sm" placeholder="imsocool@example.com" bind:value={email}/>
+            <Label for="small-input" class="mb-2 block text-gray-300">Email</Label>
+            <Input id="small-input" size="sm" placeholder="imsocool@example.com" bind:value={email} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
         <div class="mb-6">
-            <Label for="small-input" class="block mb-2">Password</Label>
-            <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={password}/>
+            <Label for="small-input" class="mb-2 block text-gray-300">Password</Label>
+            <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={password} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
         <div class="mb-6">
-            <Label for="small-input" class="block mb-2">Confirm Password</Label>
-            <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={confirmPassword}/>
+            <Label for="small-input" class="mb-2 block text-gray-300">Confirm Password</Label>
+            <Input type="password" id="small-input" size="sm" placeholder="password123" bind:value={confirmPassword} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
-        <div class="text-right w-full">
-            <Button type="submit" disabled="{!email || !password || !confirmPassword}">
+        <div class="w-full text-right">
+            <Button type="submit" disabled={!email || !password || !confirmPassword}>
                 Reset Password
             </Button>
         </div>
     </form>
+    </div>
 </div>

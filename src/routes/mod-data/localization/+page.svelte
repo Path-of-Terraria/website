@@ -478,19 +478,19 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Terraria Mod Localization</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <h1 class="mb-6 text-3xl font-black tracking-tight text-white">Terraria Mod Localization</h1>
 
     <!-- Language Selection -->
     {#if !showTranslationTable}
-        <div class="mb-8 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Select a Language</h2>
-            <p class="mb-4">Please select a language to view and edit translations:</p>
+        <div class="mb-8 rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+            <h2 class="mb-4 text-xl font-semibold text-white">Select a Language</h2>
+            <p class="mb-4 text-gray-300">Please select a language to view and edit translations:</p>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {#each availableLanguages as language}
                     <Button
-                       class="cursor-pointer"
+                        class="cursor-pointer border-white/10 bg-white/8 text-white hover:bg-white/12"
                        onclick={() => selectedLanguage = language.code}
                        type="button"
                     >
@@ -501,7 +501,7 @@
 
             <div class="mt-6 flex justify-end">
                 <button
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="cursor-pointer rounded-md bg-sky-500 px-4 py-2 text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={!selectedLanguage}
                         onclick={fetchLanguageTranslations}
                 >
@@ -515,20 +515,20 @@
         </div>
     {:else}
         <!-- Header with language info and back button -->
-        <div class="flex justify-between items-center mb-4">
+        <div class="mb-5 flex items-center justify-between">
             <div>
-                <span class="text-lg font-medium">Selected language: </span>
-                <span class="text-lg font-bold">{availableLanguages.find(l => l.code === selectedLanguage)?.name}</span>
+                <span class="text-lg font-medium text-gray-300">Selected language: </span>
+                <span class="text-lg font-bold text-white">{availableLanguages.find(l => l.code === selectedLanguage)?.name}</span>
             </div>
             <div class="flex space-x-2">
                 <button
-                        class="px-3 py-1 bg-blue-500 text-white rounded-sm hover:bg-blue-600 flex items-center"
+                        class="flex cursor-pointer items-center rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400"
                         onclick={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
                 >
                     Import HJSON
                 </button>
                 <button
-                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300 flex items-center"
+                        class="flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white"
                         onclick={() => showTranslationTable = false}
                 >
                     <span class="mr-1">←</span> Change Language
@@ -538,24 +538,24 @@
 
         <!-- HJSON Import Modal -->
         <div id="hjsonImportModal"
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                <h2 class="text-xl font-semibold mb-4">Import HJSON Translations</h2>
-                <p class="mb-4">Paste your HJSON content below. This will fill in missing translations for the selected
+             class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/65">
+            <div class="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+                <h2 class="mb-4 text-xl font-semibold text-white">Import HJSON Translations</h2>
+                <p class="mb-4 text-gray-300">Paste your HJSON content below. This will fill in missing translations for the selected
                     language ({availableLanguages.find(l => l.code === selectedLanguage)?.name}).</p>
 
                 <textarea
-                        class="w-full h-64 p-2 border rounded-md mb-4 font-mono text-sm"
+                        class="mb-4 h-64 w-full rounded-md border border-white/10 bg-white/8 p-3 font-mono text-sm text-white placeholder:text-gray-500"
                         placeholder="Paste your HJSON content here..."
                         bind:value={hjsonContent}
                 ></textarea>
 
                 <div class="mb-4">
-                    <label for="categorySelect" class="block text-sm font-medium text-gray-700 mb-1">Select
+                    <label for="categorySelect" class="mb-1 block text-sm font-medium text-gray-300">Select
                         Category</label>
                     <select
                             id="categorySelect"
-                            class="w-full p-2 border rounded-md"
+                            class="w-full rounded-md border border-white/10 bg-white/8 p-2 text-white"
                             bind:value={selectedImportCategory}
                             required
                     >
@@ -564,7 +564,7 @@
                             <option value={category}>{category}</option>
                         {/each}
                     </select>
-                    <p class="mt-1 text-sm text-gray-500">All imported translations will be assigned to this
+                    <p class="mt-1 text-sm text-gray-400">All imported translations will be assigned to this
                         category.</p>
                     {#if categories.length === 0}
                         <p class="mt-1 text-sm text-red-500">No categories available. Please select a language
@@ -573,8 +573,8 @@
                 </div>
 
                 {#if importStats.total > 0}
-                    <div class="mb-4 p-3 bg-blue-50 rounded-md">
-                        <p>Import results:</p>
+                    <div class="mb-4 rounded-md border border-sky-400/20 bg-sky-400/10 p-3">
+                        <p class="text-sky-100">Import results:</p>
                         <ul class="list-disc pl-5">
                             <li>Total entries: {importStats.total}</li>
                             <li>Added translations: {importStats.added}</li>
@@ -585,13 +585,13 @@
 
                 <div class="flex justify-end space-x-2">
                     <button
-                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                            class="cursor-pointer rounded-md border border-white/10 bg-white/8 px-4 py-2 text-gray-200 hover:bg-white/12 hover:text-white"
                             onclick={() => document.getElementById('hjsonImportModal')?.classList.add('hidden')}
                     >
                         Cancel
                     </button>
                     <button
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            class="flex cursor-pointer items-center rounded-md bg-sky-500 px-4 py-2 text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
                             onclick={importHjsonTranslations}
                             disabled={!hjsonContent.trim() || !selectedImportCategory || isImporting}
                     >
@@ -607,12 +607,12 @@
         </div>
 
         <!-- Category Tabs -->
-        <div class="mb-4 border-b border-gray-200">
+        <div class="mb-4 border-b border-white/10">
             <ul class="flex flex-wrap -mb-px">
                 {#each categories as category}
                     <li class="mr-2">
                         <button
-                                class="inline-block p-4 rounded-t-lg {activeCategory === category ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-gray-600 hover:border-gray-300'}"
+                                class="inline-block rounded-t-lg border-b-2 p-4 {activeCategory === category ? 'border-sky-400 text-sky-300' : 'border-transparent text-gray-400 hover:border-white/10 hover:text-gray-200'}"
                                 onclick={() => activeCategory = category}
                         >
                             {category}
@@ -630,12 +630,12 @@
                         class="mr-2"
                         bind:checked={hideTranslatedEntries}
                 />
-                <span class="text-sm text-gray-700">Hide already translated entries</span>
+                <span class="text-sm text-gray-300">Hide already translated entries</span>
             </label>
             <div class="w-full sm:w-auto">
                 <input
                         type="text"
-                        class="mt-2 sm:mt-0 px-2 py-1 border rounded-md text-sm w-full sm:w-64"
+                        class="mt-2 w-full rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500 sm:mt-0 sm:w-64"
                         placeholder="Search by key..."
                         bind:value={searchQuery}
                         aria-label="Search by key"
@@ -644,17 +644,17 @@
         </div>
 
         <!-- Translation Table -->
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200">
+        <div class="overflow-x-auto rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+            <table class="min-w-full border-collapse">
                 <thead>
                 <tr>
-                    <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="bg-white/[0.04] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                         Key
                     </th>
-                    <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="bg-white/[0.04] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
                         English
                     </th>
-                    <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{availableLanguages.find(l => l.code === selectedLanguage)?.name || 'Translation'}</th>
+                    <th class="bg-white/[0.04] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">{availableLanguages.find(l => l.code === selectedLanguage)?.name || 'Translation'}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -664,21 +664,21 @@
 
                     <!-- Non-grouped translations -->
                     {#each filteredNonGrouped as translation}
-                        <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b border-gray-200">{getDisplayKey(translation.key)}</td>
-                            <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
-                            <td class="py-2 px-4 border-b border-gray-200">
+                        <tr class="border-t border-white/8 hover:bg-white/[0.025]">
+                            <td class="px-4 py-3 text-gray-200">{getDisplayKey(translation.key)}</td>
+                            <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                            <td class="px-4 py-3 text-gray-200">
                                 {#if translation.translatedValue}
                                     {#if canEditTranslations && editingTranslations[translation.key]}
                                         <div class="flex items-center space-x-2">
                                             <input
                                                     type="text"
-                                                    class="grow px-2 py-1 border rounded-md text-sm"
+                                                    class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
                                                     placeholder="Edit translation"
                                                     bind:value={editedTranslations[translation.key]}
                                             />
                                             <button
-                                                    class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                    class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                     onclick={() => updateTranslation(translation)}
                                                     disabled={updatingTranslations[translation.key]}
                                             >
@@ -690,7 +690,7 @@
                                                 {/if}
                                             </button>
                                             <button
-                                                    class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
+                                                    class="rounded-md border border-white/10 bg-white/8 px-3 py-1 text-sm text-gray-200 hover:bg-white/12 hover:text-white"
                                                     onclick={() => cancelEditing(translation.key)}
                                             >
                                                 Cancel
@@ -701,7 +701,7 @@
                                             <span>{translation.translatedValue}</span>
                                             {#if canEditTranslations}
                                                 <button
-                                                        class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
+                                                        class="ml-2 rounded-md bg-sky-500 px-2 py-1 text-xs text-white hover:bg-sky-400"
                                                         onclick={() => startEditing(translation)}
                                                 >
                                                     Edit
@@ -713,12 +713,12 @@
                                     <div class="flex items-center space-x-2">
                                         <input
                                                 type="text"
-                                                class="grow px-2 py-1 border rounded-md text-sm"
+                                                class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
                                                 placeholder="Add translation"
                                                 bind:value={newTranslations[translation.key]}
                                         />
                                         <button
-                                                class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                 onclick={() => submitTranslation(translation.key)}
                                                 disabled={submitting[translation.key]}
                                         >
@@ -740,15 +740,15 @@
                         {@const filteredGroupTranslations = filterTranslations(groupTranslations)}
                         {#if filteredGroupTranslations.length > 0}
                             <!-- Group header -->
-                            <tr class="bg-gray-100 hover:bg-gray-200 cursor-pointer"
+                            <tr class="cursor-pointer bg-white/[0.05] hover:bg-white/[0.08]"
                                 onclick={() => toggleGroup(groupKey)}>
-                                <td class="py-2 px-4 border-b border-gray-200 font-medium">
+                                <td class="border-t border-white/8 px-4 py-3 font-medium text-white">
                                     <div class="flex items-center">
                                         <span class="mr-2">{expandedGroups.has(groupKey) ? '▼' : '►'}</span>
                                         {formatGroupName(groupKey)}
                                     </div>
                                 </td>
-                                <td class="py-2 px-4 border-b border-gray-200" colspan="2">
+                                <td class="border-t border-white/8 px-4 py-3 text-gray-300" colspan="2">
                                     {filteredGroupTranslations.length} entries
                                 </td>
                             </tr>
@@ -756,21 +756,21 @@
                             <!-- Group items (shown when expanded) -->
                             {#if expandedGroups.has(groupKey)}
                                 {#each filteredGroupTranslations as translation}
-                                    <tr class="bg-gray-50 hover:bg-gray-100">
-                                        <td class="py-2 px-4 border-b border-gray-200 pl-8">{getDisplayKey(translation.key, groupKey)}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200">{translation.value}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200">
+                                    <tr class="border-t border-white/8 bg-white/[0.02] hover:bg-white/[0.04]">
+                                        <td class="px-4 py-3 pl-8 text-gray-200">{getDisplayKey(translation.key, groupKey)}</td>
+                                        <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                                        <td class="px-4 py-3 text-gray-200">
                                             {#if translation.translatedValue}
                                                 {#if canEditTranslations && editingTranslations[translation.key]}
                                                     <div class="flex items-center space-x-2">
                                                         <input
                                                                 type="text"
-                                                                class="grow px-2 py-1 border rounded-md text-sm"
+                                                                class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
                                                                 placeholder="Edit translation"
                                                                 bind:value={editedTranslations[translation.key]}
                                                         />
                                                         <button
-                                                                class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                                class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                                 onclick={() => updateTranslation(translation)}
                                                                 disabled={updatingTranslations[translation.key]}
                                                         >
@@ -782,7 +782,7 @@
                                                             {/if}
                                                         </button>
                                                         <button
-                                                                class="px-3 py-1 bg-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-400"
+                                                                class="rounded-md border border-white/10 bg-white/8 px-3 py-1 text-sm text-gray-200 hover:bg-white/12 hover:text-white"
                                                                 onclick={() => cancelEditing(translation.key)}
                                                         >
                                                             Cancel
@@ -793,7 +793,7 @@
                                                         <span>{translation.translatedValue}</span>
                                                         {#if canEditTranslations}
                                                             <button
-                                                                    class="ml-2 px-2 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600"
+                                                                    class="ml-2 rounded-md bg-sky-500 px-2 py-1 text-xs text-white hover:bg-sky-400"
                                                                     onclick={() => startEditing(translation)}
                                                             >
                                                                 Edit
@@ -805,12 +805,12 @@
                                                 <div class="flex items-center space-x-2">
                                                     <input
                                                             type="text"
-                                                            class="grow px-2 py-1 border rounded-md text-sm"
+                                                            class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
                                                             placeholder="Add translation"
                                                             bind:value={newTranslations[translation.key]}
                                                     />
                                                     <button
-                                                            class="px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                                                            class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                             onclick={() => submitTranslation(translation.key)}
                                                             disabled={submitting[translation.key]}
                                                     >

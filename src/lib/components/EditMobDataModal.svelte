@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { IMobData } from "$lib/models/mob-data";
+    import type { IMobData, IDamageConfiguration, IDamageDetail } from "$lib/models/mob-data";
     import { createEventDispatcher } from 'svelte';
-    import { Accordion, AccordionItem } from 'flowbite-svelte';
+    import { Accordion, AccordionItem, Button, Input, Label, Heading, Helper } from 'flowbite-svelte';
 
     let { selectedMob = null } = $props<{ selectedMob?: IMobData | null }>();
     const dispatch = createEventDispatcher();
@@ -36,61 +36,223 @@
         }
     }
 
-    function updateEntry(index: number, field: string, value: any) {
-        if (selectedMob) {
-            selectedMob.entries[index][field] = value;
-            selectedMob.entries = [...selectedMob.entries];
+    function addDamageConfig(target: 'global' | number) {
+        if (!selectedMob) return;
+        const newConfig: IDamageConfiguration = { minLevel: 1 };
+        if (target === 'global') {
+            selectedMob.damage = [...(selectedMob.damage || []), newConfig];
+        } else {
+            selectedMob.entries[target].damageOverrides = [...(selectedMob.entries[target].damageOverrides || []), newConfig];
         }
     }
+
+    function removeDamageConfig(target: 'global' | number, index: number) {
+        if (!selectedMob) return;
+        if (target === 'global') {
+            selectedMob.damage = selectedMob.damage?.filter((_, i) => i !== index);
+        } else {
+            selectedMob.entries[target].damageOverrides = selectedMob.entries[target].damageOverrides?.filter((_, i) => i !== index);
+        }
+    }
+
+    function toggleDamageType(config: IDamageConfiguration, type: 'fire' | 'lightning' | 'cold') {
+        if (config[type]) {
+            delete config[type];
+        } else {
+            config[type] = { added: 0, conversion: 0 };
+        }
+        if (selectedMob) {
+            selectedMob.entries = [...selectedMob.entries];
+            if (selectedMob.damage) selectedMob.damage = [...selectedMob.damage];
+        }
+    }
+
+    const accordionItemClasses = {
+        active: 'border border-white/10 bg-white/[0.06] text-white',
+        inactive: 'border border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.05]',
+        button: 'rounded-xl px-4 py-3 text-left text-white transition-colors duration-150 focus:ring-0',
+        content: 'border-x border-b border-white/10 bg-[#0c141d] px-4 pb-4'
+    };
 </script>
 
-<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-4 rounded-lg shadow-lg w-1/2">
-        <h2 class="text-xl font-bold mb-4">Edit Mob Data</h2>
-        <p>Editing data for: {selectedMob?.friendlyName}</p>
+<div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4">
+    <div class="max-h-[90vh] w-3/4 overflow-y-auto rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+        <Heading tag="h2" class="mb-4 text-white">Edit Mob Data</Heading>
+        <p class="mb-4 text-gray-300">Editing data for: <span class="font-bold text-white">{selectedMob?.friendlyName}</span> (Net ID: {selectedMob?.netId})</p>
 
         {#if selectedMob}
-            <div class="mb-4">
-                <button class="text-blue-500 hover:underline" onclick={addEntry}>Add Entry</button>
+            <div class="mb-8 border-b border-white/10 pb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <Heading tag="h4" class="text-white">Global Damage Conversions</Heading>
+                    <Button size="xs" class="bg-sky-500 text-white hover:bg-sky-400" onclick={() => addDamageConfig('global')}>Add Global Damage</Button>
+                </div>
+                {#if selectedMob.damage && selectedMob.damage.length > 0}
+                    <div class="space-y-4">
+                        {#each selectedMob.damage as config, configIdx}
+                            <div class="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                                <div class="flex items-center space-x-4 mb-2">
+                                    <div class="w-32">
+                                        <Label class="text-xs text-gray-300">Min Level</Label>
+                                        <Input type="number" size="sm" bind:value={config.minLevel} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500" />
+                                    </div>
+                                    <div class="flex space-x-2 pt-5">
+                                        <Button size="xs" outline={!config.fire} color="red" class="cursor-pointer" onclick={() => toggleDamageType(config, 'fire')}>Fire</Button>
+                                        <Button size="xs" outline={!config.lightning} color="yellow" class="cursor-pointer" onclick={() => toggleDamageType(config, 'lightning')}>Lightning</Button>
+                                        <Button size="xs" outline={!config.cold} color="blue" class="cursor-pointer" onclick={() => toggleDamageType(config, 'cold')}>Cold</Button>
+                                    </div>
+                                    <div class="ml-auto pt-5">
+                                        <Button size="xs" class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" onclick={() => removeDamageConfig('global', configIdx)}>Remove</Button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    {#if config.fire}
+                                        <div class="border-l-4 border-red-500 pl-2">
+                                            <Label class="text-xs font-bold text-red-300">Fire</Label>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.fire.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.fire.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                            </div>
+                                        </div>
+                                    {/if}
+                                    {#if config.lightning}
+                                        <div class="border-l-4 border-yellow-400 pl-2">
+                                            <Label class="text-xs font-bold text-yellow-300">Lightning</Label>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.lightning.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.lightning.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                            </div>
+                                        </div>
+                                    {/if}
+                                    {#if config.cold}
+                                        <div class="border-l-4 border-blue-500 pl-2">
+                                            <Label class="text-xs font-bold text-sky-300">Cold</Label>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.cold.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.cold.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                            </div>
+                                        </div>
+                                    {/if}
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                {:else}
+                    <p class="text-sm italic text-gray-400">No global damage configurations.</p>
+                {/if}
             </div>
+
+            <div class="flex justify-between items-center mb-4">
+                <Heading tag="h3" class="text-white">Mob Entries</Heading>
+                <Button class="bg-emerald-500 text-white hover:bg-emerald-400" size="sm" onclick={addEntry}>Add Entry</Button>
+            </div>
+            <p class="mb-4 text-sm text-gray-400">Expand an entry to edit prefix data, stat requirements, and per-entry damage overrides.</p>
 
             <Accordion>
                 {#each selectedMob.entries as entry, index}
-                    <AccordionItem>
-                        <span slot="header">
-                            {selectedMob?.friendlyName} Entry {index + 1} - {entry.prefix}
+                    <AccordionItem classes={accordionItemClasses} class="mb-3 last:mb-0">
+                        <span slot="header" class="flex items-center w-full">
+                            <span class="mr-2 rounded bg-white/10 px-2 py-0.5 text-xs text-white">{index + 1}</span>
+                            <span class="font-semibold text-white">{entry.prefix || '(No Prefix)'}</span>
+                            <span class="ml-4 text-xs text-gray-400">Weight: {entry.weight} | Lvl: {entry.stats.level}</span>
                         </span>
-                        <div class="mb-4 border p-2 rounded-sm">
-                            <div class="mb-2">
-                                <label class="block text-sm font-medium text-gray-700">Prefix</label>
-                                <input type="text" class="block w-full mt-1" bind:value={entry.prefix} oninput={(e) => updateEntry(index, 'prefix', e.target?.value)} />
+                        <div class="mb-4 rounded-xl border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <Label class="text-gray-300">Prefix</Label>
+                                    <Input type="text" bind:value={entry.prefix} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500" />
+                                </div>
+                                <div>
+                                    <Label class="text-gray-300">Weight</Label>
+                                    <Input type="number" step="0.01" bind:value={entry.weight} class="border-white/10 bg-white/8 text-white" />
+                                </div>
                             </div>
-                            <div class="mb-2">
-                                <label class="block text-sm font-medium text-gray-700">Weight</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.weight} oninput={(e) => updateEntry(index, 'weight', e.target?.value)} />
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <Label class="text-gray-300">Min Level</Label>
+                                    <Input type="number" bind:value={entry.stats.level} class="border-white/10 bg-white/8 text-white" />
+                                </div>
+                                <div>
+                                    <Label class="text-gray-300">Experience</Label>
+                                    <Input type="number" bind:value={entry.stats.experience} class="border-white/10 bg-white/8 text-white" />
+                                </div>
                             </div>
-                            <div class="mb-2">
-                                <label class="block text-sm font-medium text-gray-700">Level</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.level} oninput={(e) => updateEntry(index, 'stats.level', e.target?.value)} />
+                            <div class="mb-4">
+                                <Label class="text-gray-300">Requirements</Label>
+                                <Input type="text" bind:value={entry.requirements} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500" />
                             </div>
-                            <div class="mb-2">
-                                <label class="block text-sm font-medium text-gray-700">Experience</label>
-                                <input type="number" class="block w-full mt-1" bind:value={entry.stats.experience} oninput={(e) => updateEntry(index, 'stats.experience', e.target?.value)} />
+
+                            <div class="mb-4 border-t border-white/10 pt-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <Label class="font-bold text-white">Damage Overrides</Label>
+                                    <Button size="xs" class="bg-sky-500 text-white hover:bg-sky-400" onclick={() => addDamageConfig(index)}>Add Override</Button>
+                                </div>
+                                {#if entry.damageOverrides && entry.damageOverrides.length > 0}
+                                    <div class="space-y-4">
+                                        {#each entry.damageOverrides as config, configIdx}
+                                            <div class="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                                                <div class="flex items-center space-x-4 mb-2">
+                                                    <div class="w-32">
+                                                        <Label class="text-xs text-gray-300">Min Level</Label>
+                                                        <Input type="number" size="sm" bind:value={config.minLevel} class="border-white/10 bg-white/8 text-white" />
+                                                    </div>
+                                                    <div class="flex space-x-2 pt-5">
+                                                        <Button size="xs" outline={!config.fire} color="red" class="cursor-pointer" onclick={() => toggleDamageType(config, 'fire')}>Fire</Button>
+                                                        <Button size="xs" outline={!config.lightning} color="yellow" class="cursor-pointer" onclick={() => toggleDamageType(config, 'lightning')}>Lightning</Button>
+                                                        <Button size="xs" outline={!config.cold} color="blue" class="cursor-pointer" onclick={() => toggleDamageType(config, 'cold')}>Cold</Button>
+                                                    </div>
+                                                    <div class="ml-auto pt-5">
+                                                        <Button size="xs" class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" onclick={() => removeDamageConfig(index, configIdx)}>Remove</Button>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-3 gap-4">
+                                                    {#if config.fire}
+                                                        <div class="border-l-4 border-red-500 pl-2">
+                                                            <Label class="text-xs font-bold text-red-300">Fire</Label>
+                                                            <div class="grid grid-cols-2 gap-1">
+                                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.fire.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.fire.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                                            </div>
+                                                        </div>
+                                                    {/if}
+                                                    {#if config.lightning}
+                                                        <div class="border-l-4 border-yellow-400 pl-2">
+                                                            <Label class="text-xs font-bold text-yellow-300">Lightning</Label>
+                                                            <div class="grid grid-cols-2 gap-1">
+                                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.lightning.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.lightning.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                                            </div>
+                                                        </div>
+                                                    {/if}
+                                                    {#if config.cold}
+                                                        <div class="border-l-4 border-blue-500 pl-2">
+                                                            <Label class="text-xs font-bold text-sky-300">Cold</Label>
+                                                            <div class="grid grid-cols-2 gap-1">
+                                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.cold.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.cold.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                                            </div>
+                                                        </div>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        {/each}
+                                    </div>
+                                {:else}
+                                    <p class="text-xs italic text-gray-400">No damage overrides for this entry.</p>
+                                {/if}
                             </div>
-                            <div class="mb-2">
-                                <label class="block text-sm font-medium text-gray-700">Requirements</label>
-                                <input type="text" class="block w-full mt-1" bind:value={entry.requirements} oninput={(e) => updateEntry(index, 'requirements', e.target?.value)} />
+
+                            <div class="flex justify-end">
+                                <Button size="xs" class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" onclick={() => deleteEntry(index)}>Delete Entry</Button>
                             </div>
-                            <button class="text-red-500 hover:underline" onclick={() => deleteEntry(index)}>Delete Entry</button>
                         </div>
                     </AccordionItem>
                 {/each}
             </Accordion>
         {/if}
 
-        <div class="mt-4 flex justify-end space-x-4">
-            <button class="text-blue-500 hover:underline" onclick={closeModal}>Cancel</button>
-            <button class="text-blue-500 hover:underline" onclick={saveChanges}>Save</button>
+        <div class="mt-6 flex justify-end space-x-4 border-t border-white/10 pt-4">
+            <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={closeModal}>Cancel</Button>
+            <Button class="bg-emerald-500 text-white hover:bg-emerald-400" onclick={saveChanges}>Save Changes</Button>
         </div>
     </div>
 </div>

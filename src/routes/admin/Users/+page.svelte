@@ -2,6 +2,8 @@
     import { UserService } from "$lib/services/user-service";
     import { BenefitsService } from "$lib/services/benefit-service";
     import { onMount } from "svelte";
+    import { page } from "$app/state";
+    import { goto } from "$app/navigation";
     import { Button, Input, Card, Label, Checkbox, P, Select } from "flowbite-svelte";
     import type {IUser} from "$lib/stores/user-store";
     import type {AvailableBenefitsResponse} from "$lib/services/benefit-service";
@@ -57,10 +59,15 @@
 
     onMount(() => {
         loadAvailableBenefits();
+        const search = page.url.searchParams.get("search");
+        if (search) {
+            profileName = search;
+            searchUser();
+        }
     });
 
-    async function searchUser(event: SubmitEvent) {
-        event.preventDefault();
+    async function searchUser(event?: SubmitEvent) {
+        if (event) event.preventDefault();
 
         if (!profileName.trim()) {
             error = "Please enter a profile name";
@@ -69,6 +76,11 @@
 
         error = "";
         loading = true;
+
+        const url = new URL(page.url);
+        url.searchParams.set("search", profileName);
+        goto(url.toString(), { replaceState: true, keepFocus: true });
+
         try {
             user = await userService.getUser(profileName);
             if (!user) {
@@ -76,10 +88,7 @@
             } else {
                 selectedRoles = user.roles || [];
                 selectedSupporterPacks = user.supporterPacks || [];
-                selectedSubscription = findMatchingSubscription(
-                    user.supporterSubscription,
-                    availableBenefits.subscriptions
-                );
+                selectedSubscription = findMatchingSubscription();
                 console.log("Selected subscription:", selectedSubscription);
             }
         } catch (e) {
@@ -185,10 +194,10 @@
     }
 </script>
 
-<div class="container mx-auto p-4">
-    <div class="flex items-center mb-4">
-        <a href="/admin" class="text-blue-600 hover:underline mr-2">← Back to Admin</a>
-        <h1 class="text-2xl font-bold">User Management</h1>
+<div class="container mx-auto px-4 py-24 text-white">
+    <div class="mb-4 flex items-center">
+        <a href="/admin" class="mr-3 text-sm font-semibold text-sky-300 hover:underline">← Back to Admin</a>
+        <h1 class="text-3xl font-black tracking-tight text-white">User Management</h1>
     </div>
 
     <div class="max-w-md mx-auto mb-8">
