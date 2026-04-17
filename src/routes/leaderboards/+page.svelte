@@ -59,6 +59,24 @@
         </div>
 
         <div class="relative container mx-auto px-4 py-8 md:py-12">
+            <div class="mb-6 flex justify-center">
+                <div class="inline-flex rounded-2xl border border-white/10 bg-white/[0.04] p-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]">
+                    <a
+                        href="/leaderboards"
+                        class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors duration-200"
+                        aria-current="page"
+                    >
+                        Players
+                    </a>
+                    <a
+                        href="/leaderboards/localizers"
+                        class="rounded-xl px-4 py-2 text-sm font-semibold text-gray-300 transition-colors duration-200 hover:bg-white/6 hover:text-white"
+                    >
+                        Localizers
+                    </a>
+                </div>
+            </div>
+
             <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
                 <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
                     <div class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">

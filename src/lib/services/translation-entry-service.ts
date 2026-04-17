@@ -1,5 +1,9 @@
 import { HttpService } from "$lib/services/http-service";
-import type {IEnglishTranslation, ITranslationEntry} from "$lib/models/localization";
+import type {
+    IEnglishTranslation,
+    ITranslationContributorLeaderboardEntry,
+    ITranslationEntry
+} from "$lib/models/localization";
 
 export class TranslationEntryService {
     httpService = HttpService.getInstance();
@@ -21,6 +25,14 @@ export class TranslationEntryService {
         let response = await this.httpService.get(`TranslationEntry/Language/${language}`);
         if (response) {
             return response.data as ITranslationEntry[];
+        }
+        return [];
+    }
+
+    public async getLeaderboards(): Promise<ITranslationContributorLeaderboardEntry[]> {
+        const response = await this.httpService.get('TranslationEntry/Leaderboard');
+        if (response) {
+            return response.data as ITranslationContributorLeaderboardEntry[];
         }
         return [];
     }
