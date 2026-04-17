@@ -38,7 +38,8 @@ export class HjsonParserService {
         // Regex: captures (possibly quoted) key OR numeric key, and the remainder after the colon
         const kvRe = /^\s*(?:"([^"]+)"|([\w.-]+))\s*:\s*(.*)\s*$/;
 
-        for (let raw of lines) {
+        for (let index = 0; index < lines.length; index++) {
+            const raw = lines[index];
             let line = raw.trim();
 
             // Skip blank lines and comments (# or //)
@@ -74,7 +75,18 @@ export class HjsonParserService {
             // Leaf value
             // If value is quoted, remove the surrounding quotes; otherwise keep as-is
             let value = rest;
-            if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+
+            if (value === "'''") {
+                const blockLines: string[] = [];
+
+                index += 1;
+                while (index < lines.length && lines[index].trim() !== "'''") {
+                    blockLines.push(lines[index].trim());
+                    index += 1;
+                }
+
+                value = blockLines.join('\n').trim();
+            } else if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
                 value = value.slice(1, -1);
             }
 
