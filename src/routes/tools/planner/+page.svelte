@@ -54,7 +54,12 @@
 	let hoveredClientY = $state(0);
 	let drawerOpen = $state(true);
 	let pinnedTooltipNodeId = $state<number | null>(null);
+	let pinnedTooltipX = $state(0);
+	let pinnedTooltipY = $state(0);
 	let isHoveringTooltip = $state(false);
+	let isDraggingTooltip = $state(false);
+	let tooltipDragOffsetX = 0;
+	let tooltipDragOffsetY = 0;
 	let treeScrollElement = $state<HTMLDivElement | null>(null);
 	let isDraggingTree = $state(false);
 	let zoomLevel = $state(1);
@@ -226,13 +231,34 @@
 	function pinTooltip(nodeId: number) {
 		pinnedTooltipNodeId = nodeId;
 		hoveredNodeId = nodeId;
+		pinnedTooltipX = hoveredClientX + 18;
+		pinnedTooltipY = hoveredClientY + 18;
 	}
 
 	function unpinTooltip() {
 		pinnedTooltipNodeId = null;
+		isDraggingTooltip = false;
 		if (!isHoveringTooltip) {
 			hoveredNodeId = null;
 		}
+	}
+
+	function beginTooltipDrag(event: MouseEvent) {
+		if (pinnedTooltipNodeId === null || event.button !== 0) return;
+		isDraggingTooltip = true;
+		tooltipDragOffsetX = event.clientX - pinnedTooltipX;
+		tooltipDragOffsetY = event.clientY - pinnedTooltipY;
+		event.preventDefault();
+	}
+
+	function moveTooltipDrag(event: MouseEvent) {
+		if (!isDraggingTooltip) return;
+		pinnedTooltipX = event.clientX - tooltipDragOffsetX;
+		pinnedTooltipY = event.clientY - tooltipDragOffsetY;
+	}
+
+	function endTooltipDrag() {
+		isDraggingTooltip = false;
 	}
 
 	function beginTreeDrag(event: MouseEvent) {
@@ -421,7 +447,7 @@
 	}
 </script>
 
-<div class="planner-shell">
+<div class="planner-shell" onmousemove={moveTooltipDrag} onmouseup={endTooltipDrag}>
 	<div class="control-bar">
 		<div class="control-group compact">
 			<label>
@@ -667,9 +693,11 @@
 
 	{#if hoveredNode}
 		<div
-			class={`hover-tooltip ${pinnedTooltipNodeId !== null ? 'pinned' : ''}`}
+			class={`hover-tooltip ${pinnedTooltipNodeId !== null ? 'pinned' : ''} ${isDraggingTooltip ? 'dragging' : ''}`}
 			role="presentation"
-			style={`left:${hoveredClientX + 18}px;top:${hoveredClientY + 18}px;`}
+			style={pinnedTooltipNodeId !== null
+				? `left:${pinnedTooltipX}px;top:${pinnedTooltipY}px;`
+				: `left:${hoveredClientX + 18}px;top:${hoveredClientY + 18}px;`}
 			onmouseenter={() => (isHoveringTooltip = true)}
 			onmouseleave={() => {
 				isHoveringTooltip = false;
@@ -678,7 +706,11 @@
 				}
 			}}
 		>
-			<div class="tooltip-head">
+			<div
+				class="tooltip-head"
+				onmousedown={beginTooltipDrag}
+				role="presentation"
+			>
 				<img src={hoveredNode.assetPath} alt={hoveredNode.displayName} />
 				<div>
 					<strong>{hoveredNode.displayName}</strong>
@@ -1157,6 +1189,16 @@
 		gap: 0.7rem;
 		align-items: center;
 		margin-bottom: 0.55rem;
+	}
+
+	.hover-tooltip.pinned .tooltip-head {
+		cursor: grab;
+	}
+
+	.hover-tooltip.dragging .tooltip-head,
+	.hover-tooltip.dragging {
+		cursor: grabbing;
+		user-select: none;
 	}
 
 	.tooltip-head strong {
