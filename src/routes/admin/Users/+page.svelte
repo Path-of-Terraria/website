@@ -200,44 +200,54 @@
         <h1 class="text-3xl font-black tracking-tight text-white">User Management</h1>
     </div>
 
-    <div class="max-w-md mx-auto mb-8">
+    <div class="mx-auto mb-8 max-w-md rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-sm">
         <form onsubmit={searchUser} class="flex flex-col gap-4">
             <div>
-                <Label for="profileName" class="mb-2">Search User by Profile Name</Label>
+                <Label for="profileName" class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Search User by Profile Name</Label>
                 <div class="flex">
-                    <Input id="profileName" bind:value={profileName} placeholder="Enter profile name" required />
-                    <Button type="submit" color="blue" class="ml-2" disabled={loading}>
+                    <Input
+                        id="profileName"
+                        bind:value={profileName}
+                        placeholder="Enter profile name"
+                        required
+                        class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"
+                    />
+                    <Button
+                        type="submit"
+                        class="ml-2 border-sky-400/20 bg-sky-500 text-white hover:bg-sky-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
+                        disabled={loading}
+                    >
                         {loading ? 'Searching...' : 'Search'}
                     </Button>
                 </div>
                 {#if error}
-                    <p class="text-red-500 mt-2">{error}</p>
+                    <p class="mt-2 text-sm text-red-300">{error}</p>
                 {/if}
             </div>
         </form>
     </div>
 
     {#if user}
-        <Card class="max-w-md mx-auto p-4 sm:p-6 md:p-8">
-            <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">User Details</h5>
+        <Card class="mx-auto max-w-md border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.96))] p-4 text-white shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:p-6 md:p-8">
+            <h5 class="mb-4 text-xl font-semibold text-white">User Details</h5>
             <div class="space-y-2">
                 <div class="flex justify-between">
-                    <span class="text-base font-normal text-gray-500 dark:text-gray-400">Profile Name:</span>
-                    <span class="font-semibold">{user.profileName}</span>
+                    <span class="text-base font-normal text-gray-400">Profile Name:</span>
+                    <span class="font-semibold text-white">{user.profileName}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-base font-normal text-gray-500 dark:text-gray-400">Email:</span>
-                    <span class="font-semibold">{user.email}</span>
+                    <span class="text-base font-normal text-gray-400">Email:</span>
+                    <span class="font-semibold text-white">{user.email}</span>
                 </div>
                 {#if user.steamId}
                     <div class="flex justify-between">
-                        <span class="text-base font-normal text-gray-500 dark:text-gray-400">Steam ID:</span>
-                        <span class="font-semibold">{user.steamId}</span>
+                        <span class="text-base font-normal text-gray-400">Steam ID:</span>
+                        <span class="font-semibold text-white">{user.steamId}</span>
                     </div>
                 {/if}
 
-                <div class="mt-6 pt-4 border-t border-gray-200">
-                    <h6 class="mb-3 text-lg font-medium text-gray-500 dark:text-gray-400">Role Management</h6>
+                <div class="mt-6 border-t border-white/10 pt-4">
+                    <h6 class="mb-3 text-lg font-medium text-gray-200">Role Management</h6>
 
                     <div class="space-y-2">
                         {#each availableRoles as role}
@@ -245,16 +255,17 @@
                                 <Checkbox
                                     checked={selectedRoles.includes(role)}
                                     onchange={() => toggleRole(role)}
+                                    class="border-white/20 bg-white/8 text-emerald-400 focus:ring-emerald-400/50"
                                 />
-                                <span class="ml-2">{role}</span>
+                                <span class="ml-2 text-gray-100">{role}</span>
                             </div>
                         {/each}
                     </div>
 
                     <div class="mt-4">
                         <Button
-                            color="blue"
                             size="sm"
+                            class="border-sky-400/20 bg-sky-500 text-white hover:bg-sky-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
                             disabled={saveLoading}
                             onclick={saveUserData}
                         >
@@ -272,23 +283,23 @@
                 </div>
 
                 <!-- Benefits Management Section -->
-                <div class="mt-6 pt-4 border-t border-gray-200">
-                    <h6 class="mb-3 text-lg font-medium text-gray-500 dark:text-gray-400">Benefits Management</h6>
+                <div class="mt-6 border-t border-white/10 pt-4">
+                    <h6 class="mb-3 text-lg font-medium text-gray-200">Benefits Management</h6>
 
                     <div class="space-y-4">
                         <!-- Supporter Packs -->
                         <div>
-                            <Label class="mb-2">Supporter Packs</Label>
+                            <Label class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Supporter Packs</Label>
 
                             <!-- Display current supporter packs as chips -->
                             {#if selectedSupporterPacks.length > 0}
                                 <div class="flex flex-wrap gap-2 mb-3">
                                     {#each selectedSupporterPacks as pack}
-                                        <div class="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                                        <div class="flex items-center rounded-full border border-sky-400/20 bg-sky-400/12 px-3 py-1 text-sm font-medium text-sky-100">
                                             {pack}
                                             <button
                                                 type="button"
-                                                class="ml-2 text-blue-600 hover:text-blue-800"
+                                                class="ml-2 text-sky-200 transition-colors hover:text-white"
                                                 onclick={() => removeSupporterPack(pack)}
                                             >
                                                 ×
@@ -297,7 +308,7 @@
                                     {/each}
                                 </div>
                             {:else}
-                                <p class="text-gray-500 text-sm mb-3">No supporter packs assigned</p>
+                                <p class="mb-3 text-sm text-gray-400">No supporter packs assigned</p>
                             {/if}
 
                             <!-- Dropdown to add new supporter pack -->
@@ -306,7 +317,7 @@
                                     id="newSupporterPack"
                                     bind:value={newSupporterPack}
                                     placeholder="Select a supporter pack to add"
-                                    class="flex-1"
+                                    class="flex-1 border-white/10 bg-white/8 text-white"
                                 >
                                     <option value="">Select supporter pack</option>
                                     {#each availableBenefits.supporterPacks.filter(pack => !selectedSupporterPacks.includes(pack)) as pack}
@@ -315,8 +326,8 @@
                                 </Select>
                                 <Button
                                     type="button"
-                                    color="blue"
                                     size="sm"
+                                    class="border-sky-400/20 bg-sky-500 text-white hover:bg-sky-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
                                     onclick={addSupporterPack}
                                     disabled={!newSupporterPack}
                                 >
@@ -327,11 +338,12 @@
 
                         <!-- Subscription Dropdown -->
                         <div>
-                            <Label for="subscription" class="mb-2">Subscription</Label>
+                            <Label for="subscription" class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Subscription</Label>
                             <Select
                                 id="subscription"
                                 bind:value={selectedSubscription}
                                 placeholder="Select a subscription"
+                                class="border-white/10 bg-white/8 text-white"
                             >
                                 <option value="">None</option>
                                 {#each availableBenefits.subscriptions as subscription}
@@ -343,8 +355,8 @@
                         <!-- Benefits Save Button -->
                         <div class="mt-4">
                             <Button
-                                color="green"
                                 size="sm"
+                                class="border-emerald-400/20 bg-emerald-500 text-white hover:bg-emerald-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
                                 disabled={benefitsSaveLoading}
                                 onclick={saveBenefits}
                             >
