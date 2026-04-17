@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import MechanicRichText from '$lib/components/MechanicRichText.svelte';
 	import { toast } from '$lib/toast';
 	import {
 		applyChoiceSelection,
@@ -544,7 +545,13 @@
 					<section class="card">
 						<p class="eyebrow">Focused node</p>
 						<h2>{focusedNode.displayName}</h2>
-						<p class="muted">{getFormattedTooltip(focusedNode) || 'No localized tooltip found for this node yet.'}</p>
+						<p class="muted">
+							{#if getFormattedTooltip(focusedNode)}
+								<MechanicRichText text={getFormattedTooltip(focusedNode)} />
+							{:else}
+								No localized tooltip found for this node yet.
+							{/if}
+						</p>
 						<dl class="detail-grid">
 							<div>
 								<dt>Type</dt>
@@ -608,7 +615,13 @@
 											<img src={choice.assetPath} alt={choice.displayName} />
 											<div>
 												<strong>{choice.displayName}</strong>
-												<p>{getFormattedTooltip(choice) || 'No localized tooltip found for this mastery.'}</p>
+												<p>
+													{#if getFormattedTooltip(choice)}
+														<MechanicRichText text={getFormattedTooltip(choice)} />
+													{:else}
+														No localized tooltip found for this mastery.
+													{/if}
+												</p>
 											</div>
 										</button>
 									{/each}
@@ -629,7 +642,7 @@
 										<div>
 											<strong>{item.name}</strong>
 											{#if item.tooltip}
-												<p>{item.tooltip}</p>
+												<p><MechanicRichText text={item.tooltip} /></p>
 											{/if}
 										</div>
 										<span>+{item.totalValue}{item.count > 1 ? ` (${item.count}x)` : ''}</span>
@@ -681,7 +694,7 @@
 				{/if}
 			</div>
 			{#if getFormattedTooltip(hoveredNode)}
-				<p>{getFormattedTooltip(hoveredNode)}</p>
+				<p><MechanicRichText text={getFormattedTooltip(hoveredNode)} /></p>
 			{/if}
 
 			{#if hoveredSourceNode?.isChoiceNode}
@@ -714,7 +727,13 @@
 								<img src={choice.assetPath} alt={choice.displayName} />
 								<div>
 									<strong>{choice.displayName}</strong>
-									<p>{getFormattedTooltip(choice) || 'No localized tooltip found for this mastery.'}</p>
+									<p>
+										{#if getFormattedTooltip(choice)}
+											<MechanicRichText text={getFormattedTooltip(choice)} />
+										{:else}
+											No localized tooltip found for this mastery.
+										{/if}
+									</p>
 								</div>
 							</button>
 						{/each}

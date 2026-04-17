@@ -53,9 +53,9 @@ export interface PlannerSummaryItem {
 	tooltip: string;
 }
 
+const rawNodes = passivesJson as PassiveNodeData[];
 const parser = new HjsonParserService();
 const localization = parser.parseHjsonContent(passiveLocalizationRaw, 'Passives');
-const rawNodes = passivesJson as PassiveNodeData[];
 
 const bounds = rawNodes.reduce(
 	(acc, node) => {
