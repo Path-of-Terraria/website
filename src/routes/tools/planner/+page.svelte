@@ -8,6 +8,7 @@
 		canDeallocateNode,
 		clearChoiceSelection,
 		getActiveChoiceChild,
+		getAutoAllocatePath,
 		getAnchorId,
 		getChoiceChildren,
 		getDisplayNode,
@@ -157,7 +158,20 @@
 
 		if (canAllocateNode(node.referenceId, selectedIdSet)) {
 			selectedIds = [...selectedIds, node.referenceId];
+			return;
 		}
+
+		const autoAllocatePath = getAutoAllocatePath(node.referenceId, selectedIdSet);
+		if (autoAllocatePath && autoAllocatePath.length > 0) {
+			selectedIds = [...selectedIds, ...autoAllocatePath];
+			focusedNodeId = autoAllocatePath.at(-1) ?? node.referenceId;
+			return;
+		}
+
+		toast.push(`Unable to find a valid path to ${node.displayName}`, {
+			type: 'error',
+			duration: 3000
+		});
 	}
 
 	function deallocateNode(node: PlannerNode) {
