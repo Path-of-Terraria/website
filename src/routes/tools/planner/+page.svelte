@@ -8,6 +8,7 @@
 		canDeallocateNode,
 		clearChoiceSelection,
 		getActiveChoiceChild,
+		getAutoAllocatePath,
 		getAnchorId,
 		getChoiceChildren,
 		getDisplayNode,
@@ -54,7 +55,6 @@
 
 	let startClass = $state<PlannerStartClass>(defaultStartClass);
 	let currentLevel = $state(1);
-	let extraPoints = $state(0);
 	let selectedIds = $state<number[]>([defaultAnchorId]);
 	let focusedNodeId = $state(defaultAnchorId);
 	let hoveredNodeId = $state<number | null>(null);
@@ -76,6 +76,7 @@
 	let dragScrollLeft = 0;
 	let dragScrollTop = 0;
 	let hasLoadedStoredState = $state(false);
+	let passiveSearch = $state('');
 
 	// Dev mode state
 	let isDevMode = $state(false);
@@ -96,8 +97,8 @@
 	const anchorId = $derived(getAnchorId(startClass));
 	const selectedIdSet = $derived(new Set(selectedIds));
 	const spentPoints = $derived(getSpentPoints(selectedIdSet));
-	const requiredLevel = $derived(Math.max(1, spentPoints - extraPoints));
-	const availablePoints = $derived(Math.max(0, currentLevel + extraPoints));
+	const requiredLevel = $derived(Math.max(1, spentPoints));
+	const availablePoints = $derived(Math.max(1, currentLevel));
 	const remainingPoints = $derived(availablePoints - spentPoints);
 	const summaryItems = $derived(summarizeSelection(selectedIdSet));
 	const visibleNodes = $derived(plannerNodes.filter((node) => !node.isHidden));
@@ -156,6 +157,19 @@
 	const tooltipChoiceChildren = $derived(hoveredSourceNode ? getChoiceChildren(hoveredSourceNode.referenceId) : []);
 	const tooltipActiveChoiceChild = $derived(hoveredSourceNode ? getActiveChoiceChild(hoveredSourceNode.referenceId, selectedIdSet) : null);
 	const treeOverdrawn = $derived(!isDevMode && (remainingPoints < 0 || !isTreeStateValid(selectedIdSet, anchorId)));
+	const normalizedPassiveSearch = $derived(passiveSearch.trim().toLocaleLowerCase());
+	const matchingNodeIds = $derived.by(() => {
+		if (!normalizedPassiveSearch) {
+			return new Set<number>();
+		}
+
+		return new Set(
+			visibleNodes
+				.filter((node) => getNodeSearchText(node).includes(normalizedPassiveSearch))
+				.map((node) => node.referenceId)
+		);
+	});
+	const passiveSearchMatchCount = $derived(matchingNodeIds.size);
 
 	$effect(() => {
 		if (!selectedIdSet.has(anchorId)) {
@@ -180,7 +194,6 @@
 		const state = {
 			startClass,
 			currentLevel,
-			extraPoints,
 			selectedIds,
 			zoomLevel
 		};
@@ -231,7 +244,20 @@
 
 		if (canAllocateNode(node.referenceId, selectedIdSet)) {
 			selectedIds = [...selectedIds, node.referenceId];
+			return;
 		}
+
+		const autoAllocatePath = getAutoAllocatePath(node.referenceId, selectedIdSet);
+		if (autoAllocatePath && autoAllocatePath.length > 0) {
+			selectedIds = [...selectedIds, ...autoAllocatePath];
+			focusedNodeId = autoAllocatePath.at(-1) ?? node.referenceId;
+			return;
+		}
+
+		toast.push(`Unable to find a valid path to ${node.displayName}`, {
+			type: 'error',
+			duration: 3000
+		});
 	}
 
 	function deallocateNode(node: PlannerNode) {
@@ -412,7 +438,7 @@
 		}
 	}
 
-	function updateShareUrl(state: { startClass: PlannerStartClass; currentLevel: number; extraPoints: number; selectedIds: number[] }) {
+	function updateShareUrl(state: { startClass: PlannerStartClass; currentLevel: number; selectedIds: number[] }) {
 		const url = new URL(window.location.href);
 		url.searchParams.set(shareParamKey, encodeBuildState(state));
 		// Preserve ?dev param
@@ -433,7 +459,6 @@
 		if (buildFromUrl) {
 			startClass = buildFromUrl.startClass;
 			currentLevel = buildFromUrl.currentLevel;
-			extraPoints = buildFromUrl.extraPoints;
 			selectedIds = buildFromUrl.selectedIds;
 			focusedNodeId = buildFromUrl.selectedIds.at(-1) ?? getAnchorId(buildFromUrl.startClass);
 		} else if (stored) {
@@ -441,7 +466,6 @@
 				const parsed = JSON.parse(stored) as {
 					startClass?: PlannerStartClass;
 					currentLevel?: number;
-					extraPoints?: number;
 					selectedIds?: number[];
 					zoomLevel?: number;
 				};
@@ -457,14 +481,12 @@
 
 				startClass = nextStartClass;
 				currentLevel = typeof parsed.currentLevel === 'number' && parsed.currentLevel > 0 ? Math.floor(parsed.currentLevel) : 1;
-				extraPoints = typeof parsed.extraPoints === 'number' && parsed.extraPoints >= 0 ? Math.floor(parsed.extraPoints) : 0;
 				zoomLevel = typeof parsed.zoomLevel === 'number' ? clampZoom(parsed.zoomLevel) : 1;
 				selectedIds = nextSelectedIds.includes(nextAnchorId) ? nextSelectedIds : [nextAnchorId, ...nextSelectedIds];
 				focusedNodeId = nextSelectedIds.at(-1) ?? nextAnchorId;
 			} catch {
 				startClass = defaultStartClass;
 				currentLevel = 1;
-				extraPoints = 0;
 				zoomLevel = 1;
 				selectedIds = [defaultAnchorId];
 				focusedNodeId = defaultAnchorId;
@@ -487,7 +509,6 @@
 	function encodeBuildState(state: {
 		startClass: PlannerStartClass;
 		currentLevel: number;
-		extraPoints: number;
 		selectedIds: number[];
 	}): string {
 		const anchorIdForClass = getAnchorId(state.startClass);
@@ -500,7 +521,6 @@
 		return [
 			startClassCodeMap[state.startClass],
 			Math.max(1, Math.floor(state.currentLevel)).toString(36),
-			Math.max(0, Math.floor(state.extraPoints)).toString(36),
 			encodedIds
 		].join('~');
 	}
@@ -508,19 +528,19 @@
 	function decodeBuildState(value: string | null): {
 		startClass: PlannerStartClass;
 		currentLevel: number;
-		extraPoints: number;
 		selectedIds: number[];
 	} | null {
 		if (!value) {
 			return null;
 		}
 
-		const [classCode, levelPart, extraPart, idsPart = ''] = value.split('~');
+		const parts = value.split('~');
+		const [classCode, levelPart] = parts;
+		const idsPart = parts.length >= 4 ? parts[3] ?? '' : parts[2] ?? '';
 		const startClass = startClassFromCodeMap[classCode];
 		const currentLevelParsed = Number.parseInt(levelPart ?? '', 36);
-		const extraPointsParsed = Number.parseInt(extraPart ?? '', 36);
 
-		if (!startClass || Number.isNaN(currentLevelParsed) || Number.isNaN(extraPointsParsed)) {
+		if (!startClass || Number.isNaN(currentLevelParsed)) {
 			return null;
 		}
 
@@ -534,9 +554,20 @@
 		return {
 			startClass,
 			currentLevel: Math.max(1, currentLevelParsed),
-			extraPoints: Math.max(0, extraPointsParsed),
 			selectedIds: [anchorIdForClass, ...new Set(selectedIdsFromUrl)]
 		};
+	}
+
+	function getNodeSearchText(node: PlannerNode): string {
+		const searchParts = [node.displayName, node.displayTooltip, node.internalIdentifier];
+
+		if (node.isChoiceNode) {
+			for (const child of getChoiceChildren(node.referenceId)) {
+				searchParts.push(child.displayName, child.displayTooltip, child.internalIdentifier);
+			}
+		}
+
+		return searchParts.join(' ').toLocaleLowerCase();
 	}
 
 	function clampZoom(value: number): number {
@@ -846,7 +877,7 @@
 	}
 </script>
 
-<div class="planner-shell" onmousemove={moveTooltipDrag} onmouseup={endTooltipDrag}>
+<div class="planner-shell" role="presentation" onmousemove={moveTooltipDrag} onmouseup={endTooltipDrag}>
 	{#if !isDevMode}
 	<div class="control-bar">
 		<div class="control-group compact">
@@ -863,11 +894,20 @@
 				<span>Level</span>
 				<input type="number" min="1" bind:value={currentLevel} />
 			</label>
+		</div>
 
-			<label>
-				<span>Extra</span>
-				<input type="number" min="0" bind:value={extraPoints} />
+		<div class="control-group search-group">
+			<label class="search-label">
+				<span>Search passives</span>
+				<input type="text" bind:value={passiveSearch} placeholder="Damage, bleed, mana..." />
 			</label>
+			<div class="search-status">
+				<strong>{normalizedPassiveSearch ? passiveSearchMatchCount : visibleNodes.length}</strong>
+				<span>{normalizedPassiveSearch ? 'matches' : 'nodes'}</span>
+			</div>
+			{#if passiveSearch}
+				<button type="button" class="mini-button" onclick={() => (passiveSearch = '')}>Clear</button>
+			{/if}
 		</div>
 
 		<div class="control-group stats">
@@ -937,9 +977,10 @@
 							{@const nodeRadius = getNodeRadius(node)}
 							{@const isDevAdded = devAddedNodes.some((n) => n.referenceId === node.referenceId)}
 							{@const isDevConnectSource = devConnectSourceId === node.referenceId}
+							{@const searchClass = !isDevMode && normalizedPassiveSearch ? (matchingNodeIds.has(node.referenceId) ? 'search-match' : 'search-dim') : ''}
 							<button
 								type="button"
-								class={`tree-node ${node.group} ${isDevMode ? 'dev-node' : getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${isDevAdded ? 'dev-added' : ''} ${isDevConnectSource ? 'dev-connect-source' : ''} ${draggingNodeId === node.referenceId ? 'dev-dragging' : ''}`}
+								class={`tree-node ${node.group} ${isDevMode ? 'dev-node' : getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${isDevAdded ? 'dev-added' : ''} ${isDevConnectSource ? 'dev-connect-source' : ''} ${draggingNodeId === node.referenceId ? 'dev-dragging' : ''} ${searchClass}`}
 								style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${nodeRadius * 2}px;height:${nodeRadius * 2}px;margin-left:-${nodeRadius}px;margin-top:-${nodeRadius}px;`}
 								aria-label={renderedNode.displayName}
 								onclick={() => toggleNode(node)}
@@ -1294,7 +1335,7 @@
 
 	.control-bar {
 		display: grid;
-		grid-template-columns: auto 1fr auto;
+		grid-template-columns: auto minmax(280px, 1fr) auto auto;
 		gap: 0.75rem;
 		align-items: stretch;
 		margin-bottom: 0.75rem;
@@ -1313,6 +1354,31 @@
 
 	.control-group.compact {
 		align-items: end;
+	}
+
+	.search-group {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto auto;
+	}
+
+	.search-label {
+		min-width: 0;
+	}
+
+	.search-label input {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.search-status {
+		display: grid;
+		align-content: center;
+		justify-items: end;
+		min-width: 3.5rem;
+	}
+
+	.search-status strong {
+		font-size: 1.05rem;
 	}
 
 	label {
@@ -1502,9 +1568,27 @@
 		box-shadow: 0 0 0 5px rgba(251, 191, 36, 0.16);
 	}
 
+	.tree-node.search-match {
+		border-color: #f8fafc;
+		box-shadow:
+			0 0 0 4px rgba(248, 250, 252, 0.18),
+			0 0 22px rgba(96, 165, 250, 0.28);
+	}
+
+	.tree-node.selected.search-match {
+		box-shadow:
+			0 0 0 5px rgba(251, 191, 36, 0.18),
+			0 0 0 8px rgba(248, 250, 252, 0.15),
+			0 0 26px rgba(96, 165, 250, 0.24);
+	}
+
 	.tree-node.available {
 		border-color: rgba(110, 231, 183, 0.45);
 		box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+	}
+
+	.tree-node.search-dim {
+		opacity: 0.22;
 	}
 
 	.tree-node.locked,
@@ -1515,6 +1599,18 @@
 	.tree-node.disabled {
 		cursor: default;
 		filter: grayscale(0.35);
+	}
+
+	.tree-node.available.search-match {
+		box-shadow:
+			0 0 0 4px rgba(16, 185, 129, 0.08),
+			0 0 0 7px rgba(248, 250, 252, 0.12),
+			0 0 22px rgba(96, 165, 250, 0.24);
+	}
+
+	.tree-node.locked.search-dim,
+	.tree-node.disabled.search-dim {
+		opacity: 0.22;
 	}
 
 	.tree-node.choice-hub {

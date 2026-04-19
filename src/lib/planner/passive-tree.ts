@@ -277,6 +277,108 @@ export function isTreeStateValid(selectedIds: Set<number>, anchorId: number): bo
 	return isValidTreeState(selectedIds, anchorId);
 }
 
+export function getAutoAllocatePath(targetId: number, selectedIds: Set<number>): number[] | null {
+	const targetNode = plannerNodeMap.get(targetId);
+
+	if (!targetNode || selectedIds.has(targetId) || !isSelectableNode(targetNode) || targetNode.group === 'anchor') {
+		return null;
+	}
+
+	const queue: number[] = [];
+	const queued = new Set<number>();
+	const distances = new Map<number, number>();
+	const steps = new Map<number, number>();
+	const previous = new Map<number, number | null>();
+
+	for (const selectedId of selectedIds) {
+		const node = plannerNodeMap.get(selectedId);
+		if (!node || node.isHidden) {
+			continue;
+		}
+
+		queue.push(selectedId);
+		queued.add(selectedId);
+		distances.set(selectedId, 0);
+		steps.set(selectedId, 0);
+		previous.set(selectedId, null);
+	}
+
+	while (queue.length > 0) {
+		queue.sort((left, right) => {
+			const distanceDelta = (distances.get(left) ?? Number.POSITIVE_INFINITY) - (distances.get(right) ?? Number.POSITIVE_INFINITY);
+			if (distanceDelta !== 0) {
+				return distanceDelta;
+			}
+
+			return (steps.get(left) ?? Number.POSITIVE_INFINITY) - (steps.get(right) ?? Number.POSITIVE_INFINITY);
+		});
+
+		const currentId = queue.shift();
+		if (currentId === undefined) {
+			break;
+		}
+
+		queued.delete(currentId);
+
+		if (currentId === targetId) {
+			break;
+		}
+
+		for (const neighborId of plannerAdjacency.get(currentId) ?? []) {
+			const neighbor = plannerNodeMap.get(neighborId);
+			if (!neighbor || neighbor.isHidden) {
+				continue;
+			}
+
+			const nextDistance = (distances.get(currentId) ?? Number.POSITIVE_INFINITY) + (selectedIds.has(neighborId) ? 0 : 1);
+			const nextSteps = (steps.get(currentId) ?? 0) + 1;
+			const currentDistance = distances.get(neighborId) ?? Number.POSITIVE_INFINITY;
+			const currentSteps = steps.get(neighborId) ?? Number.POSITIVE_INFINITY;
+
+			if (nextDistance > currentDistance || (nextDistance === currentDistance && nextSteps >= currentSteps)) {
+				continue;
+			}
+
+			distances.set(neighborId, nextDistance);
+			steps.set(neighborId, nextSteps);
+			previous.set(neighborId, currentId);
+
+			if (!queued.has(neighborId)) {
+				queue.push(neighborId);
+				queued.add(neighborId);
+			}
+		}
+	}
+
+	if (!previous.has(targetId)) {
+		return null;
+	}
+
+	const path: number[] = [];
+	let currentId: number | null = targetId;
+
+	while (currentId !== null) {
+		path.unshift(currentId);
+		currentId = previous.get(currentId) ?? null;
+	}
+
+	const nodesToAllocate = path.filter((nodeId) => !selectedIds.has(nodeId));
+	if (nodesToAllocate.length === 0) {
+		return null;
+	}
+
+	const nextSelected = new Set(selectedIds);
+	for (const nodeId of nodesToAllocate) {
+		if (!canAllocateNode(nodeId, nextSelected)) {
+			return null;
+		}
+
+		nextSelected.add(nodeId);
+	}
+
+	return nodesToAllocate;
+}
+
 function buildEdges(nodes: PassiveNodeData[]): PlannerEdge[] {
 	const edges = new Map<string, PlannerEdge>();
 
