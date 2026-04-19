@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { UserService } from "$lib/services/user-service";
+    import { UserService, type IAvailableBenefitsResponse } from "$lib/services/user-service";
     import {onDestroy, onMount} from "svelte";
     import { Button, Card, Label, P } from "flowbite-svelte";
     import { ChevronDownOutline } from "flowbite-svelte-icons";
@@ -12,22 +12,26 @@
     let saveSuccess = $state(false);
     let saveError = $state("");
 
-    let availableBenefits = $state({ icons: [], colors: [] });
+    let availableBenefits = $state<IAvailableBenefitsResponse>({ icons: [], colors: [], discordRoles: [] });
     let selectedIcon = $state("");
     let selectedColor = $state("");
+    let selectedDiscordRole = $state("");
     let iconDropdownOpen = $state(false);
     let colorDropdownOpen = $state(false);
+    let discordRoleDropdownOpen = $state(false);
     let currentUser: IUser | null = $state(null);
     let iconDropdownContainer: HTMLDivElement | null = $state(null);
     let colorDropdownContainer: HTMLDivElement | null = $state(null);
+    let discordRoleDropdownContainer: HTMLDivElement | null = $state(null);
 
     const unsubscribe = user.subscribe(value => {
         currentUser = value as unknown as IUser;
         console.log("Current user:", currentUser);
 
         if (currentUser?.chosenBenefits) {
-            selectedIcon = currentUser.chosenBenefits.chatIcon.value || "";
-            selectedColor = currentUser.chosenBenefits.chatColor.value || "";
+            selectedIcon = currentUser.chosenBenefits?.chatIcon?.value || "";
+            selectedColor = currentUser.chosenBenefits?.chatColor?.value || "";
+            selectedDiscordRole = currentUser.chosenBenefits?.discordRole || "";
         }
     });
 
@@ -44,7 +48,7 @@
             if (response && response.data) {
                 availableBenefits = response.data;
             } else {
-                availableBenefits = { icons: [], colors: [] };
+                availableBenefits = { icons: [], colors: [], discordRoles: [] };
             }
         } catch (e) {
             error = "Error loading benefits";
@@ -62,7 +66,8 @@
         try {
             const request = {
                 chatIcon: selectedIcon,
-                chatColor: selectedColor
+                chatColor: selectedColor,
+                discordRole: selectedDiscordRole
             };
 
             const response = await userService.updateMyBenefits("", request);
@@ -83,6 +88,10 @@
         }
     }
 
+    function formatBenefitLabel(value: string) {
+        return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+    }
+
     onMount(() => {
         const handleDocumentClick = (event: MouseEvent) => {
             if (iconDropdownContainer && !iconDropdownContainer.contains(event.target as Node)) {
@@ -90,6 +99,9 @@
             }
             if (colorDropdownContainer && !colorDropdownContainer.contains(event.target as Node)) {
                 colorDropdownOpen = false;
+            }
+            if (discordRoleDropdownContainer && !discordRoleDropdownContainer.contains(event.target as Node)) {
+                discordRoleDropdownOpen = false;
             }
         };
 
@@ -144,11 +156,12 @@
                             onclick={() => {
                                 if (availableBenefits.icons.length > 0) {
                                     colorDropdownOpen = false;
+                                    discordRoleDropdownOpen = false;
                                     iconDropdownOpen = !iconDropdownOpen;
                                 }
                             }}
                         >
-                        <span>{selectedIcon || "Select an icon"}</span>
+                        <span>{selectedIcon ? formatBenefitLabel(selectedIcon) : "Select an icon"}</span>
                         <ChevronDownOutline class="ml-2 h-4 w-4 text-gray-400" />
                     </Button>
                     {#if iconDropdownOpen}
@@ -169,7 +182,7 @@
                                         class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white transition hover:bg-white/10"
                                         onclick={() => { selectedIcon = icon; iconDropdownOpen = false; }}
                                     >
-                                        {icon}
+                                        {formatBenefitLabel(icon)}
                                     </button>
                                 {/each}
                             {/if}
@@ -190,6 +203,7 @@
                         onclick={() => {
                             if (availableBenefits.colors.length > 0) {
                                 iconDropdownOpen = false;
+                                discordRoleDropdownOpen = false;
                                 colorDropdownOpen = !colorDropdownOpen;
                             }
                         }}
@@ -197,7 +211,7 @@
                         <div class="flex items-center">
                             {#if selectedColor}
                                 <div class="w-4 h-4 rounded-sm mr-2 border border-gray-200" style="background-color: {selectedColor}"></div>
-                                {selectedColor}
+                                {formatBenefitLabel(selectedColor)}
                             {:else}
                                 Select a color
                             {/if}
@@ -223,7 +237,7 @@
                                         onclick={() => { selectedColor = color; colorDropdownOpen = false; }}
                                     >
                                         <div class="mr-2 h-4 w-4 rounded-sm border border-gray-200" style="background-color: {color}"></div>
-                                        {color}
+                                        {formatBenefitLabel(color)}
                                     </button>
                                 {/each}
                             {/if}
@@ -248,11 +262,56 @@
                     {/if}
                 </div>
 
+                <!-- Discord Role Selector -->
+                <div class="relative" bind:this={discordRoleDropdownContainer}>
+                    <Label for="discord-role-button" class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Discord Role</Label>
+                    <Button
+                        id="discord-role-button"
+                        class="w-full justify-between border-white/10 bg-white/8 font-normal text-white hover:bg-white/12"
+                        disabled={availableBenefits.discordRoles.length === 0}
+                        onclick={() => {
+                            if (availableBenefits.discordRoles.length > 0) {
+                                iconDropdownOpen = false;
+                                colorDropdownOpen = false;
+                                discordRoleDropdownOpen = !discordRoleDropdownOpen;
+                            }
+                        }}
+                    >
+                        <span>{selectedDiscordRole ? formatBenefitLabel(selectedDiscordRole) : "Select a Discord role"}</span>
+                        <ChevronDownOutline class="ml-2 h-4 w-4 text-gray-400" />
+                    </Button>
+                    {#if discordRoleDropdownOpen}
+                        <div class="absolute left-0 right-0 top-full z-20 mt-2 max-h-60 overflow-y-auto rounded-lg border border-white/10 bg-[#111827] p-1 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+                            <button
+                                type="button"
+                                class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white transition hover:bg-white/10"
+                                onclick={() => { selectedDiscordRole = ""; discordRoleDropdownOpen = false; }}
+                            >
+                                None
+                            </button>
+                            {#each availableBenefits.discordRoles as discordRole}
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white transition hover:bg-white/10"
+                                    onclick={() => { selectedDiscordRole = discordRole; discordRoleDropdownOpen = false; }}
+                                >
+                                    {formatBenefitLabel(discordRole)}
+                                </button>
+                            {/each}
+                        </div>
+                    {/if}
+                    {#if availableBenefits.discordRoles.length === 0}
+                        <p class="mt-1 text-sm text-gray-400">No Discord role benefits available to you</p>
+                    {:else if !currentUser?.discordId}
+                        <p class="mt-1 text-sm text-amber-300">Link your Discord account in Settings before saving a Discord role.</p>
+                    {/if}
+                </div>
+
                 <!-- Save Button -->
                 <div class="mt-6">
                     <Button
                         color="blue"
-                        disabled={saveLoading || (availableBenefits.icons.length === 0 && availableBenefits.colors.length === 0)}
+                        disabled={saveLoading || (availableBenefits.icons.length === 0 && availableBenefits.colors.length === 0 && availableBenefits.discordRoles.length === 0)}
                         onclick={saveBenefits}
                         class="w-full"
                     >
@@ -260,15 +319,15 @@
                     </Button>
 
                     {#if saveSuccess}
-                        <P color="green" class="mt-2 text-center">Benefits updated successfully!</P>
+                        <P class="mt-2 text-center text-emerald-300">Benefits updated successfully!</P>
                     {/if}
 
                     {#if saveError}
-                        <P color="red" class="mt-2 text-center">{saveError}</P>
+                        <P class="mt-2 text-center text-red-300">{saveError}</P>
                     {/if}
                 </div>
 
-                {#if availableBenefits.icons.length === 0 && availableBenefits.colors.length === 0}
+                {#if availableBenefits.icons.length === 0 && availableBenefits.colors.length === 0 && availableBenefits.discordRoles.length === 0}
                     <div class="text-center mt-4">
                         <P class="text-gray-300">You don't have any benefits available at this time.</P>
                         <P class="mt-2 text-sm text-gray-400">Consider upgrading to a supporter pack to unlock chat customization options!</P>

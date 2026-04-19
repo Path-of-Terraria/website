@@ -7,9 +7,10 @@ interface IUpdateBenefitsRequest {
     subscription: string
 }
 
-interface IAvailableBenefitsResponse {
+export interface IAvailableBenefitsResponse {
     icons: string[],
-    colors: string[]
+    colors: string[],
+    discordRoles: string[]
 }
 
 export interface IProfileCharacter {
@@ -147,7 +148,7 @@ export class UserService {
     public async getMyBenefits(userId: string) {
         let response = await this.httpService.get(`User/Benefits`);
         if (response) {
-            return response;
+            return response as typeof response & { data: IAvailableBenefitsResponse };
         }
         return null;
     }
