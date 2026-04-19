@@ -364,7 +364,7 @@
                             </Button>
 
                             {#if benefitsSaveSuccess}
-                                <P color="green" class="mt-2">Benefits updated successfully!</P>
+                                <P class="mt-2 text-emerald-300">Benefits updated successfully!</P>
                             {/if}
 
                             {#if benefitsSaveError}
