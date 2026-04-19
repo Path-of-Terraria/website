@@ -4,6 +4,7 @@ import type { IUser } from "$lib/stores/user-store";
 export interface IPlayer {
     id: string;
     name: string;
+    profileName?: string;
     stats: IPlayerStats;
     user?: IUser;
 }
@@ -35,9 +36,5 @@ export class PlayerService {
             return response.data as IPlayer;
         }
         return {} as IPlayer;
-    }
-
-    public async deletePlayer(id: string): Promise<void> {
-        await this.httpService.delete(`Player/${id}`);
     }
 }

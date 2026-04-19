@@ -1,7 +1,6 @@
 import {HttpService} from "$lib/services/http-service";
 import {GetJwtToken, SetJwtToken, ClearStorageItem} from "$lib/services/session-service";
 import {type IChosenBenefits, type IUpdateMyBenefitsRequest, type IUser, user} from "$lib/stores/user-store";
-import type {IPlayer} from "$lib/services/player-service";
 
 interface IUpdateBenefitsRequest {
     supporterPacks: string[],
@@ -11,6 +10,14 @@ interface IUpdateBenefitsRequest {
 interface IAvailableBenefitsResponse {
     icons: string[],
     colors: string[]
+}
+
+export interface IProfileCharacter {
+    characterName: string;
+    level: number;
+    strength: number;
+    dexterity: number;
+    intelligence: number;
 }
 
 export class UserService {
@@ -113,10 +120,10 @@ export class UserService {
         return null;
     }
 
-    public async getPlayers(profileName: string): Promise<IPlayer[]> {
+    public async getPlayers(profileName: string): Promise<IProfileCharacter[]> {
         let response = await this.httpService.get(`User/${profileName}/Players`);
         if (response) {
-            return response.data as IPlayer[];
+            return response.data as IProfileCharacter[];
         }
         return [];
     }

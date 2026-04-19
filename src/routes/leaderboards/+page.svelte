@@ -124,12 +124,22 @@
                                                                 <!--{#if leader.user?.chosenBenefits?.chatIcon?.value}-->
                                                                 <!--    <i class={leader.user.chosenBenefits.chatIcon.value}></i>-->
                                                                 <!--{/if}-->
-                                                                <span
+                                                                {#if leader.profileName}
+                                                                    <a
+                                                                        href={`/profile/${leader.profileName}/characters`}
+                                                                        class="truncate text-sm font-semibold text-white transition hover:underline md:text-base"
+                                                                        style={`color: ${leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}`}
+                                                                    >
+                                                                        {leader.name}
+                                                                    </a>
+                                                                {:else}
+                                                                    <span
                                                                         class="truncate text-sm font-semibold text-white md:text-base"
                                                                         style={`color: ${leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}`}
-                                                                >
-                                                                    {leader.name}
-                                                                </span>
+                                                                    >
+                                                                        {leader.name}
+                                                                    </span>
+                                                                {/if}
                                                             </div>
                                                         </div>
                                                     </div>
