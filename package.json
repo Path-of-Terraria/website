@@ -22,21 +22,21 @@
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "2.57.1",
-		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/postcss": "^4.2.2",
 		"@types/node": "^25.6.0",
-		"axios": "^1.15.0",
-		"flowbite": "^3.1.2",
+		"axios": "^1.15.1",
+		"flowbite": "^4.0.1",
 		"flowbite-svelte": "^1.33.1",
-		"flowbite-svelte-icons": "^2.3.0",
+		"flowbite-svelte-icons": "^3.1.0",
 		"openapi-typescript": "^7.13.0",
 		"postcss": "^8.5.10",
 		"svelte": "5.55.4",
 		"svelte-check": "^4.4.6",
 		"tailwindcss": "^4.2.2",
 		"tslib": "^2.8.1",
-		"typescript": "^5.9.3",
-		"vite": "7.3.2"
+		"typescript": "^6.0.3",
+		"vite": "8.0.8"
 	},
 	"type": "module"
 }
