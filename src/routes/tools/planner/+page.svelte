@@ -39,7 +39,6 @@
 	const storageKey = 'pot-passive-planner-state-v1';
 	const shareParamKey = 'build';
 	const devShareParamKey = 'devbuild';
-	const DEV_NODE_ID_BASE = 10000;
 	const startClassCodeMap: Record<PlannerStartClass, string> = {
 		melee: 'm',
 		ranged: 'r',
@@ -82,6 +81,8 @@
 	let isDevMode = $state(false);
 	let devActiveTab = $state<'node' | 'dev'>('node');
 	let devPositionOverrides = $state<Record<number, { x: number; y: number }>>({});
+	let devValueOverrides = $state<Record<number, number>>({});
+	let devRequirementOverrides = $state<Record<number, number>>({});
 	let devAddedNodes = $state<Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>>([]);
 	let devRemovedNodeIds = $state<Set<number>>(new Set());
 	let devAddedEdges = $state<Set<string>>(new Set());
@@ -89,6 +90,7 @@
 	let devConnectSourceId = $state<number | null>(null);
 	let devAddIdentifier = $state(plannerUniqueIdentifiers[0] ?? '');
 	let draggingNodeId = $state<number | null>(null);
+	let shouldCenterOnAnchor = $state(true);
 	let draggingStartMouseX = 0;
 	let draggingStartMouseY = 0;
 	let draggingStartCanvasX = 0;
@@ -109,19 +111,28 @@
 			.filter((n) => !devRemovedNodeIds.has(n.referenceId))
 			.map((n) => {
 				const pos = devPositionOverrides[n.referenceId];
-				if (!pos) return n;
-				return { ...n, canvasX: pos.x + plannerOffsetX, canvasY: pos.y + plannerOffsetY };
+				const value = devValueOverrides[n.referenceId];
+				const requiredAllocatedEdges = devRequirementOverrides[n.referenceId];
+				if (!pos && value === undefined && requiredAllocatedEdges === undefined) return n;
+				return {
+					...n,
+					value: value ?? n.value,
+					requiredAllocatedEdges: requiredAllocatedEdges ?? n.requiredAllocatedEdges,
+					canvasX: (pos?.x ?? n.position.x) + plannerOffsetX,
+					canvasY: (pos?.y ?? n.position.y) + plannerOffsetY
+				};
 			});
 		const added: PlannerNode[] = devAddedNodes.map((n) => ({
 			internalIdentifier: n.internalIdentifier,
 			referenceId: n.referenceId,
 			maxLevel: 1,
-			value: 0,
+			value: devValueOverrides[n.referenceId] ?? 0,
 			position: n.position,
 			connections: [],
 			displayName: humanizeDevIdentifier(n.internalIdentifier),
 			displayTooltip: '',
 			group: 'minor' as const,
+			requiredAllocatedEdges: devRequirementOverrides[n.referenceId],
 			canvasX: n.position.x + plannerOffsetX,
 			canvasY: n.position.y + plannerOffsetY,
 			assetPath: `/passives/${n.internalIdentifier}.png`
@@ -146,10 +157,18 @@
 	const activeVisibleNodes = $derived(isDevMode ? devEffectiveNodes.filter((n) => !n.isHidden) : visibleNodes);
 
 	const focusedSourceNode = $derived((isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(focusedNodeId) ?? (isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(anchorId) ?? plannerNodes[0]);
-	const focusedNode = $derived(getDisplayNode(focusedNodeId, selectedIdSet) ?? activeNodeMap.get(anchorId) ?? plannerNodes[0]);
+	const focusedNode = $derived(
+		isDevMode
+			? (activeNodeMap.get(focusedNodeId) ?? activeNodeMap.get(anchorId) ?? plannerNodes[0])
+			: (getDisplayNode(focusedNodeId, selectedIdSet) ?? activeNodeMap.get(anchorId) ?? plannerNodes[0])
+	);
 	const tooltipNodeId = $derived(pinnedTooltipNodeId ?? hoveredNodeId);
 	const hoveredNode = $derived(
-		tooltipNodeId !== null ? (getDisplayNode(tooltipNodeId, selectedIdSet) ?? activeNodeMap.get(tooltipNodeId) ?? null) : null
+		tooltipNodeId !== null
+			? (isDevMode
+				? (activeNodeMap.get(tooltipNodeId) ?? null)
+				: (getDisplayNode(tooltipNodeId, selectedIdSet) ?? activeNodeMap.get(tooltipNodeId) ?? null))
+			: null
 	);
 	const hoveredSourceNode = $derived(tooltipNodeId !== null ? (activeNodeMap.get(tooltipNodeId) ?? null) : null);
 	const choiceChildren = $derived(focusedSourceNode ? getChoiceChildren(focusedSourceNode.referenceId) : []);
@@ -175,15 +194,17 @@
 		if (!selectedIdSet.has(anchorId)) {
 			selectedIds = [anchorId];
 			focusedNodeId = anchorId;
+			shouldCenterOnAnchor = true;
 		}
 	});
 
 	$effect(() => {
+		if (!treeScrollElement || !hasLoadedStoredState || !shouldCenterOnAnchor) return;
 		const startingAnchor = activeNodeMap.get(anchorId);
-		if (treeScrollElement && startingAnchor && hasLoadedStoredState) {
-			treeScrollElement.scrollLeft = Math.max(0, startingAnchor.canvasX - treeScrollElement.clientWidth / 2);
-			treeScrollElement.scrollTop = Math.max(0, startingAnchor.canvasY - treeScrollElement.clientHeight / 2);
-		}
+		if (!startingAnchor) return;
+		treeScrollElement.scrollLeft = Math.max(0, startingAnchor.canvasX - treeScrollElement.clientWidth / 2);
+		treeScrollElement.scrollTop = Math.max(0, startingAnchor.canvasY - treeScrollElement.clientHeight / 2);
+		shouldCenterOnAnchor = false;
 	});
 
 	$effect(() => {
@@ -206,6 +227,8 @@
 		if (!hasLoadedStoredState || !isDevMode) return;
 		// Access all dev state to track dependencies
 		void devPositionOverrides;
+		void devValueOverrides;
+		void devRequirementOverrides;
 		void devAddedNodes;
 		void devRemovedNodeIds;
 		void devAddedEdges;
@@ -301,6 +324,7 @@
 		selectedIds = [anchorId];
 		focusedNodeId = anchorId;
 		hoveredNodeId = null;
+		shouldCenterOnAnchor = true;
 	}
 
 	function getNodeState(node: PlannerNode): 'selected' | 'available' | 'locked' | 'disabled' {
@@ -624,20 +648,58 @@
 		draggingNodeId = null;
 	}
 
+	function getDevEditableValue(nodeId: number): number {
+		return devEffectiveNodeMap.get(nodeId)?.value ?? plannerNodeMap.get(nodeId)?.value ?? 0;
+	}
+
+	function getDevEditableRequirement(nodeId: number): number {
+		return devEffectiveNodeMap.get(nodeId)?.requiredAllocatedEdges ?? plannerNodeMap.get(nodeId)?.requiredAllocatedEdges ?? 1;
+	}
+
+	function updateDevNodeValue(referenceId: number, nextValue: number) {
+		const normalized = Number.isFinite(nextValue) ? Math.round(nextValue) : 0;
+		const baseValue = plannerNodeMap.get(referenceId)?.value ?? 0;
+		if (normalized === baseValue) {
+			const next = { ...devValueOverrides };
+			delete next[referenceId];
+			devValueOverrides = next;
+			return;
+		}
+		devValueOverrides = { ...devValueOverrides, [referenceId]: normalized };
+	}
+
+	function updateDevNodeRequirement(referenceId: number, nextRequirement: number) {
+		const normalized = Math.max(0, Number.isFinite(nextRequirement) ? Math.round(nextRequirement) : 0);
+		const baseRequirement = plannerNodeMap.get(referenceId)?.requiredAllocatedEdges ?? 1;
+		if (normalized === baseRequirement) {
+			const next = { ...devRequirementOverrides };
+			delete next[referenceId];
+			devRequirementOverrides = next;
+			return;
+		}
+		devRequirementOverrides = { ...devRequirementOverrides, [referenceId]: normalized };
+	}
+
 	function devRemoveNode(referenceId: number) {
 		devRemovedNodeIds = new Set([...devRemovedNodeIds, referenceId]);
 		devAddedNodes = devAddedNodes.filter((n) => n.referenceId !== referenceId);
 		// Remove any override
-		const next = { ...devPositionOverrides };
-		delete next[referenceId];
-		devPositionOverrides = next;
+		const nextPositionOverrides = { ...devPositionOverrides };
+		delete nextPositionOverrides[referenceId];
+		devPositionOverrides = nextPositionOverrides;
+		const nextValueOverrides = { ...devValueOverrides };
+		delete nextValueOverrides[referenceId];
+		devValueOverrides = nextValueOverrides;
+		const nextRequirementOverrides = { ...devRequirementOverrides };
+		delete nextRequirementOverrides[referenceId];
+		devRequirementOverrides = nextRequirementOverrides;
 		// Remove edges involving this node
 		devAddedEdges = new Set([...devAddedEdges].filter((k) => !k.split(':').includes(String(referenceId))));
 	}
 
 	function devAddNode() {
 		if (!devAddIdentifier) return;
-		const maxExistingId = Math.max(...plannerNodes.map((n) => n.referenceId), DEV_NODE_ID_BASE - 1);
+		const maxExistingId = Math.max(...plannerNodes.map((n) => n.referenceId), 0);
 		const maxDevId = devAddedNodes.length > 0 ? Math.max(...devAddedNodes.map((n) => n.referenceId)) : 0;
 		const newId = Math.max(maxExistingId, maxDevId) + 1;
 		const center = getDevViewportCenter();
@@ -682,6 +744,8 @@
 
 	function devResetChanges() {
 		devPositionOverrides = {};
+		devValueOverrides = {};
+		devRequirementOverrides = {};
 		devAddedNodes = [];
 		devRemovedNodeIds = new Set();
 		devAddedEdges = new Set();
@@ -735,8 +799,10 @@
 			if (rawNode) {
 				output.push({
 					...rawNode,
+					value: devValueOverrides[id] ?? rawNode.value,
 					position: pos ?? rawNode.position,
-					connections: connMap.get(id) ?? rawNode.connections
+					connections: connMap.get(id) ?? rawNode.connections,
+					requiredAllocatedEdges: devRequirementOverrides[id] ?? rawNode.requiredAllocatedEdges
 				});
 			} else {
 				const added = devAddedNodes.find((n) => n.referenceId === id);
@@ -745,13 +811,16 @@
 					internalIdentifier: added.internalIdentifier,
 					referenceId: added.referenceId,
 					maxLevel: 1,
-					value: 0,
+					value: devValueOverrides[id] ?? 0,
 					position: pos ?? added.position,
-					connections: connMap.get(id) ?? []
+					connections: connMap.get(id) ?? [],
+					requiredAllocatedEdges: devRequirementOverrides[id]
 				};
 				output.push(exportNode);
 			}
 		}
+
+		output.sort((left, right) => left.referenceId - right.referenceId);
 
 		const blob = new Blob([JSON.stringify(output, null, '\t')], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
@@ -766,6 +835,12 @@
 		const moves = Object.entries(devPositionOverrides)
 			.map(([id, pos]) => `${Number(id).toString(36)}:${signedBase36(pos.x)}:${signedBase36(pos.y)}`)
 			.join('.');
+		const values = Object.entries(devValueOverrides)
+			.map(([id, value]) => `${Number(id).toString(36)}:${signedBase36(value)}`)
+			.join('.');
+		const requirements = Object.entries(devRequirementOverrides)
+			.map(([id, requirement]) => `${Number(id).toString(36)}:${signedBase36(requirement)}`)
+			.join('.');
 		const removes = [...devRemovedNodeIds].map((id) => id.toString(36)).join('.');
 		const adds = devAddedNodes
 			.map((n) => `${n.referenceId.toString(36)}:${n.internalIdentifier}:${signedBase36(n.position.x)}:${signedBase36(n.position.y)}`)
@@ -776,13 +851,17 @@
 		const edgeRemoves = [...devRemovedEdges]
 			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
 			.join('.');
-		return [moves || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
+		return [moves || '-', values || '-', requirements || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
 	}
 
 	function decodeDevState(value: string | null): boolean {
 		if (!value) return false;
 		try {
-			const [movesPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] = value.split('~');
+			const parts = value.split('~');
+			const [movesPart, valuesPart, requirementsPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] =
+				parts.length >= 7
+					? parts
+					: [parts[0], '-', '-', parts[1], parts[2], parts[3], parts[4]];
 
 			const positions: Record<number, { x: number; y: number }> = {};
 			if (movesPart && movesPart !== '-') {
@@ -792,6 +871,26 @@
 					const x = parseSignedBase36(xPart);
 					const y = parseSignedBase36(yPart);
 					if (!isNaN(id) && !isNaN(x) && !isNaN(y)) positions[id] = { x, y };
+				}
+			}
+
+			const values: Record<number, number> = {};
+			if (valuesPart && valuesPart !== '-') {
+				for (const entry of valuesPart.split('.')) {
+					const [idPart, valuePart] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					const nodeValue = parseSignedBase36(valuePart);
+					if (!isNaN(id) && !isNaN(nodeValue)) values[id] = nodeValue;
+				}
+			}
+
+			const requirements: Record<number, number> = {};
+			if (requirementsPart && requirementsPart !== '-') {
+				for (const entry of requirementsPart.split('.')) {
+					const [idPart, requirementPart] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					const requirement = parseSignedBase36(requirementPart);
+					if (!isNaN(id) && !isNaN(requirement)) requirements[id] = requirement;
 				}
 			}
 
@@ -837,6 +936,8 @@
 			}
 
 			devPositionOverrides = positions;
+			devValueOverrides = values;
+			devRequirementOverrides = requirements;
 			devRemovedNodeIds = removed;
 			devAddedNodes = added;
 			devAddedEdges = addedEdges;
@@ -1041,6 +1142,33 @@
 									<div><dt>Game X</dt><dd>{devFocusedPos?.x ?? '—'}</dd></div>
 									<div><dt>Game Y</dt><dd>{devFocusedPos?.y ?? '—'}</dd></div>
 								</dl>
+								<div class="dev-edit-grid">
+									<label class="dev-label">
+										<span>Value</span>
+										<input
+											type="number"
+											value={getDevEditableValue(devFocused.referenceId)}
+											oninput={(event) =>
+												updateDevNodeValue(
+													devFocused.referenceId,
+													(event.currentTarget as HTMLInputElement).valueAsNumber
+												)}
+										/>
+									</label>
+									<label class="dev-label">
+										<span>Connections required</span>
+										<input
+											type="number"
+											min="0"
+											value={getDevEditableRequirement(devFocused.referenceId)}
+											oninput={(event) =>
+												updateDevNodeRequirement(
+													devFocused.referenceId,
+													(event.currentTarget as HTMLInputElement).valueAsNumber
+												)}
+										/>
+									</label>
+								</div>
 								<div class="dev-actions-row">
 									<button type="button" class="dev-danger-btn" onclick={() => { devRemoveNode(devFocused.referenceId); }}>
 										Remove node
@@ -1921,6 +2049,13 @@
 
 	.dev-actions-row {
 		margin-top: 0.75rem;
+	}
+
+	.dev-edit-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.65rem;
+		margin-top: 0.85rem;
 	}
 
 	.dev-danger-btn {

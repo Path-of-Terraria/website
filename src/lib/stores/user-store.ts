@@ -20,12 +20,14 @@ export interface IChosenBenefits {
     chatColor: {
         value: string;
     };
+    discordRole: string;
 }
 
 
 export interface IUpdateMyBenefitsRequest {
     chatIcon: string;
     chatColor: string;
+    discordRole: string;
 }
 
 function createUserStore() {

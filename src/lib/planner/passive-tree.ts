@@ -68,7 +68,7 @@ const bounds = rawNodes.reduce(
 	{ minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
 );
 
-const padding = 180;
+const padding = 900;
 const offsetX = -bounds.minX + padding;
 const offsetY = -bounds.minY + padding;
 
