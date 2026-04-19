@@ -4,6 +4,7 @@ import type { IUser } from "$lib/stores/user-store";
 export interface IPlayer {
     id: string;
     name: string;
+    profileName?: string;
     stats: IPlayerStats;
     user?: IUser;
 }

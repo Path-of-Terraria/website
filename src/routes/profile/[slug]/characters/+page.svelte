@@ -6,11 +6,16 @@
 
     let { data }: { data: PageData } = $props();
 
-    let playerPromise = $state<Promise<IProfileCharacter[]>>(getPlayer());
+    let playerPromise = $state<Promise<IProfileCharacter[]>>(Promise.resolve([]));
 
     async function getPlayer() {
         return await userService.getPlayers(data.slug);
     }
+
+    $effect(() => {
+        data.slug;
+        playerPromise = getPlayer();
+    });
 </script>
 
 <div class="relative min-h-screen overflow-hidden text-white">
