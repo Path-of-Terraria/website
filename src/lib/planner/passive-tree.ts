@@ -96,6 +96,11 @@ export const plannerCanvas = {
 	height: bounds.maxY - bounds.minY + padding * 2
 };
 
+export const plannerOffsetX = offsetX;
+export const plannerOffsetY = offsetY;
+export const plannerRawNodes: readonly PassiveNodeData[] = rawNodes;
+export const plannerUniqueIdentifiers: readonly string[] = [...new Set(rawNodes.map((n) => n.internalIdentifier))].sort();
+
 export const startClassOptions: Array<{ value: PlannerStartClass; label: string; anchorId: number }> = [
 	{ value: 'melee', label: 'Melee', anchorId: 0 },
 	{ value: 'ranged', label: 'Ranged', anchorId: -1 },

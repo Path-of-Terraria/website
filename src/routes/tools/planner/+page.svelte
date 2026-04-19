@@ -22,8 +22,14 @@
 		plannerEdges,
 		plannerNodeMap,
 		plannerNodes,
+		plannerOffsetX,
+		plannerOffsetY,
+		plannerRawNodes,
+		plannerUniqueIdentifiers,
 		startClassOptions,
 		summarizeSelection,
+		type PassiveNodeData,
+		type PlannerEdge,
 		type PlannerNode,
 		type PlannerStartClass
 	} from '$lib/planner/passive-tree';
@@ -32,6 +38,8 @@
 	const defaultAnchorId = getAnchorId(defaultStartClass);
 	const storageKey = 'pot-passive-planner-state-v1';
 	const shareParamKey = 'build';
+	const devShareParamKey = 'devbuild';
+	const DEV_NODE_ID_BASE = 10000;
 	const startClassCodeMap: Record<PlannerStartClass, string> = {
 		melee: 'm',
 		ranged: 'r',
@@ -70,6 +78,22 @@
 	let hasLoadedStoredState = $state(false);
 	let passiveSearch = $state('');
 
+	// Dev mode state
+	let isDevMode = $state(false);
+	let devActiveTab = $state<'node' | 'dev'>('node');
+	let devPositionOverrides = $state<Record<number, { x: number; y: number }>>({});
+	let devAddedNodes = $state<Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>>([]);
+	let devRemovedNodeIds = $state<Set<number>>(new Set());
+	let devAddedEdges = $state<Set<string>>(new Set());
+	let devRemovedEdges = $state<Set<string>>(new Set());
+	let devConnectSourceId = $state<number | null>(null);
+	let devAddIdentifier = $state(plannerUniqueIdentifiers[0] ?? '');
+	let draggingNodeId = $state<number | null>(null);
+	let draggingStartMouseX = 0;
+	let draggingStartMouseY = 0;
+	let draggingStartCanvasX = 0;
+	let draggingStartCanvasY = 0;
+
 	const anchorId = $derived(getAnchorId(startClass));
 	const selectedIdSet = $derived(new Set(selectedIds));
 	const spentPoints = $derived(getSpentPoints(selectedIdSet));
@@ -78,18 +102,61 @@
 	const remainingPoints = $derived(availablePoints - spentPoints);
 	const summaryItems = $derived(summarizeSelection(selectedIdSet));
 	const visibleNodes = $derived(plannerNodes.filter((node) => !node.isHidden));
-	const focusedSourceNode = $derived(plannerNodeMap.get(focusedNodeId) ?? plannerNodeMap.get(anchorId) ?? plannerNodes[0]);
-	const focusedNode = $derived(getDisplayNode(focusedNodeId, selectedIdSet) ?? plannerNodeMap.get(anchorId) ?? plannerNodes[0]);
+
+	// Dev mode derived data
+	const devEffectiveNodes = $derived.by((): PlannerNode[] => {
+		const overridden = plannerNodes
+			.filter((n) => !devRemovedNodeIds.has(n.referenceId))
+			.map((n) => {
+				const pos = devPositionOverrides[n.referenceId];
+				if (!pos) return n;
+				return { ...n, canvasX: pos.x + plannerOffsetX, canvasY: pos.y + plannerOffsetY };
+			});
+		const added: PlannerNode[] = devAddedNodes.map((n) => ({
+			internalIdentifier: n.internalIdentifier,
+			referenceId: n.referenceId,
+			maxLevel: 1,
+			value: 0,
+			position: n.position,
+			connections: [],
+			displayName: humanizeDevIdentifier(n.internalIdentifier),
+			displayTooltip: '',
+			group: 'minor' as const,
+			canvasX: n.position.x + plannerOffsetX,
+			canvasY: n.position.y + plannerOffsetY,
+			assetPath: `/passives/${n.internalIdentifier}.png`
+		}));
+		return [...overridden, ...added];
+	});
+	const devEffectiveNodeMap = $derived(new Map(devEffectiveNodes.map((n) => [n.referenceId, n])));
+	const devEffectiveEdges = $derived.by((): PlannerEdge[] => {
+		const filtered = plannerEdges.filter((e) => {
+			if (devRemovedNodeIds.has(e.from) || devRemovedNodeIds.has(e.to)) return false;
+			if (devRemovedEdges.has(e.key)) return false;
+			return true;
+		});
+		const added: PlannerEdge[] = [...devAddedEdges].map((key) => {
+			const [from, to] = key.split(':').map(Number);
+			return { key, from, to, hidden: false, effectsOnly: false };
+		});
+		return [...filtered, ...added];
+	});
+	const activeNodeMap = $derived(isDevMode ? devEffectiveNodeMap : plannerNodeMap);
+	const activeEdges = $derived(isDevMode ? devEffectiveEdges : plannerEdges);
+	const activeVisibleNodes = $derived(isDevMode ? devEffectiveNodes.filter((n) => !n.isHidden) : visibleNodes);
+
+	const focusedSourceNode = $derived((isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(focusedNodeId) ?? (isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(anchorId) ?? plannerNodes[0]);
+	const focusedNode = $derived(getDisplayNode(focusedNodeId, selectedIdSet) ?? activeNodeMap.get(anchorId) ?? plannerNodes[0]);
 	const tooltipNodeId = $derived(pinnedTooltipNodeId ?? hoveredNodeId);
 	const hoveredNode = $derived(
-		tooltipNodeId !== null ? (getDisplayNode(tooltipNodeId, selectedIdSet) ?? plannerNodeMap.get(tooltipNodeId) ?? null) : null
+		tooltipNodeId !== null ? (getDisplayNode(tooltipNodeId, selectedIdSet) ?? activeNodeMap.get(tooltipNodeId) ?? null) : null
 	);
-	const hoveredSourceNode = $derived(tooltipNodeId !== null ? (plannerNodeMap.get(tooltipNodeId) ?? null) : null);
+	const hoveredSourceNode = $derived(tooltipNodeId !== null ? (activeNodeMap.get(tooltipNodeId) ?? null) : null);
 	const choiceChildren = $derived(focusedSourceNode ? getChoiceChildren(focusedSourceNode.referenceId) : []);
 	const activeChoiceChild = $derived(focusedSourceNode ? getActiveChoiceChild(focusedSourceNode.referenceId, selectedIdSet) : null);
 	const tooltipChoiceChildren = $derived(hoveredSourceNode ? getChoiceChildren(hoveredSourceNode.referenceId) : []);
 	const tooltipActiveChoiceChild = $derived(hoveredSourceNode ? getActiveChoiceChild(hoveredSourceNode.referenceId, selectedIdSet) : null);
-	const treeOverdrawn = $derived(remainingPoints < 0 || !isTreeStateValid(selectedIdSet, anchorId));
+	const treeOverdrawn = $derived(!isDevMode && (remainingPoints < 0 || !isTreeStateValid(selectedIdSet, anchorId)));
 	const normalizedPassiveSearch = $derived(passiveSearch.trim().toLocaleLowerCase());
 	const matchingNodeIds = $derived.by(() => {
 		if (!normalizedPassiveSearch) {
@@ -112,7 +179,7 @@
 	});
 
 	$effect(() => {
-		const startingAnchor = plannerNodeMap.get(anchorId);
+		const startingAnchor = activeNodeMap.get(anchorId);
 		if (treeScrollElement && startingAnchor && hasLoadedStoredState) {
 			treeScrollElement.scrollLeft = Math.max(0, startingAnchor.canvasX - treeScrollElement.clientWidth / 2);
 			treeScrollElement.scrollTop = Math.max(0, startingAnchor.canvasY - treeScrollElement.clientHeight / 2);
@@ -135,9 +202,28 @@
 		updateShareUrl(state);
 	});
 
+	$effect(() => {
+		if (!hasLoadedStoredState || !isDevMode) return;
+		// Access all dev state to track dependencies
+		void devPositionOverrides;
+		void devAddedNodes;
+		void devRemovedNodeIds;
+		void devAddedEdges;
+		void devRemovedEdges;
+		updateDevShareUrl();
+	});
+
 	function toggleNode(node: PlannerNode) {
 		focusedNodeId = node.referenceId;
 		drawerOpen = true;
+
+		if (isDevMode) {
+			if (devConnectSourceId !== null) {
+				devToggleConnect(node.referenceId);
+			}
+			devActiveTab = 'dev';
+			return;
+		}
 
 		if (!isSelectableNode(node)) {
 			return;
@@ -305,7 +391,7 @@
 	}
 
 	function handleTreeDrag(event: MouseEvent) {
-		if (!isDraggingTree || !treeScrollElement) {
+		if (draggingNodeId !== null || !isDraggingTree || !treeScrollElement) {
 			return;
 		}
 
@@ -355,11 +441,19 @@
 	function updateShareUrl(state: { startClass: PlannerStartClass; currentLevel: number; selectedIds: number[] }) {
 		const url = new URL(window.location.href);
 		url.searchParams.set(shareParamKey, encodeBuildState(state));
+		// Preserve ?dev param
+		if (isDevMode) url.searchParams.set('dev', '');
 		window.history.replaceState({}, '', url);
 	}
 
 	onMount(() => {
-		const buildFromUrl = decodeBuildState(new URL(window.location.href).searchParams.get(shareParamKey));
+		const pageUrl = new URL(window.location.href);
+		isDevMode = pageUrl.searchParams.has('dev');
+		if (isDevMode) {
+			decodeDevState(pageUrl.searchParams.get(devShareParamKey));
+		}
+
+		const buildFromUrl = decodeBuildState(pageUrl.searchParams.get(shareParamKey));
 		const stored = localStorage.getItem(storageKey);
 
 		if (buildFromUrl) {
@@ -401,11 +495,14 @@
 
 		hasLoadedStoredState = true;
 
-		const handleWindowMouseUp = () => endTreeDrag();
+		const handleWindowMouseUp = () => { endTreeDrag(); endNodeDrag(); };
+		const handleWindowMouseMove = (e: MouseEvent) => { handleDevNodeDragMove(e); };
 		window.addEventListener('mouseup', handleWindowMouseUp);
+		window.addEventListener('mousemove', handleWindowMouseMove);
 
 		return () => {
 			window.removeEventListener('mouseup', handleWindowMouseUp);
+			window.removeEventListener('mousemove', handleWindowMouseMove);
 		};
 	});
 
@@ -476,9 +573,312 @@
 	function clampZoom(value: number): number {
 		return Math.min(1.8, Math.max(0.45, Math.round(value * 100) / 100));
 	}
+
+	function humanizeDevIdentifier(identifier: string): string {
+		return identifier
+			.replace(/Passive$/u, '')
+			.replace(/([a-z])([A-Z])/gu, '$1 $2')
+			.trim();
+	}
+
+	function devEdgeKey(a: number, b: number): string {
+		return `${Math.min(a, b)}:${Math.max(a, b)}`;
+	}
+
+	function getDevViewportCenter(): { x: number; y: number } {
+		if (!treeScrollElement) return { x: 0, y: 0 };
+		const cx = (treeScrollElement.scrollLeft + treeScrollElement.clientWidth / 2) / zoomLevel;
+		const cy = (treeScrollElement.scrollTop + treeScrollElement.clientHeight / 2) / zoomLevel;
+		return { x: Math.round(cx - plannerOffsetX), y: Math.round(cy - plannerOffsetY) };
+	}
+
+	function beginNodeDrag(event: MouseEvent, referenceId: number) {
+		if (!isDevMode || event.button !== 0 || devConnectSourceId !== null) return;
+		event.stopPropagation();
+		draggingNodeId = referenceId;
+		draggingStartMouseX = event.clientX;
+		draggingStartMouseY = event.clientY;
+		const node = devEffectiveNodeMap.get(referenceId);
+		draggingStartCanvasX = node?.canvasX ?? 0;
+		draggingStartCanvasY = node?.canvasY ?? 0;
+	}
+
+	function handleDevNodeDragMove(event: MouseEvent) {
+		if (draggingNodeId === null) return;
+		const dx = (event.clientX - draggingStartMouseX) / zoomLevel;
+		const dy = (event.clientY - draggingStartMouseY) / zoomLevel;
+		const newCanvasX = draggingStartCanvasX + dx;
+		const newCanvasY = draggingStartCanvasY + dy;
+		const gameX = Math.round(newCanvasX - plannerOffsetX);
+		const gameY = Math.round(newCanvasY - plannerOffsetY);
+		devPositionOverrides = { ...devPositionOverrides, [draggingNodeId]: { x: gameX, y: gameY } };
+		// Also update position in devAddedNodes if it's a dev-added node
+		const addedIdx = devAddedNodes.findIndex((n) => n.referenceId === draggingNodeId);
+		if (addedIdx >= 0) {
+			devAddedNodes = devAddedNodes.map((n, i) => (i === addedIdx ? { ...n, position: { x: gameX, y: gameY } } : n));
+		}
+	}
+
+	function endNodeDrag() {
+		draggingNodeId = null;
+	}
+
+	function devRemoveNode(referenceId: number) {
+		devRemovedNodeIds = new Set([...devRemovedNodeIds, referenceId]);
+		devAddedNodes = devAddedNodes.filter((n) => n.referenceId !== referenceId);
+		// Remove any override
+		const next = { ...devPositionOverrides };
+		delete next[referenceId];
+		devPositionOverrides = next;
+		// Remove edges involving this node
+		devAddedEdges = new Set([...devAddedEdges].filter((k) => !k.split(':').includes(String(referenceId))));
+	}
+
+	function devAddNode() {
+		if (!devAddIdentifier) return;
+		const maxExistingId = Math.max(...plannerNodes.map((n) => n.referenceId), DEV_NODE_ID_BASE - 1);
+		const maxDevId = devAddedNodes.length > 0 ? Math.max(...devAddedNodes.map((n) => n.referenceId)) : 0;
+		const newId = Math.max(maxExistingId, maxDevId) + 1;
+		const center = getDevViewportCenter();
+		devAddedNodes = [...devAddedNodes, { referenceId: newId, internalIdentifier: devAddIdentifier, position: center }];
+		focusedNodeId = newId;
+	}
+
+	function devToggleConnect(nodeId: number) {
+		if (devConnectSourceId === null) {
+			devConnectSourceId = nodeId;
+			return;
+		}
+		if (devConnectSourceId === nodeId) {
+			devConnectSourceId = null;
+			return;
+		}
+		const key = devEdgeKey(devConnectSourceId, nodeId);
+		const existsInOriginal = plannerEdges.some((e) => e.key === key);
+		const addedByDev = devAddedEdges.has(key);
+		const removedByDev = devRemovedEdges.has(key);
+
+		if (addedByDev) {
+			devAddedEdges = new Set([...devAddedEdges].filter((k) => k !== key));
+		} else if (existsInOriginal && !removedByDev) {
+			devRemovedEdges = new Set([...devRemovedEdges, key]);
+		} else if (existsInOriginal && removedByDev) {
+			devRemovedEdges = new Set([...devRemovedEdges].filter((k) => k !== key));
+		} else {
+			devAddedEdges = new Set([...devAddedEdges, key]);
+		}
+		devConnectSourceId = null;
+	}
+
+	function devRemoveEdge(fromId: number, toId: number) {
+		const key = devEdgeKey(fromId, toId);
+		if (devAddedEdges.has(key)) {
+			devAddedEdges = new Set([...devAddedEdges].filter((k) => k !== key));
+		} else {
+			devRemovedEdges = new Set([...devRemovedEdges, key]);
+		}
+	}
+
+	function devResetChanges() {
+		devPositionOverrides = {};
+		devAddedNodes = [];
+		devRemovedNodeIds = new Set();
+		devAddedEdges = new Set();
+		devRemovedEdges = new Set();
+		devConnectSourceId = null;
+	}
+
+	function exportPassivesJson() {
+		const rawNodeMap = new Map(plannerRawNodes.map((n) => [n.referenceId, n]));
+		// Build per-node connection lists from the active edges
+		const connMap = new Map<number, Array<{ referenceId: number; effectsOnly?: boolean; isHidden?: boolean }>>();
+		const allNodeIds = new Set([
+			...plannerRawNodes.map((n) => n.referenceId),
+			...devAddedNodes.map((n) => n.referenceId)
+		]);
+		for (const id of allNodeIds) {
+			if (!devRemovedNodeIds.has(id)) connMap.set(id, []);
+		}
+
+		// Seed from original raw connections, excluding removed nodes/edges
+		for (const rawNode of plannerRawNodes) {
+			if (devRemovedNodeIds.has(rawNode.referenceId)) continue;
+			for (const conn of rawNode.connections ?? []) {
+				if (devRemovedNodeIds.has(conn.referenceId)) continue;
+				const key = devEdgeKey(rawNode.referenceId, conn.referenceId);
+				if (devRemovedEdges.has(key)) continue;
+				connMap.get(rawNode.referenceId)?.push({ ...conn });
+			}
+		}
+
+		// Apply added edges (bidirectional in JSON)
+		for (const key of devAddedEdges) {
+			const [a, b] = key.split(':').map(Number);
+			if (!devRemovedNodeIds.has(a) && !devRemovedNodeIds.has(b)) {
+				if (!connMap.get(a)?.some((c) => c.referenceId === b)) {
+					connMap.get(a)?.push({ referenceId: b });
+				}
+				if (!connMap.get(b)?.some((c) => c.referenceId === a)) {
+					connMap.get(b)?.push({ referenceId: a });
+				}
+			}
+		}
+
+		const output: PassiveNodeData[] = [];
+
+		for (const id of allNodeIds) {
+			if (devRemovedNodeIds.has(id)) continue;
+			const pos = devPositionOverrides[id];
+			const rawNode = rawNodeMap.get(id);
+
+			if (rawNode) {
+				output.push({
+					...rawNode,
+					position: pos ?? rawNode.position,
+					connections: connMap.get(id) ?? rawNode.connections
+				});
+			} else {
+				const added = devAddedNodes.find((n) => n.referenceId === id);
+				if (!added) continue;
+				const exportNode: PassiveNodeData = {
+					internalIdentifier: added.internalIdentifier,
+					referenceId: added.referenceId,
+					maxLevel: 1,
+					value: 0,
+					position: pos ?? added.position,
+					connections: connMap.get(id) ?? []
+				};
+				output.push(exportNode);
+			}
+		}
+
+		const blob = new Blob([JSON.stringify(output, null, '\t')], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'passives.json';
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	function encodeDevState(): string {
+		const moves = Object.entries(devPositionOverrides)
+			.map(([id, pos]) => `${Number(id).toString(36)}:${signedBase36(pos.x)}:${signedBase36(pos.y)}`)
+			.join('.');
+		const removes = [...devRemovedNodeIds].map((id) => id.toString(36)).join('.');
+		const adds = devAddedNodes
+			.map((n) => `${n.referenceId.toString(36)}:${n.internalIdentifier}:${signedBase36(n.position.x)}:${signedBase36(n.position.y)}`)
+			.join('.');
+		const edgeAdds = [...devAddedEdges]
+			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
+			.join('.');
+		const edgeRemoves = [...devRemovedEdges]
+			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
+			.join('.');
+		return [moves || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
+	}
+
+	function decodeDevState(value: string | null): boolean {
+		if (!value) return false;
+		try {
+			const [movesPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] = value.split('~');
+
+			const positions: Record<number, { x: number; y: number }> = {};
+			if (movesPart && movesPart !== '-') {
+				for (const entry of movesPart.split('.')) {
+					const [idPart, xPart, yPart] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					const x = parseSignedBase36(xPart);
+					const y = parseSignedBase36(yPart);
+					if (!isNaN(id) && !isNaN(x) && !isNaN(y)) positions[id] = { x, y };
+				}
+			}
+
+			const removed = new Set<number>();
+			if (removesPart && removesPart !== '-') {
+				for (const part of removesPart.split('.')) {
+					const id = parseInt(part, 36);
+					if (!isNaN(id)) removed.add(id);
+				}
+			}
+
+			const added: typeof devAddedNodes = [];
+			if (addsPart && addsPart !== '-') {
+				for (const entry of addsPart.split('.')) {
+					const [idPart, identifier, xPart, yPart] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					const x = parseSignedBase36(xPart);
+					const y = parseSignedBase36(yPart);
+					if (!isNaN(id) && identifier && !isNaN(x) && !isNaN(y)) {
+						added.push({ referenceId: id, internalIdentifier: identifier, position: { x, y } });
+					}
+				}
+			}
+
+			const addedEdges = new Set<string>();
+			if (edgeAddsPart && edgeAddsPart !== '-') {
+				for (const entry of edgeAddsPart.split('.')) {
+					const [aPart, bPart] = entry.split(':');
+					const a = parseInt(aPart, 36);
+					const b = parseInt(bPart, 36);
+					if (!isNaN(a) && !isNaN(b)) addedEdges.add(devEdgeKey(a, b));
+				}
+			}
+
+			const removedEdges = new Set<string>();
+			if (edgeRemovesPart && edgeRemovesPart !== '-') {
+				for (const entry of edgeRemovesPart.split('.')) {
+					const [aPart, bPart] = entry.split(':');
+					const a = parseInt(aPart, 36);
+					const b = parseInt(bPart, 36);
+					if (!isNaN(a) && !isNaN(b)) removedEdges.add(devEdgeKey(a, b));
+				}
+			}
+
+			devPositionOverrides = positions;
+			devRemovedNodeIds = removed;
+			devAddedNodes = added;
+			devAddedEdges = addedEdges;
+			devRemovedEdges = removedEdges;
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	function signedBase36(n: number): string {
+		return (n < 0 ? '-' : '') + Math.abs(n).toString(36);
+	}
+
+	function parseSignedBase36(s: string): number {
+		if (!s) return NaN;
+		const negative = s.startsWith('-');
+		const val = parseInt(negative ? s.slice(1) : s, 36);
+		return negative ? -val : val;
+	}
+
+	async function copyDevShareLink() {
+		try {
+			const url = new URL(window.location.href);
+			url.searchParams.set(devShareParamKey, encodeDevState());
+			await navigator.clipboard.writeText(url.toString());
+			toast.push('Dev layout link copied', { type: 'success', duration: 2500 });
+		} catch {
+			toast.push('Failed to copy dev link', { type: 'error', duration: 3000 });
+		}
+	}
+
+	function updateDevShareUrl() {
+		const url = new URL(window.location.href);
+		if (isDevMode) {
+			url.searchParams.set(devShareParamKey, encodeDevState());
+			window.history.replaceState({}, '', url);
+		}
+	}
 </script>
 
 <div class="planner-shell" role="presentation" onmousemove={moveTooltipDrag} onmouseup={endTooltipDrag}>
+	{#if !isDevMode}
 	<div class="control-bar">
 		<div class="control-group compact">
 			<label>
@@ -537,8 +937,9 @@
 			</button>
 		</div>
 	</div>
+	{/if}
 
-	<div class="planner-stage">
+	<div class="planner-stage" class:full-height={isDevMode}>
 		<section class={`tree-panel ${drawerOpen ? 'drawer-open' : ''}`}>
 			<div
 				class={`tree-scroll ${isDraggingTree ? 'dragging' : ''}`}
@@ -556,34 +957,44 @@
 						style={`width:${plannerCanvas.width}px;height:${plannerCanvas.height}px;transform:scale(${zoomLevel});`}
 					>
 						<svg class="tree-lines" viewBox={`0 0 ${plannerCanvas.width} ${plannerCanvas.height}`}>
-							{#each plannerEdges as edge (edge.key)}
-								{#if plannerNodeMap.has(edge.from) && plannerNodeMap.has(edge.to) && !plannerNodeMap.get(edge.to)?.isHidden && !plannerNodeMap.get(edge.from)?.isHidden}
+							{#each activeEdges as edge (edge.key)}
+								{#if activeNodeMap.has(edge.from) && activeNodeMap.has(edge.to) && !activeNodeMap.get(edge.to)?.isHidden && !activeNodeMap.get(edge.from)?.isHidden}
 									<line
-										x1={plannerNodeMap.get(edge.from)?.canvasX}
-										y1={plannerNodeMap.get(edge.from)?.canvasY}
-										x2={plannerNodeMap.get(edge.to)?.canvasX}
-										y2={plannerNodeMap.get(edge.to)?.canvasY}
-										class:active-edge={edgeIsActive(edge.from, edge.to)}
+										x1={activeNodeMap.get(edge.from)?.canvasX}
+										y1={activeNodeMap.get(edge.from)?.canvasY}
+										x2={activeNodeMap.get(edge.to)?.canvasX}
+										y2={activeNodeMap.get(edge.to)?.canvasY}
+										class:active-edge={!isDevMode && edgeIsActive(edge.from, edge.to)}
 										class:effects-edge={edge.effectsOnly}
+										class:dev-added-edge={isDevMode && devAddedEdges.has(edge.key)}
 									/>
 								{/if}
 							{/each}
 						</svg>
 
-						{#each visibleNodes as node (node.referenceId)}
-							{@const renderedNode = getRenderedNode(node)}
+						{#each activeVisibleNodes as node (node.referenceId)}
+							{@const renderedNode = isDevMode ? node : getRenderedNode(node)}
+							{@const nodeRadius = getNodeRadius(node)}
+							{@const isDevAdded = devAddedNodes.some((n) => n.referenceId === node.referenceId)}
+							{@const isDevConnectSource = devConnectSourceId === node.referenceId}
+							{@const searchClass = !isDevMode && normalizedPassiveSearch ? (matchingNodeIds.has(node.referenceId) ? 'search-match' : 'search-dim') : ''}
 							<button
 								type="button"
-								class={`tree-node ${node.group} ${getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${normalizedPassiveSearch ? (matchingNodeIds.has(node.referenceId) ? 'search-match' : 'search-dim') : ''}`}
-								style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${getNodeRadius(node) * 2}px;height:${getNodeRadius(node) * 2}px;margin-left:-${getNodeRadius(node)}px;margin-top:-${getNodeRadius(node)}px;`}
+								class={`tree-node ${node.group} ${isDevMode ? 'dev-node' : getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${isDevAdded ? 'dev-added' : ''} ${isDevConnectSource ? 'dev-connect-source' : ''} ${draggingNodeId === node.referenceId ? 'dev-dragging' : ''} ${searchClass}`}
+								style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${nodeRadius * 2}px;height:${nodeRadius * 2}px;margin-left:-${nodeRadius}px;margin-top:-${nodeRadius}px;`}
 								aria-label={renderedNode.displayName}
 								onclick={() => toggleNode(node)}
+								onmousedown={isDevMode ? (e) => beginNodeDrag(e, node.referenceId) : undefined}
 								oncontextmenu={(event) => {
 									event.preventDefault();
-									deallocateNode(node);
+									if (isDevMode) {
+										devRemoveNode(node.referenceId);
+									} else {
+										deallocateNode(node);
+									}
 								}}
 								onmouseenter={(event) => {
-									focusedNodeId = node.referenceId;
+									if (!isDevMode) focusedNodeId = node.referenceId;
 									setHover(node.referenceId, event);
 								}}
 								onmouseleave={() => {
@@ -593,7 +1004,7 @@
 								}}
 								onmousemove={moveHover}
 							>
-								<img src={renderedNode.assetPath} alt={renderedNode.displayName} />
+								<img src={renderedNode.assetPath} alt={renderedNode.displayName} draggable="false" />
 							</button>
 						{/each}
 					</div>
@@ -608,6 +1019,98 @@
 
 			{#if drawerOpen}
 				<div class="drawer-content">
+					{#if isDevMode}
+						<div class="drawer-tabs">
+							<button type="button" class={`drawer-tab-btn ${devActiveTab === 'node' ? 'active' : ''}`} onclick={() => (devActiveTab = 'node')}>Node</button>
+							<button type="button" class={`drawer-tab-btn ${devActiveTab === 'dev' ? 'active' : ''}`} onclick={() => (devActiveTab = 'dev')}>Dev</button>
+						</div>
+					{/if}
+
+					{#if isDevMode && devActiveTab === 'dev'}
+						{@const devFocused = devEffectiveNodeMap.get(focusedNodeId)}
+						{@const devFocusedPos = devFocused ? (devPositionOverrides[devFocused.referenceId] ?? devFocused.position) : null}
+						{@const devFocusedConnections = devFocused ? activeEdges.filter((e) => e.from === devFocused.referenceId || e.to === devFocused.referenceId) : []}
+						<section class="card">
+							<p class="eyebrow">Focused node</p>
+							{#if devFocused}
+								<h2>{devFocused.displayName}</h2>
+								<dl class="detail-grid">
+									<div><dt>Ref ID</dt><dd>{devFocused.referenceId}</dd></div>
+									<div><dt>Group</dt><dd>{devFocused.group}</dd></div>
+									<div><dt>Game X</dt><dd>{devFocusedPos?.x ?? '—'}</dd></div>
+									<div><dt>Game Y</dt><dd>{devFocusedPos?.y ?? '—'}</dd></div>
+								</dl>
+								<div class="dev-actions-row">
+									<button type="button" class="dev-danger-btn" onclick={() => { devRemoveNode(devFocused.referenceId); }}>
+										Remove node
+									</button>
+								</div>
+							{:else}
+								<p class="muted">No node focused.</p>
+							{/if}
+						</section>
+
+						<section class="card">
+							<p class="eyebrow">Connections</p>
+							<h2>Connect mode</h2>
+							<button
+								type="button"
+								class={`action-button secondary full-width ${devConnectSourceId !== null ? 'connect-active' : ''}`}
+								onclick={() => { devConnectSourceId = devConnectSourceId !== null ? null : (devFocused?.referenceId ?? null); }}
+							>
+								{devConnectSourceId !== null ? `Source: #${devConnectSourceId} — click target` : 'Start connecting'}
+							</button>
+							{#if devFocused && devFocusedConnections.length > 0}
+								<ul class="conn-list">
+									{#each devFocusedConnections as edge}
+										{@const neighborId = edge.from === devFocused.referenceId ? edge.to : edge.from}
+										{@const neighbor = devEffectiveNodeMap.get(neighborId)}
+										{@const isDevAdded = devAddedEdges.has(edge.key)}
+										<li>
+											<span class:dev-added-label={isDevAdded}>{neighbor?.displayName ?? `#${neighborId}`}</span>
+											<button type="button" class="mini-button" onclick={() => devRemoveEdge(devFocused.referenceId, neighborId)}>
+												Remove
+											</button>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</section>
+
+						<section class="card">
+							<p class="eyebrow">Add node</p>
+							<h2>Place new node</h2>
+							<label class="dev-label">
+								<span>Identifier</span>
+								<select bind:value={devAddIdentifier} class="dev-select">
+									{#each plannerUniqueIdentifiers as id}
+										<option value={id}>{humanizeDevIdentifier(id)}</option>
+									{/each}
+								</select>
+							</label>
+							<button type="button" class="action-button secondary full-width" onclick={devAddNode}>
+								Add at viewport center
+							</button>
+						</section>
+
+						<section class="card">
+							<p class="eyebrow">Export</p>
+							<h2>Save &amp; export</h2>
+							<div class="dev-export-buttons">
+								<button type="button" class="action-button full-width" onclick={exportPassivesJson}>
+									Download passives.json
+								</button>
+								<button type="button" class="action-button secondary full-width" onclick={copyDevShareLink}>
+									Copy dev link
+								</button>
+								<button type="button" class="action-button secondary full-width" onclick={devResetChanges}>
+									Reset all changes
+								</button>
+							</div>
+						</section>
+					{/if}
+
+					{#if !isDevMode || devActiveTab === 'node'}
 					<section class="card">
 						<p class="eyebrow">Focused node</p>
 						<h2>{focusedNode.displayName}</h2>
@@ -726,6 +1229,7 @@
 							<li>Only one mastery option can be active in a mastery slot at a time.</li>
 						</ul>
 					</section>
+					{/if}
 				</div>
 			{/if}
 		</aside>
@@ -955,6 +1459,10 @@
 		height: calc(100% - 4.2rem);
 	}
 
+	.planner-stage.full-height {
+		height: 100%;
+	}
+
 	.tree-panel {
 		height: 100%;
 		border: 1px solid rgba(148, 163, 184, 0.18);
@@ -1048,6 +1556,7 @@
 		height: 100%;
 		object-fit: contain;
 		image-rendering: pixelated;
+		pointer-events: none;
 	}
 
 	.tree-node:hover {
@@ -1336,6 +1845,159 @@
 		.details-drawer {
 			width: 320px;
 		}
+	}
+
+	/* Dev mode styles */
+	.dev-badge {
+		padding: 0.45rem 0.7rem;
+		border-radius: 10px;
+		background: linear-gradient(135deg, #a855f7, #7c3aed);
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.78rem;
+		letter-spacing: 0.1em;
+	}
+
+	.tree-node.dev-node {
+		cursor: move;
+	}
+
+	.tree-node.dev-node:hover {
+		border-color: rgba(168, 85, 247, 0.6);
+		box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.14);
+	}
+
+	.tree-node.dev-added {
+		border-color: rgba(52, 211, 153, 0.7);
+		box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
+	}
+
+	.tree-node.dev-connect-source {
+		border-color: #f59e0b;
+		box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.28);
+		animation: dev-pulse 1s ease-in-out infinite;
+	}
+
+	.tree-node.dev-dragging {
+		opacity: 0.75;
+		transform: scale(1.12);
+		z-index: 10;
+	}
+
+	@keyframes dev-pulse {
+		0%, 100% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.28); }
+		50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0.12); }
+	}
+
+	:global(.dev-added-edge) {
+		stroke: rgba(168, 85, 247, 0.7);
+		stroke-dasharray: 6 4;
+	}
+
+	.drawer-tabs {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.4rem;
+		margin-bottom: 0.65rem;
+	}
+
+	.drawer-tab-btn {
+		padding: 0.55rem;
+		border: 1px solid rgba(148, 163, 184, 0.24);
+		border-radius: 12px;
+		background: rgba(30, 41, 59, 0.96);
+		color: #94a3b8;
+		font-weight: 700;
+		font-size: 0.82rem;
+		cursor: pointer;
+	}
+
+	.drawer-tab-btn.active {
+		background: rgba(168, 85, 247, 0.18);
+		border-color: rgba(168, 85, 247, 0.5);
+		color: #e9d5ff;
+	}
+
+	.dev-actions-row {
+		margin-top: 0.75rem;
+	}
+
+	.dev-danger-btn {
+		width: 100%;
+		padding: 0.6rem;
+		border: 1px solid rgba(239, 68, 68, 0.4);
+		border-radius: 12px;
+		background: rgba(127, 29, 29, 0.5);
+		color: #fca5a5;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.dev-danger-btn:hover {
+		background: rgba(185, 28, 28, 0.6);
+	}
+
+	.full-width {
+		width: 100%;
+		text-align: center;
+		justify-content: center;
+	}
+
+	.connect-active {
+		border-color: rgba(245, 158, 11, 0.6) !important;
+		color: #fbbf24;
+	}
+
+	.conn-list {
+		margin: 0.75rem 0 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		gap: 0.4rem;
+	}
+
+	.conn-list li {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.45rem 0.6rem;
+		border-radius: 10px;
+		background: rgba(30, 41, 59, 0.7);
+		font-size: 0.85rem;
+	}
+
+	.dev-added-label {
+		color: #c4b5fd;
+	}
+
+	.dev-label {
+		display: grid;
+		gap: 0.3rem;
+		margin-bottom: 0.65rem;
+		font-size: 0.82rem;
+	}
+
+	.dev-label span {
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		font-size: 0.7rem;
+		color: #94a3b8;
+	}
+
+	.dev-select {
+		width: 100%;
+		padding: 0.55rem 0.7rem;
+		border: 1px solid rgba(148, 163, 184, 0.24);
+		border-radius: 12px;
+		background: rgba(30, 41, 59, 0.96);
+		color: #f8fafc;
+	}
+
+	.dev-export-buttons {
+		display: grid;
+		gap: 0.5rem;
+		margin-top: 0.2rem;
 	}
 
 	@media (max-width: 760px) {
