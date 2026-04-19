@@ -36,8 +36,4 @@ export class PlayerService {
         }
         return {} as IPlayer;
     }
-
-    public async deletePlayer(id: string): Promise<void> {
-        await this.httpService.delete(`Player/${id}`);
-    }
 }
