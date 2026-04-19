@@ -411,14 +411,15 @@
 		event.preventDefault();
 
 		const previousZoom = zoomLevel;
-		const nextZoom = clampZoom(previousZoom + (event.deltaY < 0 ? 0.1 : -0.1));
+		const nextZoom = clampZoom(previousZoom + (event.deltaY < 0 ? 0.05 : -0.05));
 		if (nextZoom === previousZoom) {
 			return;
 		}
 
 		const rect = treeScrollElement.getBoundingClientRect();
-		const offsetX = event.clientX - rect.left;
-		const offsetY = event.clientY - rect.top;
+		// Anchor to viewport center so zoom doesn't drift left
+		const offsetX = rect.width / 2;
+		const offsetY = rect.height / 2;
 		const contentX = (treeScrollElement.scrollLeft + offsetX) / previousZoom;
 		const contentY = (treeScrollElement.scrollTop + offsetY) / previousZoom;
 
@@ -571,7 +572,7 @@
 	}
 
 	function clampZoom(value: number): number {
-		return Math.min(1.8, Math.max(0.45, Math.round(value * 100) / 100));
+		return Math.min(1.8, Math.max(0.25, Math.round(value * 100) / 100));
 	}
 
 	function humanizeDevIdentifier(identifier: string): string {
