@@ -62,8 +62,8 @@
 <div class="container mx-auto px-4 py-24 text-white">
     {#if loading}
         <div class="flex items-center justify-center">
-            <Spinner class="mr-3" size="4" />
-            <P size="lg">Loading supporter packs...</P>
+            <Spinner class="mr-3 text-white" size="4" />
+            <P class="text-gray-200" size="lg">Loading supporter packs...</P>
         </div>
     {:else if error}
         <div class="flex items-center justify-center">

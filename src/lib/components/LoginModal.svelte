@@ -2,6 +2,7 @@
     import {Button, Modal, Label, Input} from 'flowbite-svelte';
 
     let modalOpen = $state(false);
+    let isSubmitting = $state(false);
 
     import {UserService} from "$lib/services/user-service";
     import {toast} from '$lib/toast'
@@ -16,6 +17,7 @@
     async function signup() {
         await userService.signup(email, password, profileName);
         toast.push("Account created");
+        modalOpen = false;
     }
 
     async function login() {
@@ -26,17 +28,31 @@
     async function forgotPassword() {
         await userService.forgotPassword(email);
         toast.push("If an account exists, an email will be sent with a reset link");
+        view = "login";
     }
 
-    async function onaction() {
-        console.log('test');
-        if (view === 'login') {
-            return await login();
-        } else if (view === 'register') {
-            return await signup();
-        } else {
-            return await forgotPassword();
+    async function handleSubmit() {
+        if (isSubmitting) {
+            return;
         }
+
+        isSubmitting = true;
+        try {
+            if (view === 'login') {
+                await login();
+            } else if (view === 'register') {
+                await signup();
+            } else {
+                await forgotPassword();
+            }
+        } finally {
+            isSubmitting = false;
+        }
+    }
+
+    function onaction() {
+        void handleSubmit();
+        return false;
     }
 </script>
 
@@ -47,6 +63,9 @@
     title="Login / Signup"
     bind:open={modalOpen}
     {onaction}
+    dismissable={!isSubmitting}
+    outsideclose={!isSubmitting}
+    permanent={isSubmitting}
     class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop:bg-black/70"
     headerClass="border-b border-white/10 bg-white/[0.03] text-white"
     bodyClass="bg-transparent text-white"
@@ -80,22 +99,22 @@
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'register'}>
                         Register Instead
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password}>
-                        Login
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || isSubmitting}>
+                        {isSubmitting ? 'Logging In...' : 'Login'}
                     </Button>
                 {:else if view === 'register'}
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Signin Instead
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || !profileName}>
-                        Signup
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || !profileName || isSubmitting}>
+                        {isSubmitting ? 'Signing Up...' : 'Signup'}
                     </Button>
                 {:else}
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Back to Login
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email}>
-                        Send Reset Email
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || isSubmitting}>
+                        {isSubmitting ? 'Sending...' : 'Send Reset Email'}
                     </Button>
                 {/if}
             </div>
