@@ -53,6 +53,12 @@ export interface PlannerSummaryItem {
 	tooltip: string;
 }
 
+export interface PassivePresentation {
+	displayName: string;
+	displayTooltip: string;
+	assetPath: string;
+}
+
 const rawNodes = passivesJson as PassiveNodeData[];
 const parser = new HjsonParserService();
 const localization = parser.parseHjsonContent(passiveLocalizationRaw, 'Passives');
@@ -73,18 +79,17 @@ const offsetX = -bounds.minX + padding;
 const offsetY = -bounds.minY + padding;
 
 export const plannerNodes: PlannerNode[] = rawNodes.map((node) => {
-	const nameKey = `Mods.PathOfTerraria.Passives.${node.internalIdentifier}.Name`;
-	const tooltipKey = `Mods.PathOfTerraria.Passives.${node.internalIdentifier}.Tooltip`;
+	const presentation = getPassivePresentation(node.internalIdentifier);
 
 	return {
 		...node,
 		value: node.value ?? 0,
-		displayName: localization[nameKey] ?? humanizeIdentifier(node.internalIdentifier),
-		displayTooltip: localization[tooltipKey] ?? '',
+		displayName: presentation.displayName,
+		displayTooltip: presentation.displayTooltip,
 		group: getNodeGroup(node),
 		canvasX: node.position.x + offsetX,
 		canvasY: node.position.y + offsetY,
-		assetPath: getAssetPath(node.internalIdentifier)
+		assetPath: presentation.assetPath
 	};
 });
 
@@ -95,11 +100,10 @@ export const plannerCanvas = {
 	width: bounds.maxX - bounds.minX + padding * 2,
 	height: bounds.maxY - bounds.minY + padding * 2
 };
-
 export const plannerOffsetX = offsetX;
 export const plannerOffsetY = offsetY;
 export const plannerRawNodes: readonly PassiveNodeData[] = rawNodes;
-export const plannerUniqueIdentifiers: readonly string[] = [...new Set(rawNodes.map((n) => n.internalIdentifier))].sort();
+export const plannerUniqueIdentifiers: readonly string[] = [...new Set(rawNodes.map((node) => node.internalIdentifier))].sort();
 
 export const startClassOptions: Array<{ value: PlannerStartClass; label: string; anchorId: number }> = [
 	{ value: 'melee', label: 'Melee', anchorId: 0 },
@@ -173,6 +177,70 @@ export function canDeallocateNode(nodeId: number, selectedIds: Set<number>, anch
 	nextSelected.delete(nodeId);
 
 	return isValidTreeState(nextSelected, anchorId);
+}
+
+export function getPrunedSelectionAfterDeallocate(nodeId: number, selectedIds: Set<number>, anchorId: number): Set<number> {
+	const node = plannerNodeMap.get(nodeId);
+
+	if (!node || node.group === 'anchor' || !selectedIds.has(nodeId)) {
+		return new Set(selectedIds);
+	}
+
+	const nextSelected = new Set(selectedIds);
+	nextSelected.delete(nodeId);
+
+	const choiceParentId = choiceParentByChild.get(nodeId);
+	if (choiceParentId !== undefined) {
+		nextSelected.delete(choiceParentId);
+	}
+
+	for (const childId of choiceChildrenByHub.get(nodeId) ?? []) {
+		nextSelected.delete(childId);
+	}
+
+	let changed = true;
+	while (changed) {
+		changed = false;
+
+		const connected = getReachableSelectedIds(anchorId, nextSelected);
+		for (const selectedId of [...nextSelected]) {
+			const selectedNode = plannerNodeMap.get(selectedId);
+			if (!selectedNode) {
+				nextSelected.delete(selectedId);
+				changed = true;
+				continue;
+			}
+
+			if (!selectedNode.isHidden && !connected.has(selectedId)) {
+				nextSelected.delete(selectedId);
+				changed = true;
+			}
+		}
+
+		for (const [hubId, childIds] of choiceChildrenByHub.entries()) {
+			if (!nextSelected.has(hubId)) {
+				for (const childId of childIds) {
+					if (nextSelected.delete(childId)) {
+						changed = true;
+					}
+				}
+			}
+		}
+
+		for (const selectedId of [...nextSelected]) {
+			const selectedNode = plannerNodeMap.get(selectedId);
+			if (!selectedNode || selectedNode.group === 'anchor' || selectedNode.isHidden) {
+				continue;
+			}
+
+			if (countAllocatedNeighbors(selectedId, nextSelected) < (selectedNode.requiredAllocatedEdges ?? 1)) {
+				nextSelected.delete(selectedId);
+				changed = true;
+			}
+		}
+	}
+
+	return nextSelected;
 }
 
 export function applyChoiceSelection(nodeId: number, childId: number, selectedIds: Set<number>): Set<number> {
@@ -256,6 +324,17 @@ export function getSpentPoints(selectedIds: Set<number>): number {
 
 export function getFormattedTooltip(node: Pick<PlannerNode, 'displayTooltip' | 'value'>): string {
 	return formatTooltip(node.displayTooltip, node.value);
+}
+
+export function getPassivePresentation(internalIdentifier: string): PassivePresentation {
+	const nameKey = `Mods.PathOfTerraria.Passives.${internalIdentifier}.Name`;
+	const tooltipKey = `Mods.PathOfTerraria.Passives.${internalIdentifier}.Tooltip`;
+
+	return {
+		displayName: localization[nameKey] ?? humanizeIdentifier(internalIdentifier),
+		displayTooltip: localization[tooltipKey] ?? '',
+		assetPath: getAssetPath(internalIdentifier)
+	};
 }
 
 export function getNodeRadius(node: PlannerNode): number {

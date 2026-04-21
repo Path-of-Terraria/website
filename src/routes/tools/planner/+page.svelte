@@ -5,7 +5,6 @@
 	import {
 		applyChoiceSelection,
 		canAllocateNode,
-		canDeallocateNode,
 		clearChoiceSelection,
 		getActiveChoiceChild,
 		getAutoAllocatePath,
@@ -14,6 +13,8 @@
 		getDisplayNode,
 		getFormattedTooltip,
 		getNodeRadius,
+		getPassivePresentation,
+		getPrunedSelectionAfterDeallocate,
 		getSpentPoints,
 		isChoiceHub,
 		isSelectableNode,
@@ -88,7 +89,8 @@
 	let devAddedEdges = $state<Set<string>>(new Set());
 	let devRemovedEdges = $state<Set<string>>(new Set());
 	let devConnectSourceId = $state<number | null>(null);
-	let devAddIdentifier = $state(plannerUniqueIdentifiers[0] ?? '');
+	let devAddIdentifier = $state('');
+	let devAddSearch = $state('');
 	let draggingNodeId = $state<number | null>(null);
 	let shouldCenterOnAnchor = $state(true);
 	let draggingStartMouseX = 0;
@@ -104,6 +106,26 @@
 	const remainingPoints = $derived(availablePoints - spentPoints);
 	const summaryItems = $derived(summarizeSelection(selectedIdSet));
 	const visibleNodes = $derived(plannerNodes.filter((node) => !node.isHidden));
+	const devAddOptions = $derived.by(() =>
+		plannerUniqueIdentifiers
+			.map((identifier) => {
+				const presentation = getPassivePresentation(identifier);
+				return {
+					identifier,
+					displayName: presentation.displayName,
+					searchText: `${presentation.displayName} ${identifier}`.toLocaleLowerCase()
+				};
+			})
+			.sort((left, right) => left.displayName.localeCompare(right.displayName) || left.identifier.localeCompare(right.identifier))
+	);
+	const filteredDevAddOptions = $derived.by(() => {
+		const query = devAddSearch.trim().toLocaleLowerCase();
+		if (!query) {
+			return devAddOptions;
+		}
+
+		return devAddOptions.filter((option) => option.searchText.includes(query));
+	});
 
 	// Dev mode derived data
 	const devEffectiveNodes = $derived.by((): PlannerNode[] => {
@@ -123,19 +145,17 @@
 				};
 			});
 		const added: PlannerNode[] = devAddedNodes.map((n) => ({
+			...getPassivePresentation(n.internalIdentifier),
 			internalIdentifier: n.internalIdentifier,
 			referenceId: n.referenceId,
 			maxLevel: 1,
 			value: devValueOverrides[n.referenceId] ?? 0,
 			position: n.position,
 			connections: [],
-			displayName: humanizeDevIdentifier(n.internalIdentifier),
-			displayTooltip: '',
 			group: 'minor' as const,
 			requiredAllocatedEdges: devRequirementOverrides[n.referenceId],
 			canvasX: n.position.x + plannerOffsetX,
-			canvasY: n.position.y + plannerOffsetY,
-			assetPath: `/passives/${n.internalIdentifier}.png`
+			canvasY: n.position.y + plannerOffsetY
 		}));
 		return [...overridden, ...added];
 	});
@@ -199,6 +219,14 @@
 	});
 
 	$effect(() => {
+		if (devAddIdentifier && devAddOptions.some((option) => option.identifier === devAddIdentifier)) {
+			return;
+		}
+
+		devAddIdentifier = devAddOptions[0]?.identifier ?? '';
+	});
+
+	$effect(() => {
 		if (!treeScrollElement || !hasLoadedStoredState || !shouldCenterOnAnchor) return;
 		const startingAnchor = activeNodeMap.get(anchorId);
 		if (!startingAnchor) return;
@@ -259,9 +287,7 @@
 		}
 
 		if (selectedIdSet.has(node.referenceId)) {
-			if (canDeallocateNode(node.referenceId, selectedIdSet, anchorId)) {
-				selectedIds = selectedIds.filter((id) => id !== node.referenceId);
-			}
+			selectedIds = [...getPrunedSelectionAfterDeallocate(node.referenceId, selectedIdSet, anchorId)];
 			return;
 		}
 
@@ -298,8 +324,8 @@
 			return;
 		}
 
-		if (selectedIdSet.has(node.referenceId) && canDeallocateNode(node.referenceId, selectedIdSet, anchorId)) {
-			selectedIds = selectedIds.filter((id) => id !== node.referenceId);
+		if (selectedIdSet.has(node.referenceId)) {
+			selectedIds = [...getPrunedSelectionAfterDeallocate(node.referenceId, selectedIdSet, anchorId)];
 		}
 	}
 
@@ -597,13 +623,6 @@
 
 	function clampZoom(value: number): number {
 		return Math.min(1.8, Math.max(0.25, Math.round(value * 100) / 100));
-	}
-
-	function humanizeDevIdentifier(identifier: string): string {
-		return identifier
-			.replace(/Passive$/u, '')
-			.replace(/([a-z])([A-Z])/gu, '$1 $2')
-			.trim();
 	}
 
 	function devEdgeKey(a: number, b: number): string {
@@ -1210,13 +1229,25 @@
 							<p class="eyebrow">Add node</p>
 							<h2>Place new node</h2>
 							<label class="dev-label">
+								<span>Search</span>
+								<input
+									bind:value={devAddSearch}
+									class="dev-select"
+									type="search"
+									placeholder="Search by passive name or identifier"
+								/>
+							</label>
+							<label class="dev-label">
 								<span>Identifier</span>
 								<select bind:value={devAddIdentifier} class="dev-select">
-									{#each plannerUniqueIdentifiers as id}
-										<option value={id}>{humanizeDevIdentifier(id)}</option>
+									{#each filteredDevAddOptions as option}
+										<option value={option.identifier}>{option.displayName}</option>
 									{/each}
 								</select>
 							</label>
+							<p class="muted dev-select-summary">
+								{filteredDevAddOptions.length} passive{filteredDevAddOptions.length === 1 ? '' : 's'} shown
+							</p>
 							<button type="button" class="action-button secondary full-width" onclick={devAddNode}>
 								Add at viewport center
 							</button>
@@ -2128,6 +2159,11 @@
 		border-radius: 12px;
 		background: rgba(30, 41, 59, 0.96);
 		color: #f8fafc;
+	}
+
+	.dev-select-summary {
+		margin: -0.15rem 0 0.65rem;
+		font-size: 0.76rem;
 	}
 
 	.dev-export-buttons {
