@@ -53,7 +53,7 @@
 
     <section class="relative">
         <div class="mx-auto max-w-4xl text-center">
-            <h1 class="mt-5 text-3xl font-black tracking-tight text-white md:text-4xl pt-32">
+            <h1 class="mt-5 text-3xl font-black tracking-tight text-white md:text-4xl pt-12">
                 Path of Terraria Leaderboards
             </h1>
         </div>
