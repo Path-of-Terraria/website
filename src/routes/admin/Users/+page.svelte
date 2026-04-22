@@ -5,8 +5,8 @@
     import { page } from "$app/state";
     import { goto } from "$app/navigation";
     import { Button, Input, Card, Label, Checkbox, P, Select } from "flowbite-svelte";
-    import type {IUser} from "$lib/stores/user-store";
-    import type {AvailableBenefitsResponse} from "$lib/services/benefit-service";
+    import type { IUser } from "$lib/stores/user-store";
+    import type { AvailableBenefitsResponse } from "$lib/services/benefit-service";
 
     let userService = new UserService();
     let benefitsService = new BenefitsService();
@@ -26,7 +26,7 @@
     let benefitsSaveSuccess = $state(false);
     let benefitsSaveError = $state("");
 
-    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ManageBenefits"];
+    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ManageBenefits", "SendAnnouncements"];
 
     let selectedRoles: string[] = $state([]);
 
@@ -39,7 +39,7 @@
     }
 
     function normalizeSubscription(subscription: string) {
-        return subscription.replace(/\s+/g, '');
+        return subscription.replace(/\s+/g, "");
     }
 
     function findMatchingSubscription() {
@@ -54,7 +54,7 @@
 
         const normalizedUser = normalizeSubscription(user?.supporterSubscription);
         console.log("Normalized user subscription:", normalizedUser);
-        return availableBenefits.subscriptions.find(sub => normalizeSubscription(sub) === normalizedUser) || "";
+        return availableBenefits.subscriptions.find((sub) => normalizeSubscription(sub) === normalizedUser) || "";
     }
 
     onMount(() => {
@@ -101,7 +101,7 @@
 
     function toggleRole(role: string) {
         if (selectedRoles.includes(role)) {
-            selectedRoles = selectedRoles.filter(r => r !== role);
+            selectedRoles = selectedRoles.filter((r) => r !== role);
         } else {
             selectedRoles = [...selectedRoles, role];
         }
@@ -149,7 +149,7 @@
     }
 
     function removeSupporterPack(packToRemove: string) {
-        selectedSupporterPacks = selectedSupporterPacks.filter(pack => pack !== packToRemove);
+        selectedSupporterPacks = selectedSupporterPacks.filter((pack) => pack !== packToRemove);
     }
 
     async function saveBenefits() {
@@ -169,7 +169,6 @@
 
             if (response) {
                 benefitsSaveSuccess = true;
-                // Update local user object with new benefits
                 user = {
                     ...user,
                     supporterPacks: selectedSupporterPacks,
@@ -184,7 +183,6 @@
         } finally {
             benefitsSaveLoading = false;
 
-            // Clear success message after 3 seconds
             if (benefitsSaveSuccess) {
                 setTimeout(() => {
                     benefitsSaveSuccess = false;
@@ -195,9 +193,14 @@
 </script>
 
 <div class="container mx-auto px-4 py-24 text-white">
-    <div class="mb-4 flex items-center">
-        <a href="/admin" class="mr-3 text-sm font-semibold text-sky-300 hover:underline">← Back to Admin</a>
-        <h1 class="text-3xl font-black tracking-tight text-white">User Management</h1>
+    <div class="mx-auto mb-6 max-w-md">
+        <a
+            href="/admin"
+            class="inline-flex items-center rounded-full border border-sky-400/20 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-200 transition hover:border-sky-300/40 hover:bg-sky-400/16 hover:text-white"
+        >
+            &larr; Back to Admin
+        </a>
+        <h1 class="mt-4 text-3xl font-black tracking-tight text-white">User Management</h1>
     </div>
 
     <div class="mx-auto mb-8 max-w-md rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.34)] backdrop-blur-sm">
@@ -217,7 +220,7 @@
                         class="ml-2 border-sky-400/20 bg-sky-500 text-white hover:bg-sky-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
                         disabled={loading}
                     >
-                        {loading ? 'Searching...' : 'Search'}
+                        {loading ? "Searching..." : "Search"}
                     </Button>
                 </div>
                 {#if error}
@@ -269,7 +272,7 @@
                             disabled={saveLoading}
                             onclick={saveUserData}
                         >
-                            {saveLoading ? 'Saving...' : 'Save Changes'}
+                            {saveLoading ? "Saving..." : "Save Changes"}
                         </Button>
 
                         {#if saveSuccess}
@@ -282,18 +285,15 @@
                     </div>
                 </div>
 
-                <!-- Benefits Management Section -->
                 <div class="mt-6 border-t border-white/10 pt-4">
                     <h6 class="mb-3 text-lg font-medium text-gray-200">Benefits Management</h6>
 
                     <div class="space-y-4">
-                        <!-- Supporter Packs -->
                         <div>
                             <Label class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Supporter Packs</Label>
 
-                            <!-- Display current supporter packs as chips -->
                             {#if selectedSupporterPacks.length > 0}
-                                <div class="flex flex-wrap gap-2 mb-3">
+                                <div class="mb-3 flex flex-wrap gap-2">
                                     {#each selectedSupporterPacks as pack}
                                         <div class="flex items-center rounded-full border border-sky-400/20 bg-sky-400/12 px-3 py-1 text-sm font-medium text-sky-100">
                                             {pack}
@@ -302,7 +302,7 @@
                                                 class="ml-2 text-sky-200 transition-colors hover:text-white"
                                                 onclick={() => removeSupporterPack(pack)}
                                             >
-                                                ×
+                                                &times;
                                             </button>
                                         </div>
                                     {/each}
@@ -311,7 +311,6 @@
                                 <p class="mb-3 text-sm text-gray-400">No supporter packs assigned</p>
                             {/if}
 
-                            <!-- Dropdown to add new supporter pack -->
                             <div class="flex gap-2">
                                 <Select
                                     id="newSupporterPack"
@@ -320,7 +319,7 @@
                                     class="flex-1 border-white/10 bg-white/8 text-white"
                                 >
                                     <option value="">Select supporter pack</option>
-                                    {#each availableBenefits.supporterPacks.filter(pack => !selectedSupporterPacks.includes(pack)) as pack}
+                                    {#each availableBenefits.supporterPacks.filter((pack) => !selectedSupporterPacks.includes(pack)) as pack}
                                         <option value={pack}>{pack}</option>
                                     {/each}
                                 </Select>
@@ -336,7 +335,6 @@
                             </div>
                         </div>
 
-                        <!-- Subscription Dropdown -->
                         <div>
                             <Label for="subscription" class="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-300">Subscription</Label>
                             <Select
@@ -352,7 +350,6 @@
                             </Select>
                         </div>
 
-                        <!-- Benefits Save Button -->
                         <div class="mt-4">
                             <Button
                                 size="sm"
@@ -360,7 +357,7 @@
                                 disabled={benefitsSaveLoading}
                                 onclick={saveBenefits}
                             >
-                                {benefitsSaveLoading ? 'Saving Benefits...' : 'Save Benefits'}
+                                {benefitsSaveLoading ? "Saving Benefits..." : "Save Benefits"}
                             </Button>
 
                             {#if benefitsSaveSuccess}

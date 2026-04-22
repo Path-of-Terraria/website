@@ -16,6 +16,15 @@
                     linkText="Manage Users"
                 ></FeatureCard>
             </div>
+            <div class="mx-auto w-full">
+                <FeatureCard
+                    title="Announcements"
+                    description="Broadcast an announcement to all connected mod clients"
+                    link="/admin/Announcements"
+                    target=""
+                    linkText="Send Announcement"
+                ></FeatureCard>
+            </div>
         </div>
     </div>
-</div>'
+</div>
