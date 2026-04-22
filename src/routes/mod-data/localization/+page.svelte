@@ -730,7 +730,7 @@
             <label class="flex items-center">
                 <input
                         type="checkbox"
-                        class="mr-2"
+                        class="mr-2 h-4 w-4 rounded border-white/20 bg-white/8 text-sky-400 focus:ring-2 focus:ring-sky-400/40 focus:ring-offset-0"
                         bind:checked={hideTranslatedEntries}
                 />
                 <span class="text-sm text-gray-300">Hide already translated entries</span>
