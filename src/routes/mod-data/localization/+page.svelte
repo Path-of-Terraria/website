@@ -1,12 +1,15 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
-    import {TranslationEntryService} from '$lib/services/translation-entry-service';
-    import {HjsonParserService} from '$lib/services/hjson-parser-service';
-    import type {IEnglishTranslation, ITranslationEntry} from '$lib/models/localization';
+    import { onMount } from 'svelte';
+    import { goto } from "$app/navigation";
+    import { page } from "$app/state";
+    import { TranslationEntryService } from '$lib/services/translation-entry-service';
+    import { HjsonParserService } from '$lib/services/hjson-parser-service';
+    import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
     import { toast } from '$lib/toast';
-    import {UserService} from '$lib/services/user-service';
+    import { UserService } from '$lib/services/user-service';
     import {IsLoggedIn} from "$lib/services/session-service";
     import { Button } from 'flowbite-svelte';
+    import { ChevronDownOutline } from 'flowbite-svelte-icons';
 
     // Available languages for translation
     const availableLanguages = [
@@ -45,7 +48,9 @@
     let importStats = $state({total: 0, added: 0, skipped: 0});
     let isImporting: boolean = $state(false);
     let selectedImportCategory: string = $state('');
-
+    let importCategoryDropdownOpen: boolean = $state(false);
+    let importCategoryDropdownContainer: HTMLDivElement | null = $state(null);
+    let hjsonImportModal: HTMLDivElement | null = $state(null);
     const translationService = new TranslationEntryService();
     const hjsonParserService = new HjsonParserService();
     const userService = new UserService();
@@ -53,12 +58,89 @@
     // Flag to track if user has edit permissions
     let canEditTranslations = $state(false);
 
-    onMount(async () => {
-        // Only fetch English translations on mount
-        await fetchEnglishTranslations();
-        
-        // Check if user has EditTranslations role
-        canEditTranslations = await userService.hasRole("EditTranslations");
+    function isValidLanguage(languageCode: string) {
+        return availableLanguages.some((language) => language.code === languageCode);
+    }
+
+    function getSelectedLanguageName() {
+        return availableLanguages.find((language) => language.code === selectedLanguage)?.name ?? '';
+    }
+
+    async function updateLanguageQueryParam(languageCode: string) {
+        const url = new URL(page.url);
+
+        if (languageCode) {
+            url.searchParams.set("language", languageCode);
+        } else {
+            url.searchParams.delete("language");
+        }
+
+        await goto(url.toString(), { replaceState: true, keepFocus: true, noScroll: true });
+    }
+
+    async function applySelectedLanguage(languageCode: string) {
+        if (!isValidLanguage(languageCode)) {
+            return;
+        }
+
+        selectedLanguage = languageCode;
+        selectedImportCategory = '';
+        importCategoryDropdownOpen = false;
+        hjsonContent = '';
+        importStats = { total: 0, added: 0, skipped: 0 };
+        await updateLanguageQueryParam(languageCode);
+        await fetchLanguageTranslations();
+    }
+
+    async function clearSelectedLanguage() {
+        selectedLanguage = '';
+        languageTranslations = [];
+        categories = [];
+        categorizedTranslations = {};
+        activeCategory = '';
+        expandedGroups = new Set();
+        showTranslationTable = false;
+        selectedImportCategory = '';
+        importCategoryDropdownOpen = false;
+        hjsonContent = '';
+        importStats = { total: 0, added: 0, skipped: 0 };
+        await updateLanguageQueryParam('');
+    }
+
+    function openHjsonImportModal() {
+        hjsonImportModal?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeHjsonImportModal() {
+        hjsonImportModal?.classList.add('hidden');
+        document.body.style.overflow = '';
+        importCategoryDropdownOpen = false;
+    }
+
+    onMount(() => {
+        const handleDocumentClick = (event: MouseEvent) => {
+            if (importCategoryDropdownContainer && !importCategoryDropdownContainer.contains(event.target as Node)) {
+                importCategoryDropdownOpen = false;
+            }
+        };
+
+        document.addEventListener("click", handleDocumentClick);
+
+        (async () => {
+            await fetchEnglishTranslations();
+            canEditTranslations = await userService.hasRole("EditTranslations");
+
+            const languageFromQuery = page.url.searchParams.get("language");
+            if (languageFromQuery && isValidLanguage(languageFromQuery)) {
+                await applySelectedLanguage(languageFromQuery);
+            }
+        })();
+
+        return () => {
+            document.removeEventListener("click", handleDocumentClick);
+            document.body.style.overflow = '';
+        };
     });
 
     /**
@@ -491,8 +573,10 @@
                 {#each availableLanguages as language}
                     <Button
                         class="cursor-pointer border-white/10 bg-white/8 text-white hover:bg-white/12"
-                       onclick={() => selectedLanguage = language.code}
-                       type="button"
+                        onclick={() => {
+                            selectedLanguage = language.code;
+                        }}
+                        type="button"
                     >
                         {language.name}
                     </Button>
@@ -503,7 +587,7 @@
                 <button
                         class="cursor-pointer rounded-md bg-sky-500 px-4 py-2 text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={!selectedLanguage}
-                        onclick={fetchLanguageTranslations}
+                        onclick={() => applySelectedLanguage(selectedLanguage)}
                 >
                     Continue
                 </button>
@@ -514,56 +598,69 @@
             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
     {:else}
-        <!-- Header with language info and back button -->
-        <div class="mb-5 flex items-center justify-between">
+        <!-- Header with language info and reset button -->
+        <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-                <span class="text-lg font-medium text-gray-300">Selected language: </span>
-                <span class="text-lg font-bold text-white">{availableLanguages.find(l => l.code === selectedLanguage)?.name}</span>
-            </div>
-            <div class="flex space-x-2">
                 <button
-                        class="flex cursor-pointer items-center rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400"
-                        onclick={() => document.getElementById('hjsonImportModal')?.classList.remove('hidden')}
+                    class="mb-3 flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white"
+                    onclick={clearSelectedLanguage}
+                >
+                    <span class="mr-1">&larr;</span> Select a Language
+                </button>
+                <span class="text-lg font-medium text-gray-300">Selected language: </span>
+                <span class="text-lg font-bold text-white">{getSelectedLanguageName()}</span>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button
+                    class="flex cursor-pointer items-center rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400"
+                    onclick={openHjsonImportModal}
                 >
                     Import HJSON
-                </button>
-                <button
-                        class="flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white"
-                        onclick={() => showTranslationTable = false}
-                >
-                    <span class="mr-1">←</span> Change Language
                 </button>
             </div>
         </div>
 
         <!-- HJSON Import Modal -->
         <div id="hjsonImportModal"
-             class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/65">
-            <div class="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+               bind:this={hjsonImportModal}
+               class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/65">
+            <div class="max-h-[88vh] w-[min(92vw,72rem)] overflow-y-auto overscroll-contain rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(9,14,24,0.97))] p-6 text-white shadow-[0_30px_80px_rgba(0,0,0,0.45)] sm:p-8">
                 <h2 class="mb-4 text-xl font-semibold text-white">Import HJSON Translations</h2>
                 <p class="mb-4 text-gray-300">Paste your HJSON content below. This will fill in missing translations for the selected
                     language ({availableLanguages.find(l => l.code === selectedLanguage)?.name}).</p>
 
-                <textarea
-                        class="mb-4 h-64 w-full rounded-md border border-white/10 bg-white/8 p-3 font-mono text-sm text-white placeholder:text-gray-500"
-                        placeholder="Paste your HJSON content here..."
-                        bind:value={hjsonContent}
-                ></textarea>
-
-                <div class="mb-4">
+                <div class="relative mb-4" bind:this={importCategoryDropdownContainer}>
                     <label for="categorySelect" class="mb-1 block text-sm font-medium text-gray-300">Select
                         Category</label>
-                    <select
+                    <Button
                             id="categorySelect"
-                            class="w-full rounded-md border border-white/10 bg-white/8 p-2 text-white"
-                            bind:value={selectedImportCategory}
-                            required
+                            class="w-full justify-between border-white/10 bg-white/8 font-normal text-white hover:bg-white/12"
+                            disabled={categories.length === 0}
+                            onclick={() => {
+                                if (categories.length > 0) {
+                                    importCategoryDropdownOpen = !importCategoryDropdownOpen;
+                                }
+                            }}
                     >
-                        <option value="" disabled>Select a category</option>
-                        {#each categories as category}
-                            <option value={category}>{category}</option>
-                        {/each}
-                    </select>
+                        <span>{selectedImportCategory || "Select a category"}</span>
+                        <ChevronDownOutline class="ml-2 h-4 w-4 text-gray-400" />
+                    </Button>
+                    {#if importCategoryDropdownOpen}
+                        <div class="absolute left-0 right-0 top-full z-20 mt-2 max-h-96 overflow-y-auto rounded-lg border border-white/10 bg-[#111827] p-1 text-white shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+                            {#each categories as category}
+                                <button
+                                        type="button"
+                                        class="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-white transition hover:bg-white/10"
+                                        onclick={() => {
+                                            selectedImportCategory = category;
+                                            importCategoryDropdownOpen = false;
+                                        }}
+                                >
+                                    {category}
+                                </button>
+                            {/each}
+                        </div>
+                    {/if}
                     <p class="mt-1 text-sm text-gray-400">All imported translations will be assigned to this
                         category.</p>
                     {#if categories.length === 0}
@@ -571,6 +668,12 @@
                             first.</p>
                     {/if}
                 </div>
+
+                <textarea
+                        class="mb-4 h-80 w-full rounded-md border border-white/10 bg-white/8 p-3 font-mono text-sm text-white placeholder:text-gray-500 lg:h-[28rem]"
+                        placeholder="Paste your HJSON content here..."
+                        bind:value={hjsonContent}
+                ></textarea>
 
                 {#if importStats.total > 0}
                     <div class="mb-4 rounded-md border border-sky-400/20 bg-sky-400/10 p-3">
@@ -586,7 +689,7 @@
                 <div class="flex justify-end space-x-2">
                     <button
                             class="cursor-pointer rounded-md border border-white/10 bg-white/8 px-4 py-2 text-gray-200 hover:bg-white/12 hover:text-white"
-                            onclick={() => document.getElementById('hjsonImportModal')?.classList.add('hidden')}
+                            onclick={closeHjsonImportModal}
                     >
                         Cancel
                     </button>
