@@ -40,6 +40,7 @@
 	const storageKey = 'pot-passive-planner-state-v1';
 	const shareParamKey = 'build';
 	const devShareParamKey = 'devbuild';
+	const devSnapGridSize = 10;
 	const startClassCodeMap: Record<PlannerStartClass, string> = {
 		melee: 'm',
 		ranged: 'r',
@@ -95,8 +96,7 @@
 	let shouldCenterOnAnchor = $state(true);
 	let draggingStartMouseX = 0;
 	let draggingStartMouseY = 0;
-	let draggingStartCanvasX = 0;
-	let draggingStartCanvasY = 0;
+	let draggingStartPositions = $state<Record<number, { x: number; y: number }>>({});
 
 	const anchorId = $derived(getAnchorId(startClass));
 	const selectedIdSet = $derived(new Set(selectedIds));
@@ -174,7 +174,7 @@
 	});
 	const activeNodeMap = $derived(isDevMode ? devEffectiveNodeMap : plannerNodeMap);
 	const activeEdges = $derived(isDevMode ? devEffectiveEdges : plannerEdges);
-	const activeVisibleNodes = $derived(isDevMode ? devEffectiveNodes.filter((n) => !n.isHidden) : visibleNodes);
+	const activeVisibleNodes = $derived(isDevMode ? devEffectiveNodes : visibleNodes);
 
 	const focusedSourceNode = $derived((isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(focusedNodeId) ?? (isDevMode ? devEffectiveNodeMap : plannerNodeMap).get(anchorId) ?? plannerNodes[0]);
 	const focusedNode = $derived(
@@ -636,35 +636,63 @@
 		return { x: Math.round(cx - plannerOffsetX), y: Math.round(cy - plannerOffsetY) };
 	}
 
+	function snapDevCoordinate(value: number, event: MouseEvent): number {
+		if (event.ctrlKey) {
+			return Math.round(value);
+		}
+
+		return Math.round(value / devSnapGridSize) * devSnapGridSize;
+	}
+
 	function beginNodeDrag(event: MouseEvent, referenceId: number) {
 		if (!isDevMode || event.button !== 0 || devConnectSourceId !== null) return;
 		event.stopPropagation();
 		draggingNodeId = referenceId;
 		draggingStartMouseX = event.clientX;
 		draggingStartMouseY = event.clientY;
-		const node = devEffectiveNodeMap.get(referenceId);
-		draggingStartCanvasX = node?.canvasX ?? 0;
-		draggingStartCanvasY = node?.canvasY ?? 0;
+		const sourceNode = devEffectiveNodeMap.get(referenceId);
+		const nodeIdsToDrag = sourceNode?.isChoiceNode
+			? [referenceId, ...getChoiceChildren(referenceId).map((node) => node.referenceId)]
+			: [referenceId];
+		draggingStartPositions = Object.fromEntries(
+			nodeIdsToDrag
+				.map((nodeId) => {
+					const node = devEffectiveNodeMap.get(nodeId);
+					return node ? [nodeId, { x: node.canvasX, y: node.canvasY }] : null;
+				})
+				.filter((entry): entry is [number, { x: number; y: number }] => entry !== null)
+		);
 	}
 
 	function handleDevNodeDragMove(event: MouseEvent) {
 		if (draggingNodeId === null) return;
 		const dx = (event.clientX - draggingStartMouseX) / zoomLevel;
 		const dy = (event.clientY - draggingStartMouseY) / zoomLevel;
-		const newCanvasX = draggingStartCanvasX + dx;
-		const newCanvasY = draggingStartCanvasY + dy;
-		const gameX = Math.round(newCanvasX - plannerOffsetX);
-		const gameY = Math.round(newCanvasY - plannerOffsetY);
-		devPositionOverrides = { ...devPositionOverrides, [draggingNodeId]: { x: gameX, y: gameY } };
-		// Also update position in devAddedNodes if it's a dev-added node
-		const addedIdx = devAddedNodes.findIndex((n) => n.referenceId === draggingNodeId);
-		if (addedIdx >= 0) {
-			devAddedNodes = devAddedNodes.map((n, i) => (i === addedIdx ? { ...n, position: { x: gameX, y: gameY } } : n));
+		const nextPositions = { ...devPositionOverrides };
+		const movedPositions = new Map<number, { x: number; y: number }>();
+
+		for (const [idText, startPos] of Object.entries(draggingStartPositions)) {
+			const nodeId = Number(idText);
+			const newCanvasX = startPos.x + dx;
+			const newCanvasY = startPos.y + dy;
+			const gameX = snapDevCoordinate(newCanvasX - plannerOffsetX, event);
+			const gameY = snapDevCoordinate(newCanvasY - plannerOffsetY, event);
+			nextPositions[nodeId] = { x: gameX, y: gameY };
+			movedPositions.set(nodeId, { x: gameX, y: gameY });
+		}
+
+		devPositionOverrides = nextPositions;
+		if (movedPositions.size > 0) {
+			devAddedNodes = devAddedNodes.map((node) => {
+				const moved = movedPositions.get(node.referenceId);
+				return moved ? { ...node, position: moved } : node;
+			});
 		}
 	}
 
 	function endNodeDrag() {
 		draggingNodeId = null;
+		draggingStartPositions = {};
 	}
 
 	function getDevEditableValue(nodeId: number): number {
@@ -718,9 +746,13 @@
 
 	function devAddNode() {
 		if (!devAddIdentifier) return;
-		const maxExistingId = Math.max(...plannerNodes.map((n) => n.referenceId), 0);
-		const maxDevId = devAddedNodes.length > 0 ? Math.max(...devAddedNodes.map((n) => n.referenceId)) : 0;
-		const newId = Math.max(maxExistingId, maxDevId) + 1;
+		const newId =
+			Math.max(
+				...plannerRawNodes.map((n) => n.referenceId),
+				...devAddedNodes.map((n) => n.referenceId),
+				...devRemovedNodeIds,
+				0
+			) + 1;
 		const center = getDevViewportCenter();
 		devAddedNodes = [...devAddedNodes, { referenceId: newId, internalIdentifier: devAddIdentifier, position: center }];
 		focusedNodeId = newId;
@@ -772,33 +804,43 @@
 		devConnectSourceId = null;
 	}
 
-	function exportPassivesJson() {
-		const rawNodeMap = new Map(plannerRawNodes.map((n) => [n.referenceId, n]));
+	async function exportPassivesJson() {
+		await tick();
+
+		const rawNodes = [...plannerRawNodes];
+		const addedNodes = [...devAddedNodes];
+		const removedNodeIds = new Set(devRemovedNodeIds);
+		const positionOverrides = { ...devPositionOverrides };
+		const valueOverrides = { ...devValueOverrides };
+		const requirementOverrides = { ...devRequirementOverrides };
+		const addedEdges = new Set(devAddedEdges);
+		const removedEdges = new Set(devRemovedEdges);
+		const rawNodeMap = new Map(rawNodes.map((n) => [n.referenceId, n]));
 		// Build per-node connection lists from the active edges
 		const connMap = new Map<number, Array<{ referenceId: number; effectsOnly?: boolean; isHidden?: boolean }>>();
 		const allNodeIds = new Set([
-			...plannerRawNodes.map((n) => n.referenceId),
-			...devAddedNodes.map((n) => n.referenceId)
+			...rawNodes.map((n) => n.referenceId),
+			...addedNodes.map((n) => n.referenceId)
 		]);
 		for (const id of allNodeIds) {
-			if (!devRemovedNodeIds.has(id)) connMap.set(id, []);
+			if (!removedNodeIds.has(id)) connMap.set(id, []);
 		}
 
 		// Seed from original raw connections, excluding removed nodes/edges
-		for (const rawNode of plannerRawNodes) {
-			if (devRemovedNodeIds.has(rawNode.referenceId)) continue;
+		for (const rawNode of rawNodes) {
+			if (removedNodeIds.has(rawNode.referenceId)) continue;
 			for (const conn of rawNode.connections ?? []) {
-				if (devRemovedNodeIds.has(conn.referenceId)) continue;
+				if (removedNodeIds.has(conn.referenceId)) continue;
 				const key = devEdgeKey(rawNode.referenceId, conn.referenceId);
-				if (devRemovedEdges.has(key)) continue;
+				if (removedEdges.has(key)) continue;
 				connMap.get(rawNode.referenceId)?.push({ ...conn });
 			}
 		}
 
 		// Apply added edges (bidirectional in JSON)
-		for (const key of devAddedEdges) {
+		for (const key of addedEdges) {
 			const [a, b] = key.split(':').map(Number);
-			if (!devRemovedNodeIds.has(a) && !devRemovedNodeIds.has(b)) {
+			if (!removedNodeIds.has(a) && !removedNodeIds.has(b)) {
 				if (!connMap.get(a)?.some((c) => c.referenceId === b)) {
 					connMap.get(a)?.push({ referenceId: b });
 				}
@@ -811,29 +853,29 @@
 		const output: PassiveNodeData[] = [];
 
 		for (const id of allNodeIds) {
-			if (devRemovedNodeIds.has(id)) continue;
-			const pos = devPositionOverrides[id];
+			if (removedNodeIds.has(id)) continue;
+			const pos = positionOverrides[id];
 			const rawNode = rawNodeMap.get(id);
 
 			if (rawNode) {
 				output.push({
 					...rawNode,
-					value: devValueOverrides[id] ?? rawNode.value,
+					value: valueOverrides[id] ?? rawNode.value,
 					position: pos ?? rawNode.position,
 					connections: connMap.get(id) ?? rawNode.connections,
-					requiredAllocatedEdges: devRequirementOverrides[id] ?? rawNode.requiredAllocatedEdges
+					requiredAllocatedEdges: requirementOverrides[id] ?? rawNode.requiredAllocatedEdges
 				});
 			} else {
-				const added = devAddedNodes.find((n) => n.referenceId === id);
+				const added = addedNodes.find((n) => n.referenceId === id);
 				if (!added) continue;
 				const exportNode: PassiveNodeData = {
 					internalIdentifier: added.internalIdentifier,
 					referenceId: added.referenceId,
 					maxLevel: 1,
-					value: devValueOverrides[id] ?? 0,
+					value: valueOverrides[id] ?? 0,
 					position: pos ?? added.position,
 					connections: connMap.get(id) ?? [],
-					requiredAllocatedEdges: devRequirementOverrides[id]
+					requiredAllocatedEdges: requirementOverrides[id]
 				};
 				output.push(exportNode);
 			}
@@ -1079,7 +1121,7 @@
 					>
 						<svg class="tree-lines" viewBox={`0 0 ${plannerCanvas.width} ${plannerCanvas.height}`}>
 							{#each activeEdges as edge (edge.key)}
-								{#if activeNodeMap.has(edge.from) && activeNodeMap.has(edge.to) && !activeNodeMap.get(edge.to)?.isHidden && !activeNodeMap.get(edge.from)?.isHidden}
+								{#if activeNodeMap.has(edge.from) && activeNodeMap.has(edge.to) && (isDevMode || (!activeNodeMap.get(edge.to)?.isHidden && !activeNodeMap.get(edge.from)?.isHidden))}
 									<line
 										x1={activeNodeMap.get(edge.from)?.canvasX}
 										y1={activeNodeMap.get(edge.from)?.canvasY}
