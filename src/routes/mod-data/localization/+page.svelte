@@ -287,6 +287,40 @@
         expandedGroups = next;
     }
 
+    function getVisibleGroupKeysForCategory(category: string): string[] {
+        const categoryTranslations = categorizedTranslations[category] ?? [];
+        const { grouped } = getGroupedTranslations(categoryTranslations);
+
+        return Object.entries(grouped)
+            .filter(([, groupTranslations]) => filterTranslations(groupTranslations).length > 0)
+            .map(([groupKey]) => groupKey);
+    }
+
+    function areAllVisibleGroupsExpanded(category: string): boolean {
+        const visibleGroupKeys = getVisibleGroupKeysForCategory(category);
+        return visibleGroupKeys.length > 0 && visibleGroupKeys.every((groupKey) => expandedGroups.has(groupKey));
+    }
+
+    function toggleAllGroups(category: string) {
+        const visibleGroupKeys = getVisibleGroupKeysForCategory(category);
+        if (visibleGroupKeys.length === 0) {
+            return;
+        }
+
+        const next = new Set(expandedGroups);
+        const shouldCollapse = visibleGroupKeys.every((groupKey) => next.has(groupKey));
+
+        for (const groupKey of visibleGroupKeys) {
+            if (shouldCollapse) {
+                next.delete(groupKey);
+            } else {
+                next.add(groupKey);
+            }
+        }
+
+        expandedGroups = next;
+    }
+
     /**
      * Formats the display of a translation key
      * For grouped items, shows only the part after the group key
@@ -744,6 +778,15 @@
                         aria-label="Search by key"
                 />
             </div>
+            {#if categorizedTranslations[activeCategory] && getVisibleGroupKeysForCategory(activeCategory).length > 0}
+                <button
+                        type="button"
+                        class="rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-sm text-gray-200 hover:bg-white/12 hover:text-white"
+                        onclick={() => toggleAllGroups(activeCategory)}
+                >
+                    {areAllVisibleGroupsExpanded(activeCategory) ? 'Collapse all' : 'Expand all'}
+                </button>
+            {/if}
         </div>
 
         <!-- Translation Table -->
