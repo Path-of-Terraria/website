@@ -18,6 +18,70 @@ export interface IPlayerStats {
     intelligence: number;
 }
 
+export interface ICharacterViewerStats {
+    level: number;
+    experience: number;
+    savePlayTimeSeconds: number;
+    modPlayerPlayTimeSeconds: number;
+    strength: number;
+    dexterity: number;
+    intelligence: number;
+    levelAchievedAt?: string;
+}
+
+export interface IGearAffixSnapshot {
+    affixType: string;
+    displayText: string;
+    value: number;
+    tier: number;
+    isImplicit: boolean;
+    isCorrupted: boolean;
+}
+
+export interface IGearItemSnapshot {
+    sourceMod: string;
+    internalName: string;
+    typeId: number;
+    displayName: string;
+    itemType: string;
+    rarity: string;
+    influence: string;
+    itemLevel: number;
+    corrupted: boolean;
+    cloned: boolean;
+    prefixId: number;
+    suffixId: number;
+    damage: number;
+    defense: number;
+    critChance: number;
+    knockback: number;
+    useTime: number;
+    manaCost: number;
+    affixes: IGearAffixSnapshot[];
+    affixTextLines: string[];
+}
+
+export interface IGearSlotSnapshot {
+    slot: string;
+    item?: IGearItemSnapshot;
+}
+
+export interface ICharacterGearSnapshot {
+    capturedAt: string;
+    modVersion?: string;
+    slots: IGearSlotSnapshot[];
+}
+
+export interface ICharacterViewer {
+    id: string;
+    characterName: string;
+    profileName?: string;
+    modVersion?: string;
+    stats: ICharacterViewerStats;
+    gearSnapshot?: ICharacterGearSnapshot;
+    updatedDate?: string;
+}
+
 export class PlayerService {
     httpService = HttpService.getInstance();
 
@@ -36,5 +100,13 @@ export class PlayerService {
             return response.data as IPlayer;
         }
         return {} as IPlayer;
+    }
+
+    public async getCharacterViewer(name: string): Promise<ICharacterViewer | null> {
+        const response = await this.httpService.get(`Player/${encodeURIComponent(name)}/Viewer`);
+        if (response) {
+            return response.data as ICharacterViewer;
+        }
+        return null;
     }
 }
