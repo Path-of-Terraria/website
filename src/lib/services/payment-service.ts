@@ -7,6 +7,7 @@ export interface LeaguePacksResponse {
     price?: number;
     id: string;
     marketingFeatures?: string[];
+    imageUrl?: string;
 }
 
 export interface CreateCheckoutRequest {

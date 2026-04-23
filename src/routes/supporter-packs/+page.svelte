@@ -80,7 +80,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each oneTimePacks as pack}
                             <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-                                <Heading tag="h3" class="mb-3 text-white">{pack.name}</Heading>
+                                <div class="mb-3 flex items-center gap-3">
+                                    {#if pack.imageUrl}
+                                        <img
+                                            src={pack.imageUrl}
+                                            alt={pack.name}
+                                            class="h-10 w-10 flex-none rounded object-contain"
+                                        />
+                                    {/if}
+                                    <Heading tag="h3" class="mb-0 text-white">{pack.name}</Heading>
+                                </div>
                                 <P class="mb-4 text-gray-300">{pack.description}</P>
                                 {#if pack.price}
                                     <P class="mb-4 text-lg font-semibold text-emerald-300">
@@ -114,7 +123,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each subscriptionPacks as pack}
                             <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-                                <Heading tag="h3" class="mb-3 text-2xl text-white">{pack.name}</Heading>
+                                <div class="mb-3 flex items-center gap-3">
+                                    {#if pack.imageUrl}
+                                        <img
+                                            src={pack.imageUrl}
+                                            alt={pack.name}
+                                            class="h-10 w-10 flex-none rounded object-contain"
+                                        />
+                                    {/if}
+                                    <Heading tag="h3" class="mb-0 text-2xl text-white">{pack.name}</Heading>
+                                </div>
                                 <P class="mb-4 text-gray-300">{pack.description}</P>
                                 {#if pack.price}
                                     <P class="mb-4 text-lg font-semibold text-emerald-300">
