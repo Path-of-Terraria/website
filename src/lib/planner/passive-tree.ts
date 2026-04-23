@@ -1,4 +1,4 @@
-import passivesJson from '$lib/data/passives/passives-dev.json';
+import passivesJson from '$lib/data/passives/passives.json';
 import passiveLocalizationRaw from '$lib/data/passives/passives-en-US.hjson?raw';
 import { HjsonParserService } from '$lib/services/hjson-parser-service';
 
