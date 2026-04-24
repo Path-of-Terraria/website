@@ -14,6 +14,7 @@ export interface IAvailableBenefitsResponse {
 }
 
 export interface IProfileCharacter {
+    id: string;
     characterName: string;
     level: number;
     strength: number;
@@ -127,6 +128,10 @@ export class UserService {
             return response.data as IProfileCharacter[];
         }
         return [];
+    }
+
+    public async deletePlayer(id: string): Promise<void> {
+        await this.httpService.delete(`Player/${id}`);
     }
 
     public async updateUser(user: IUser) {
