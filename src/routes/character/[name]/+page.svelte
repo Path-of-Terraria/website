@@ -1,10 +1,20 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { Button } from 'flowbite-svelte';
     import type { PageData } from './$types';
     import { PlayerService, type ICharacterViewer, type IGearItemSnapshot } from '$lib/services/player-service';
+    import { GetJwtToken } from '$lib/services/session-service';
+    import { UserService } from '$lib/services/user-service';
+    import { toast } from '$lib/toast';
 
     let { data }: { data: PageData } = $props();
 
     const playerService = new PlayerService();
+    const userService = new UserService();
+
+    let canManagePlayers = $state(false);
+    let checkingPermission = $state(true);
+    let updatingBlacklist = $state(false);
 
     async function loadViewer(): Promise<ICharacterViewer> {
         const result = await playerService.getCharacterViewer(data.name);
@@ -13,6 +23,42 @@
     }
 
     let viewerPromise: Promise<ICharacterViewer> = $state(loadViewer());
+
+    onMount(async () => {
+        if (!GetJwtToken()) {
+            checkingPermission = false;
+            return;
+        }
+
+        try {
+            canManagePlayers = await userService.hasRole('ManagePlayers');
+        } catch (e) {
+            console.error('Failed to resolve player management permissions', e);
+        } finally {
+            checkingPermission = false;
+        }
+    });
+
+    async function toggleBlacklist(viewer: ICharacterViewer) {
+        updatingBlacklist = true;
+
+        try {
+            const nextBlacklisted = !viewer.blacklisted;
+            await playerService.updatePlayerBlacklist(viewer.id, nextBlacklisted);
+            toast.push(
+                nextBlacklisted
+                    ? `${viewer.characterName} has been blacklisted.`
+                    : `${viewer.characterName} has been removed from the blacklist.`,
+                { type: 'success', duration: 2500 }
+            );
+            viewerPromise = loadViewer();
+        } catch (e) {
+            console.error('Failed to update player blacklist', e);
+            toast.push('Failed to update blacklist status.', { type: 'error', duration: 3000 });
+        } finally {
+            updatingBlacklist = false;
+        }
+    }
 
     function rarityColor(rarity: string): string {
         switch (rarity?.toLowerCase()) {
@@ -85,13 +131,36 @@
                                 @{viewer.profileName}
                             </a>
                         {/if}
+                        {#if viewer.blacklisted}
+                            <div class="mt-2 inline-flex rounded-full border border-rose-400/30 bg-rose-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-200">
+                                Blacklisted
+                            </div>
+                        {/if}
                     </div>
-                    <div class="ml-auto flex flex-col items-end gap-1">
+                    <div class="ml-auto flex flex-col items-end gap-2">
                         {#if viewer.modVersion}
                             <span class="text-xs text-gray-500">Mod v{viewer.modVersion}</span>
                         {/if}
                         {#if viewer.updatedDate}
                             <span class="text-xs text-gray-500">Updated {new Date(viewer.updatedDate).toLocaleDateString()}</span>
+                        {/if}
+                        {#if !checkingPermission && canManagePlayers}
+                            <Button
+                                size="sm"
+                                class={viewer.blacklisted
+                                    ? 'border-emerald-400/20 bg-emerald-500/90 text-white hover:bg-emerald-400'
+                                    : 'border-rose-400/20 bg-rose-500/90 text-white hover:bg-rose-400'}
+                                disabled={updatingBlacklist}
+                                onclick={() => toggleBlacklist(viewer)}
+                            >
+                                {#if updatingBlacklist}
+                                    Updating...
+                                {:else if viewer.blacklisted}
+                                    Unblacklist
+                                {:else}
+                                    Blacklist
+                                {/if}
+                            </Button>
                         {/if}
                     </div>
                 </div>

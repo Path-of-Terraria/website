@@ -26,7 +26,7 @@
     let benefitsSaveSuccess = $state(false);
     let benefitsSaveError = $state("");
 
-    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ManageBenefits", "SendAnnouncements"];
+    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ManagePlayers", "ManageBenefits", "SendAnnouncements"];
 
     let selectedRoles: string[] = $state([]);
 

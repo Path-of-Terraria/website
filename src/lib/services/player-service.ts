@@ -75,6 +75,7 @@ export interface ICharacterGearSnapshot {
 export interface ICharacterViewer {
     id: string;
     characterName: string;
+    blacklisted: boolean;
     profileName?: string;
     modVersion?: string;
     stats: ICharacterViewerStats;
@@ -108,5 +109,9 @@ export class PlayerService {
             return response.data as ICharacterViewer;
         }
         return null;
+    }
+
+    public async updatePlayerBlacklist(id: string, blacklisted: boolean): Promise<void> {
+        await this.httpService.patch(`Player/${id}/Blacklisted`, { blacklisted });
     }
 }
