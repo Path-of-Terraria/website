@@ -103,8 +103,8 @@ export class PlayerService {
         return {} as IPlayer;
     }
 
-    public async getCharacterViewer(name: string): Promise<ICharacterViewer | null> {
-        const response = await this.httpService.get(`Player/${encodeURIComponent(name)}/Viewer`);
+    public async getCharacterViewer(profileName: string, name: string): Promise<ICharacterViewer | null> {
+        const response = await this.httpService.get(`Player/${encodeURIComponent(profileName)}/${encodeURIComponent(name)}/Viewer`);
         if (response) {
             return response.data as ICharacterViewer;
         }

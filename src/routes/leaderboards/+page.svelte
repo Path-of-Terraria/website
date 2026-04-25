@@ -125,7 +125,7 @@
                                                                 <!--    <i class={leader.user.chosenBenefits.chatIcon.value}></i>-->
                                                                 <!--{/if}-->
                                                                 <a
-                                                                    href={`/character/${encodeURIComponent(leader.name)}`}
+                                                                    href={`/character/${encodeURIComponent(leader.profileName ?? '')}/${encodeURIComponent(leader.name)}`}
                                                                     class="truncate text-sm font-semibold text-white transition hover:underline md:text-base"
                                                                     style={`color: ${leader.user?.chosenBenefits?.chatColor?.value || 'inherit'}`}
                                                                 >

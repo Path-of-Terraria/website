@@ -117,7 +117,7 @@
                                                             {index + 1}
                                                         </div>
                                                         <div class="min-w-0">
-                                                            <a href="/character/{encodeURIComponent(player.characterName)}" class="truncate text-sm font-semibold text-white transition hover:underline md:text-base">
+                                                            <a href="/character/{encodeURIComponent(data.slug)}/{encodeURIComponent(player.characterName)}" class="truncate text-sm font-semibold text-white transition hover:underline md:text-base">
                                                                 {player.characterName}
                                                             </a>
                                                         </div>
