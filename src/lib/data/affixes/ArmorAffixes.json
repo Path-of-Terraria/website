@@ -1,0 +1,477 @@
+[
+	{
+		"affixType": "DefenseItemAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "EnduranceItemAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ThornyArmorAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "BaseLifeAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "AddedLifeAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "MultipliedLifeAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+
+		"affixType": "LifeRegenMultiplierAffix",
+		"equipTypes": "Armor Shield",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LifePotionPowerAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 2,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 3,
+				"maxValue": 4,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 6,
+				"minimumLevel": 52,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LifePotionCapAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 1,
+				"weight": 5
+			},
+			{
+				"minValue": 1,
+				"maxValue": 2,
+				"minimumLevel": 21,
+				"weight": 4
+			},
+			{
+				"minValue": 2,
+				"maxValue": 3,
+				"minimumLevel": 52,
+				"weight": 3
+			},
+			{
+				"minValue": 3,
+				"maxValue": 4,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LifePotionCooldownAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ManaAffix",
+		"equipTypes": "Armor Talisman",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ManaRegenAffix",
+		"equipTypes": "Armor Talisman",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ManaPotionPowerAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ManaPotionCapAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 1,
+				"weight": 5
+			},
+			{
+				"minValue": 1,
+				"maxValue": 2,
+				"minimumLevel": 21,
+				"weight": 4
+			},
+			{
+				"minValue": 2,
+				"maxValue": 3,
+				"minimumLevel": 52,
+				"weight": 3
+			},
+			{
+				"minValue": 3,
+				"maxValue": 4,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ManaPotionCooldownAffix",
+		"equipTypes": "Armor",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "MovementSpeedAffix",
+		"equipTypes": "Armor Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 8,
+				"minimumLevel": 21,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 52,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 16,
+				"minimumLevel": 73,
+				"weight": 1
+			}
+		]
+	}
+]

@@ -1,0 +1,114 @@
+# Each Affix comes with a standard, pre-generated line:
+# "{1}{0} to stat"
+# The {0} is the value of the affix, and the {1} is the sign.
+# An in-game line would look like: -5.58 to stat
+IncreasedDamageAffix.Description: "{1}{0}% increased global damage"
+DefenseItemAffix.Description: "{1}{0} added defense"
+EnduranceItemAffix.Description: "{1}{0}% increased damage resistance"
+ResistanceHelmetAffix.Description: "{1}{0}% decreased debuff duration"
+BuffBoostHelmetAffix.Description: "{1}{0}% increased buff duration"
+ThornyArmorAffix.Description: "{1}{0} reflected flat damage"
+BaseLifeAffix.Description: "{1}{0} added max life"
+AddedLifeAffix.Description: "{1}{0}% increased max life"
+LifeRegenAffix.Description: "{1}{0} added life regeneration"
+LifeRegenMultiplierAffix.Description: "{1}{0}% increased life regeneration"
+LifePotionPowerAffix.Description: "{1}{0}% stronger healing potions"
+LifePotionCapAffix.Description: "{1}{0} max health potions"
+LifePotionCooldownAffix.Description: "{1}{0}% life potion cooldown reduction"
+ManaAffix.Description: "{1}{0} added max mana"
+ManaRegenAffix.Description: "{1}{0}% increased mana regeneration"
+ManaPotionPowerAffix.Description: "{1}{0}% stronger mana potions"
+ManaPotionCapAffix.Description: "{1}{0} max mana potions"
+ManaPotionCooldownAffix.Description: "{1}{0}% mana potion cooldown reduction"
+PiercingItemAffix.Description: "{1}{0}% defense piercing"
+AddedKnockbackItemAffix.Description: "{1}{0} added knockback"
+IncreasedKnockbackItemAffix.Description: "{1}{0}% increased knockback"
+ChanceToApplyOnFireGearAffix.Description: "{1}{0}% chance to apply on fire!"
+ChanceToApplyArmorShredGearAffix.Description: "{1}{0} chance to apply armor shred"
+ChanceToApplyBloodclotItemAffix.Description: "{1}{0}% chance to apply bloodclot"
+ChanceToApplyPoisonItemAffix.Description: "{1}{0}% chance to apply poisoned"
+BuffPoisonedHitsAffix.Description: "{1}{0}% damage to poisoned enemies"
+MovementSpeedAffix.Description: "{1}{0}% increased movement speed"
+HealOnKillingBurningEnemiesAffix.Description: "{1}{0} health gained on killing a burned enemy"
+IncreasedAttackSpeedAffix.Description: "{1}{0}% increased attack speed"
+AddedAttackSpeedAffix.Description: "{1}{0} added attack speed"
+AddedDamageAffix.Description: "{1}{0} added damage"
+MoltenShellAffix.Description: "{1}{0} to Molten Shell"
+BloodSiphonAffix.Description: "{1}{0} to Blood Siphon"
+FetidCarapaceAffix.Description: "{1}{0} to Fetid Carapace"
+
+NoFallDamageAffix: {
+	Description: Immunity to fall damage
+	Removed: Vulnerable to fall damage
+}
+
+PercentageIncreasedCriticalStrikeChanceAffix.Description: "{1}{0}% increased critical strike chance"
+PercentageCriticalStrikeMultiplierAffix.Description: "{1}{0}% critical strike multiplier"
+FlatCriticalStrikeChanceAffix.Description: "{1}{0} added critical strike chance"
+PercentageIncreasedCriticalStrikeDamageAffix.Description: "{1}{0}% increased critical strike damage"
+ChanceToApplyShockGearAffix.Description: "{1}{0}% chance to apply shock"
+BuffShockedEffectAffix.Description: "{1}{0}% multiplier to shock effect"
+IncreaseBlockAffix.Description: "{1}{0}% increased block chance"
+StrengthItemAffix.Description: "{1}{0} strength"
+DexterityItemAffix.Description: "{1}{0} dexterity"
+IntelligenceItemAffix.Description: "{1}{0} intelligence"
+DoubleLife.Prefix: Hearty
+SiphonerAffix.Prefix: Siphoning
+FastAffix.Prefix: Swift
+AggravatorAffix.Prefix: Aggravating
+DamageAffix.Prefix: Harmful
+ChanceToApplyRootedGearAffix.Description: "{1}{0}% chance to apply rooted"
+MapDamageAffix.Description: "{1}{0}% increased mob damage"
+MapBossHealthAffix.Description: "{1}{0}% increased boss health"
+MapMobCritChanceAffix.Description: "{1}{0}% increased enemy crit chance"
+MapMobChillChanceAffix.Description: "{1}{0}% chance for enemies to inflict chilled"
+MapIncreasedBehaviourAffix.Description: "{1}{0}% increased enemy behavior speed"
+MapStealAegisChargeAffix.Description: Monsters steal an Aegis Charge on hit
+MapStealFocusChargeAffix.Description: Monsters steal a Focus Charge on hit
+MapStealHasteChargeAffix.Description: Monsters steal a Haste Charge on hit
+ColdAffix.Prefix: Freezing
+LightningAffix.Prefix: Shocking
+FlamingAffix.Prefix: Flaming
+StalwartAffix.Prefix: Stalwart
+FireResistItemAffix.Description: "{1}{0}% fire resistance"
+ColdResistItemAffix.Description: "{1}{0}% cold resistance"
+LightningResistItemAffix.Description: "{1}{0}% lightning resistance"
+FocusChargeChanceOnKillAffix.Description: "{1}{0}% chance to gain a focus charge on kill"
+HasteChargeChanceOnKillAffix.Description: "{1}{0}% chance to gain a haste charge on kill"
+AegisChargeChanceOnKillAffix.Description: "{1}{0}% chance to gain a aegis charge on kill"
+FireConversionDamage.Description: "{1}{0}% base damage as added fire"
+ColdConversionDamage.Description: "{1}{0}% base damage as added cold"
+LightningConversionDamage.Description: "{1}{0}% base damage as added lightning"
+ChaosResistItemAffix.Description: "{1}{0}% chaos resistance"
+ChaosConversionDamage.Description: "{1}{0}% base damage as added chaos"
+ChaoticAffix.Prefix: Chaotic
+FireFlatDamage.Description: "{1}{0} added fire damage"
+ColdFlatDamage.Description: "{1}{0} added cold damage"
+LightningFlatDamage.Description: "{1}{0} added lightning damage"
+ChaosFlatDamage.Description: "{1}{0} added chaos damage"
+ExtraFireDamage.Description: "{1}{0}% damage as fire"
+ExtraLightningDamage.Description: "{1}{0}% damage as lightning"
+ExtraColdDamage.Description: "{1}{0}% damage as cold"
+ChanceToApplyBleedingItemAffix.Description: "{1}{0}% chance to apply a stack of Bleed on hit"
+AddedBleedStackAffix.Description: "{1}{0} max Bleed stacks"
+BetterBleedAffix.Description: "{1}{0}% more damage used for Bleed"
+EoLDaylightAffix.Description: Fight in the daylight
+AmmoReservationAffix.Description: "{1}{0}% chance to reserve ammo"
+IncreasedSummonDamageAffix.Description: "{1}{0}% increased summon damage"
+IncreasedMeleeDamageAffix.Description: "{1}{0}% increased melee damage"
+IncreasedRangedDamageAffix.Description: "{1}{0}% increased ranged damage"
+IncreasedMagicDamageAffix.Description: "{1}{0}% increased magic damage"
+LifeOnKillAffix.Description: "{1}{0} life restored on kill"
+ManaOnKillAffix.Description: "{1}{0} mana restored on kill"
+AddedSummonCritAffix.Description: "{1}{0}% chance for summon damage to crit"
+AddBlockAffix.Description: "{1}{0} block chance"
+MapFireConversionAffix.Description: "{1}{0}% of enemy damage converted to fire"
+MapColdConversionAffix.Description: "{1}{0}% of enemy damage converted to cold"
+MapLightningConversionAffix.Description: "{1}{0}% of enemy damage converted to lightning"
+IgniteChanceAffix.Description: "{1}{0}% chance to inflict Ignited"
+CannotBeChilledAffix.Description: Cannot be Chilled
+NearbyEnemiesScorchedAffix.Description: Nearby enemies are scorched
+PermanentlyScorchedAffix.Description: You are permanently scorched
+IncreasedIgniteEffectAffix.Description: "{1}{0}% increased effect of Ignite"
+SpreadIgniteScorchOnKillAffix.Description: On kill, spread your Ignite and Scorch debuffs to all nearby targets
+AllResistancesAffix.Description: "{1}{0}% to all resistances"

@@ -1,0 +1,257 @@
+[
+	{
+		"affixType": "MapDamageAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 8,
+				"maxValue": 12,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 8
+			},
+			{
+				"minValue": 20,
+				"maxValue": 25,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 12
+			}
+		]
+	},
+	{
+		"affixType": "MapBossHealthAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 100,
+				"maxValue": 110,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 14
+			},
+			{
+				"minValue": 180,
+				"maxValue": 200,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 18
+			}
+		]
+	},
+	{
+		"affixType": "MapMobCritChanceAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 18,
+				"maxValue": 25,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 10
+			},
+			{
+				"minValue": 26,
+				"maxValue": 34,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 12
+			},
+			{
+				"minValue": 35,
+				"maxValue": 48,
+				"minimumLevel": 75,
+				"weight": 1,
+				"strength": 12
+			},
+			{
+				"minValue": 49,
+				"maxValue": 60,
+				"minimumLevel": 85,
+				"weight": 1,
+				"strength": 12
+			}
+		]
+	},
+	{
+		"affixType": "MapMobChillChanceAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 4,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 8
+			},
+			{
+				"minValue": 6,
+				"maxValue": 9,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 10
+			}
+		]
+	},
+	{
+		"affixType": "MapIncreasedBehaviourAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 12
+			},
+			{
+				"minValue": 10,
+				"maxValue": 14,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 16
+			}
+		]
+	},
+	{
+		"affixType": "MapStealAegisChargeAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 8
+			},
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 10
+			}
+		]
+	},
+	{
+		"affixType": "MapStealFocusChargeAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 8
+			},
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 10
+			}
+		]
+	},
+	{
+		"affixType": "MapStealHasteChargeAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 8
+			},
+			{
+				"minValue": 1,
+				"maxValue": 1,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 10
+			}
+		]
+	},
+	{
+		"affixType": "MapFireConversionAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 15,
+				"maxValue": 22,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 18
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 22
+			},
+			{
+				"minValue": 29,
+				"maxValue": 37,
+				"minimumLevel": 85,
+				"weight": 1,
+				"strength": 26
+			}
+		]
+	},
+	{
+		"affixType": "MapColdConversionAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 15,
+				"maxValue": 22,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 18
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 22
+			},
+			{
+				"minValue": 29,
+				"maxValue": 37,
+				"minimumLevel": 85,
+				"weight": 1,
+				"strength": 26
+			}
+		]
+	},
+	{
+		"affixType": "MapLightningConversionAffix",
+		"equipTypes": "Map",
+		"tiers": [
+			{
+				"minValue": 15,
+				"maxValue": 22,
+				"minimumLevel": 45,
+				"weight": 1,
+				"strength": 18
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 65,
+				"weight": 1,
+				"strength": 22
+			},
+			{
+				"minValue": 29,
+				"maxValue": 37,
+				"minimumLevel": 85,
+				"weight": 1,
+				"strength": 26
+			}
+		]
+	}
+]

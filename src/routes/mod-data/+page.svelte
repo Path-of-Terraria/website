@@ -6,12 +6,30 @@
     <h1 class="mb-4 text-3xl font-black tracking-tight text-white">Mod Data</h1>
 
     <div class="container mx-auto mt-12 px-0">
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div class="mx-auto w-full">
                 <FeatureCard
                         title="Edit Mob Data"
                         description="View and edit the mob data for the mod"
                         link="/mod-data/mobs"
+                        target=""
+                        linkText="See Data"
+                ></FeatureCard>
+            </div>
+            <div class="mx-auto w-full">
+                <FeatureCard
+                        title="View Passives"
+                        description="Browse passive tree data by type"
+                        link="/mod-data/passives"
+                        target=""
+                        linkText="See Data"
+                ></FeatureCard>
+            </div>
+            <div class="mx-auto w-full">
+                <FeatureCard
+                        title="View Gear Affixes"
+                        description="Browse gear types and their possible affix rolls"
+                        link="/mod-data/affixes"
                         target=""
                         linkText="See Data"
                 ></FeatureCard>

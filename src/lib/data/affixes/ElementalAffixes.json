@@ -1,0 +1,740 @@
+[
+	{
+		"affixType": "FireResistItemAffix",
+		"equipTypes": "Equipment Quiver",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 9,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 12,
+				"maxValue": 17,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 17,
+				"maxValue": 23,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ColdResistItemAffix",
+		"equipTypes": "Equipment Quiver",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 9,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 12,
+				"maxValue": 17,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 17,
+				"maxValue": 23,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LightningResistItemAffix",
+		"equipTypes": "Equipment Quiver",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 9,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 9,
+				"maxValue": 12,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 12,
+				"maxValue": 17,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 17,
+				"maxValue": 23,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 23,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ChaosResistItemAffix",
+		"equipTypes": "Equipment Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 8,
+				"maxValue": 12,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 17,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 18,
+				"maxValue": 23,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 25,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "FireConversionDamage",
+		"equipTypes": "Weapon",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 5,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 21,
+				"maxValue": 24,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 25,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ColdConversionDamage",
+		"equipTypes": "Weapon",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 5,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 21,
+				"maxValue": 24,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 25,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LightningConversionDamage",
+		"equipTypes": "Weapon",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 5,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 21,
+				"maxValue": 24,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 25,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ChaosConversionDamage",
+		"equipTypes": "Weapon",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 7,
+				"minimumLevel": 11,
+				"weight": 1
+			},
+			{
+				"minValue": 8,
+				"maxValue": 12,
+				"minimumLevel": 19,
+				"weight": 1
+			},
+			{
+				"minValue": 13,
+				"maxValue": 17,
+				"minimumLevel": 26,
+				"weight": 1
+			},
+			{
+				"minValue": 18,
+				"maxValue": 23,
+				"minimumLevel": 35,
+				"weight": 1
+			},
+			{
+				"minValue": 25,
+				"maxValue": 28,
+				"minimumLevel": 47,
+				"weight": 1
+			},
+			{
+				"minValue": 28,
+				"maxValue": 33,
+				"minimumLevel": 56,
+				"weight": 1
+			},
+			{
+				"minValue": 33,
+				"maxValue": 36,
+				"minimumLevel": 63,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "FireFlatDamage",
+		"equipTypes": "Weapon Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 30,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 50,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 10,
+				"minimumLevel": 70,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ColdFlatDamage",
+		"equipTypes": "Weapon Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 30,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 50,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 10,
+				"minimumLevel": 70,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "LightningFlatDamage",
+		"equipTypes": "Weapon Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 30,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 50,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 10,
+				"minimumLevel": 70,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ChaosFlatDamage",
+		"equipTypes": "Weapon Quiver",
+		"tiers": [
+			{
+				"minValue": 1,
+				"maxValue": 3,
+				"minimumLevel": 50,
+				"weight": 1
+			},
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 70,
+				"weight": 1
+			},
+			{
+				"minValue": 7,
+				"maxValue": 10,
+				"minimumLevel": 90,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraFireDamage",
+		"equipTypes": "Magic -Staff",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 7,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 8,
+				"maxValue": 10,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 14,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraLightningDamage",
+		"equipTypes": "Magic -Staff",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 7,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 8,
+				"maxValue": 10,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 14,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraColdDamage",
+		"equipTypes": "Magic -Staff",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 7,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 8,
+				"maxValue": 10,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 14,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraFireDamage",
+		"equipTypes": "Staff",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraLightningDamage",
+		"equipTypes": "Staff",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "ExtraColdDamage",
+		"equipTypes": "Staff",
+		"tiers": [
+			{
+				"minValue": 4,
+				"maxValue": 6,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 6,
+				"maxValue": 10,
+				"minimumLevel": 23,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 15,
+				"minimumLevel": 41,
+				"weight": 1
+			},
+			{
+				"minValue": 16,
+				"maxValue": 20,
+				"minimumLevel": 56,
+				"weight": 1
+			}
+		]
+	},
+	{
+		"affixType": "IgniteChanceAffix",
+		"equipTypes": "Weapon",
+		"tiers": [
+			{
+				"minValue": 2,
+				"maxValue": 4,
+				"minimumLevel": 1,
+				"weight": 1
+			},
+			{
+				"minValue": 5,
+				"maxValue": 10,
+				"minimumLevel": 15,
+				"weight": 1
+			},
+			{
+				"minValue": 11,
+				"maxValue": 18,
+				"minimumLevel": 30,
+				"weight": 1
+			},
+			{
+				"minValue": 19,
+				"maxValue": 30,
+				"minimumLevel": 45,
+				"weight": 1
+			}
+		]
+	}
+]

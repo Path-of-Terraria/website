@@ -1817,7 +1817,7 @@
 		"internalIdentifier": "AddedCriticalStrikeChance",
 		"referenceId": 104,
 		"maxLevel": 1,
-		"value": 5,
+		"value": 2.5,
 		"connections": [
 			{
 				"referenceId": 87
@@ -3929,7 +3929,7 @@
 		"internalIdentifier": "AddedCriticalStrikeChance",
 		"referenceId": 235,
 		"maxLevel": 1,
-		"value": 5,
+		"value": 2.5,
 		"connections": [
 			{
 				"referenceId": 1089
@@ -3950,7 +3950,7 @@
 		}
 	},
 	{
-		"internalIdentifier": "QuickExplosionsPassive",
+		"internalIdentifier": "BiggerExplosivesPassive",
 		"referenceId": 236,
 		"maxLevel": 1,
 		"value": 2,
@@ -3961,7 +3961,7 @@
 		"connections": []
 	},
 	{
-		"internalIdentifier": "BiggerExplosivesPassive",
+		"internalIdentifier": "QuickExplosionsPassive",
 		"referenceId": 237,
 		"maxLevel": 1,
 		"value": 15,
@@ -4051,7 +4051,7 @@
 		"internalIdentifier": "PoisonedRangedAttacksPassive",
 		"referenceId": 242,
 		"maxLevel": 1,
-		"value": 10,
+		"value": 5,
 		"connections": [
 			{
 				"referenceId": 243
@@ -6257,7 +6257,7 @@
 		"internalIdentifier": "ExplosiveSlugsMastery",
 		"referenceId": 1091,
 		"maxLevel": 1,
-		"value": 50,
+		"value": 30,
 		"position": {
 			"x": 450,
 			"y": 1210
@@ -7147,7 +7147,7 @@
 		"internalIdentifier": "PoisonedRangedAttacksPassive",
 		"referenceId": 1150,
 		"maxLevel": 1,
-		"value": 0,
+		"value": 5,
 		"position": {
 			"x": 820,
 			"y": 1019
@@ -7168,7 +7168,7 @@
 		"internalIdentifier": "IncreasedAttackSpeedPassive",
 		"referenceId": 1151,
 		"maxLevel": 1,
-		"value": 0,
+		"value": 5,
 		"position": {
 			"x": 584,
 			"y": 1224
