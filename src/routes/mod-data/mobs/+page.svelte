@@ -12,6 +12,30 @@
     let error: string | null = $state(null);
     let isEditModalOpen = $state(false);
     let selectedMob: IMobData | null = $state(null);
+    let prefixOptions = $derived.by(() => {
+        const prefixes = new Set<string>();
+
+        for (const mob of mobData) {
+            for (const entry of mob.entries) {
+                if (entry.prefix?.trim()) {
+                    prefixes.add(entry.prefix.trim());
+                }
+            }
+        }
+
+        return [
+            { value: '', label: '(No Prefix)' },
+            ...Array.from(prefixes)
+                .sort((a, b) => a.localeCompare(b))
+                .map((prefix) => ({ value: prefix, label: prefix }))
+        ];
+    });
+
+    let totalEntries = $derived(mobData.reduce((total, mob) => total + mob.entries.length, 0));
+    let mobsWithDamage = $derived(mobData.filter((mob) => mob.damage?.length).length);
+    let guaranteedAffixEntries = $derived(
+        mobData.reduce((total, mob) => total + mob.entries.filter((entry) => entry.affixes?.length).length, 0)
+    );
 
     onMount(() => {
         // Load mob data
@@ -28,9 +52,7 @@
         if (!query) {
             filteredMobData = [...mobData];
         } else {
-            filteredMobData = mobData.filter((mob) =>
-                mob.friendlyName.toLowerCase().includes(query)
-            );
+            filteredMobData = mobData.filter((mob) => getMobSearchText(mob).includes(query));
         }
     }
 
@@ -58,10 +80,126 @@
             error = 'Failed to export mob data';
         }
     }
+
+    function getMobSearchText(mob: IMobData) {
+        return [
+            mob.friendlyName,
+            mob.netId,
+            ...mob.entries.flatMap((entry) => [
+                entry.prefix,
+                entry.requirements,
+                entry.stats.level,
+                entry.stats.experience,
+                ...(entry.affixes?.map((affix) => affix.name) ?? [])
+            ])
+        ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+    }
+
+    function getTotalEntryWeight(mob: IMobData) {
+        return mob.entries.reduce((total, entry) => total + Number(entry.weight || 0), 0);
+    }
+
+    function getEntryChance(mob: IMobData, weight: number) {
+        const totalWeight = getTotalEntryWeight(mob);
+
+        if (!totalWeight || !weight) {
+            return '0%';
+        }
+
+        return `${formatNumber((Number(weight) / totalWeight) * 100)}%`;
+    }
+
+    function formatNumber(value: number) {
+        return value.toFixed(1).replace(/\.0$/, '');
+    }
+
+    function formatAdded(value?: number) {
+        return value === undefined || value === null ? '0' : formatNumber(value);
+    }
+
+    function formatConversion(value?: number) {
+        return `${formatNumber((value ?? 0) * 100)}%`;
+    }
+
+    function describeDamageTypes(damage: IMobData['damage'][number]) {
+        const types = [];
+
+        if (damage.fire) {
+            types.push(`Fire +${formatAdded(damage.fire.added)}, ${formatConversion(damage.fire.conversion)} conversion`);
+        }
+
+        if (damage.lightning) {
+            types.push(`Lightning +${formatAdded(damage.lightning.added)}, ${formatConversion(damage.lightning.conversion)} conversion`);
+        }
+
+        if (damage.cold) {
+            types.push(`Cold +${formatAdded(damage.cold.added)}, ${formatConversion(damage.cold.conversion)} conversion`);
+        }
+
+        return types;
+    }
 </script>
 
 <div class="container mx-auto px-4 py-24 text-white">
     <h1 class="mb-4 text-3xl font-black tracking-tight text-white">Mob Data</h1>
+
+    <section class="mb-6 rounded-[1.5rem] border border-white/10 bg-[#0a1016] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-200">How to read this</p>
+                <p class="mt-2 max-w-4xl text-sm leading-6 text-gray-300">
+                    Each mob can have one or more weighted entries. The mod picks one entry by relative weight, applies its
+                    prefix to the NPC name when present, then applies the entry stats, requirements, guaranteed affixes, and
+                    any entry damage overrides.
+                </p>
+                <div class="mt-4 grid gap-3 text-sm text-gray-300 md:grid-cols-2">
+                    <div class="rounded-xl border border-white/8 bg-white/[0.035] p-3">
+                        <span class="font-semibold text-white">Damage rows:</span> the highest Min Level that is less than or
+                        equal to the picked item/area level wins.
+                    </div>
+                    <div class="rounded-xl border border-white/8 bg-white/[0.035] p-3">
+                        <span class="font-semibold text-white">Conversion values:</span> JSON stores fractions, so 0.25 is
+                        shown here as 25%.
+                    </div>
+                    <div class="rounded-xl border border-white/8 bg-white/[0.035] p-3">
+                        <span class="font-semibold text-white">Entry overrides:</span> when an entry has damage overrides,
+                        those rows replace the global damage table for that spawn.
+                    </div>
+                    <div class="rounded-xl border border-white/8 bg-white/[0.035] p-3">
+                        <span class="font-semibold text-white">Affixes:</span> listed affixes are guaranteed first; magic and
+                        rare mobs can roll additional random mob affixes after that.
+                    </div>
+                </div>
+            </div>
+            <div class="grid min-w-[16rem] grid-cols-3 gap-3 text-sm">
+                <div class="rounded-xl border border-white/10 bg-white/[0.045] p-3">
+                    <div class="text-xs uppercase tracking-[0.14em] text-gray-400">Mobs</div>
+                    <div class="mt-2 text-2xl font-black text-white">{mobData.length}</div>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-white/[0.045] p-3">
+                    <div class="text-xs uppercase tracking-[0.14em] text-gray-400">Entries</div>
+                    <div class="mt-2 text-2xl font-black text-white">{totalEntries}</div>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-white/[0.045] p-3">
+                    <div class="text-xs uppercase tracking-[0.14em] text-gray-400">Prefixes</div>
+                    <div class="mt-2 text-2xl font-black text-white">{prefixOptions.length - 1}</div>
+                </div>
+                <div class="col-span-3 grid grid-cols-2 gap-3">
+                    <div class="rounded-xl border border-white/10 bg-white/[0.045] p-3">
+                        <div class="text-xs uppercase tracking-[0.14em] text-gray-400">Mobs With Damage</div>
+                        <div class="mt-2 text-2xl font-black text-white">{mobsWithDamage}</div>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-white/[0.045] p-3">
+                        <div class="text-xs uppercase tracking-[0.14em] text-gray-400">Affix Entries</div>
+                        <div class="mt-2 text-2xl font-black text-white">{guaranteedAffixEntries}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Search Input and Save Button -->
     <div class="mb-6 flex items-end space-x-4">
@@ -77,7 +215,7 @@
                 type="text"
                 bind:value={searchQuery}
                 oninput={handleSearch}
-                placeholder="Type to search by name..."
+                placeholder="Search by name, prefix, requirement, level, or affix..."
                 class="block w-full rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-sky-400 focus:outline-hidden focus:ring-2 focus:ring-sky-400/30"
             />
         </div>
@@ -114,16 +252,13 @@
                                     <ul class="text-xs">
                                         {#each mob.damage as damage}
                                             <li class="mb-2 rounded-lg border border-white/8 bg-white/[0.035] p-2">
-                                                <div class="font-bold text-gray-100">Min Lvl: {damage.minLevel}</div>
-                                                {#if damage.fire}
-                                                    <div class="text-red-300">Fire: +{damage.fire.added}, {damage.fire.conversion * 100}% conv</div>
-                                                {/if}
-                                                {#if damage.lightning}
-                                                    <div class="text-yellow-300">Light: +{damage.lightning.added}, {damage.lightning.conversion * 100}% conv</div>
-                                                {/if}
-                                                {#if damage.cold}
-                                                    <div class="text-sky-300">Cold: +{damage.cold.added}, {damage.cold.conversion * 100}% conv</div>
-                                                {/if}
+                                                <div class="font-bold text-gray-100">Min Level {damage.minLevel}</div>
+                                                <div class="mt-1 text-[11px] text-gray-400">Applies when picked level is {damage.minLevel} or higher, until a higher row qualifies.</div>
+                                                <div class="mt-2 space-y-1">
+                                                    {#each describeDamageTypes(damage) as damageType}
+                                                        <div class="text-gray-200">{damageType}</div>
+                                                    {/each}
+                                                </div>
                                             </li>
                                         {/each}
                                     </ul>
@@ -135,28 +270,40 @@
                                 <ul>
                                     {#each mob.entries as entry}
                                         <li class="my-2 rounded-lg border border-white/8 bg-white/[0.035] p-3">
-                                            <div>
-                                                <strong>Prefix:</strong> {entry.prefix || 'N/A'}
+                                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                                <div>
+                                                    <div class="font-bold text-white">{entry.prefix || '(No Prefix)'}</div>
+                                                    <div class="mt-1 text-xs text-gray-400">Displayed before the mob name when present.</div>
+                                                </div>
+                                                <div class="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs text-sky-100">
+                                                    {getEntryChance(mob, entry.weight)} chance
+                                                </div>
                                             </div>
-                                            <div>
-                                                <strong>Weight:</strong> {entry.weight}
-                                            </div>
-                                            <div>
-                                                <strong>Stats:</strong> Level {entry.stats.level}, Experience {entry.stats.experience}
-                                            </div>
-                                            <div>
-                                                <strong>Requirements:</strong> {entry.requirements}
+                                            <div class="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                                                <div class="rounded-lg border border-white/8 bg-black/20 p-2">
+                                                    <div class="uppercase tracking-[0.12em] text-gray-500">Weight</div>
+                                                    <div class="mt-1 font-semibold text-white">{entry.weight} of {getTotalEntryWeight(mob)}</div>
+                                                </div>
+                                                <div class="rounded-lg border border-white/8 bg-black/20 p-2">
+                                                    <div class="uppercase tracking-[0.12em] text-gray-500">Stats</div>
+                                                    <div class="mt-1 font-semibold text-white">Level {entry.stats.level}, {entry.stats.experience} XP</div>
+                                                </div>
+                                                <div class="rounded-lg border border-white/8 bg-black/20 p-2 sm:col-span-2">
+                                                    <div class="uppercase tracking-[0.12em] text-gray-500">Requirements</div>
+                                                    <div class="mt-1 font-semibold text-white">{entry.requirements || 'None'}</div>
+                                                </div>
                                             </div>
                                             {#if entry.damageOverrides && entry.damageOverrides.length > 0}
                                                 <div class="mt-2 border-t border-white/8 pt-2">
                                                     <strong>Damage Overrides:</strong>
-                                                    <ul class="text-xs">
+                                                    <p class="mt-1 text-xs text-gray-400">These rows replace the global damage table for this entry.</p>
+                                                    <ul class="mt-2 space-y-2 text-xs">
                                                         {#each entry.damageOverrides as damage}
-                                                            <li>
-                                                                Lvl {damage.minLevel}:
-                                                                {#if damage.fire} <span class="text-red-300">F</span> {/if}
-                                                                {#if damage.lightning} <span class="text-yellow-300">L</span> {/if}
-                                                                {#if damage.cold} <span class="text-sky-300">C</span> {/if}
+                                                            <li class="rounded-lg border border-white/8 bg-black/20 p-2">
+                                                                <div class="font-semibold text-white">Min Level {damage.minLevel}</div>
+                                                                {#each describeDamageTypes(damage) as damageType}
+                                                                    <div class="mt-1 text-gray-300">{damageType}</div>
+                                                                {/each}
                                                             </li>
                                                         {/each}
                                                     </ul>
@@ -164,10 +311,10 @@
                                             {/if}
                                             {#if entry.affixes?.length > 0}
                                                 <div>
-                                                    <strong>Affixes:</strong>
-                                                    <ul>
+                                                    <strong>Guaranteed Affixes:</strong>
+                                                    <ul class="mt-1 flex flex-wrap gap-2 text-xs">
                                                         {#each entry.affixes as affix}
-                                                            <li>{affix.name}</li>
+                                                            <li class="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-emerald-100">{affix.name}</li>
                                                         {/each}
                                                     </ul>
                                                 </div>
@@ -196,5 +343,5 @@
 
 <!-- Edit Modal -->
 {#if isEditModalOpen}
-    <EditModal {selectedMob} on:close={closeEditModal} on:save={saveMobData} />
+    <EditModal {selectedMob} {prefixOptions} on:close={closeEditModal} on:save={saveMobData} />
 {/if}

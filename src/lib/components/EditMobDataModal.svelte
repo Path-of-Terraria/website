@@ -1,9 +1,21 @@
 <script lang="ts">
     import type { IMobData, IDamageConfiguration, IDamageDetail } from "$lib/models/mob-data";
     import { createEventDispatcher } from 'svelte';
-    import { Accordion, AccordionItem, Button, Input, Label, Heading, Helper } from 'flowbite-svelte';
+    import { Accordion, AccordionItem, Button, Input, Label, Heading } from 'flowbite-svelte';
+    import DataDropdown from '$lib/components/DataDropdown.svelte';
 
-    let { selectedMob = null } = $props<{ selectedMob?: IMobData | null }>();
+    interface PrefixOption {
+        value: string;
+        label: string;
+    }
+
+    let {
+        selectedMob = null,
+        prefixOptions = [{ value: '', label: '(No Prefix)' }]
+    } = $props<{
+        selectedMob?: IMobData | null;
+        prefixOptions?: PrefixOption[];
+    }>();
     const dispatch = createEventDispatcher();
 
     function closeModal() {
@@ -158,8 +170,12 @@
                         <div class="mb-4 rounded-xl border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <Label class="text-gray-300">Prefix</Label>
-                                    <Input type="text" bind:value={entry.prefix} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500" />
+                                    <DataDropdown
+                                        id={`entry-prefix-${index}`}
+                                        label="Prefix"
+                                        options={prefixOptions}
+                                        bind:value={entry.prefix}
+                                    />
                                 </div>
                                 <div>
                                     <Label class="text-gray-300">Weight</Label>
