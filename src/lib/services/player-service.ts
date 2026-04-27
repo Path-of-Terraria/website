@@ -72,14 +72,30 @@ export interface ICharacterGearSnapshot {
     slots: IGearSlotSnapshot[];
 }
 
+export interface IPassiveTreeNodeSnapshot {
+    referenceId: number;
+    internalIdentifier: string;
+    level: number;
+}
+
+export interface ICharacterPassiveTreeSnapshot {
+    capturedAt: string;
+    modVersion?: string;
+    points: number;
+    extraPoints: number;
+    allocatedNodes: IPassiveTreeNodeSnapshot[];
+}
+
 export interface ICharacterViewer {
     id: string;
     characterName: string;
     blacklisted: boolean;
     profileName?: string;
     modVersion?: string;
+    characterClass?: string;
     stats: ICharacterViewerStats;
     gearSnapshot?: ICharacterGearSnapshot;
+    passiveTreeSnapshot?: ICharacterPassiveTreeSnapshot;
     updatedDate?: string;
 }
 

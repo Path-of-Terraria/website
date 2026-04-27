@@ -2,9 +2,10 @@
     import { onMount } from 'svelte';
     import { Button } from 'flowbite-svelte';
     import type { PageData } from './$types';
-    import { PlayerService, type ICharacterViewer, type IGearItemSnapshot } from '$lib/services/player-service';
+    import { PlayerService, type ICharacterPassiveTreeSnapshot, type ICharacterViewer, type IGearSlotSnapshot } from '$lib/services/player-service';
     import { GetJwtToken } from '$lib/services/session-service';
     import { UserService } from '$lib/services/user-service';
+    import PassiveTreeViewer from '$lib/components/PassiveTreeViewer.svelte';
     import { toast } from '$lib/toast';
 
     let { data }: { data: PageData } = $props();
@@ -91,15 +92,63 @@
     }
 
     const SLOT_ORDER = [
-        'Head', 'Body', 'Legs', 'Feet', 'Hands', 'Neck',
-        'Ring1', 'Ring2', 'MainHand', 'OffHand',
+        'MainWeapon', 'Offhand',
+        'Helmet', 'Body', 'Legs', 'Wings', 'Necklace',
+        'RingLeft', 'RingRight',
     ];
 
-    function orderedSlots(slots: { slot: string; item?: IGearItemSnapshot }[]) {
+    const LOADOUT_ROWS = [
+        ['MainWeapon', 'Helmet', 'Offhand'],
+        ['Wings', 'Body', 'Necklace'],
+        ['RingLeft', 'Legs', 'RingRight'],
+    ];
+
+    const LOADOUT_SLOTS = LOADOUT_ROWS.flat();
+
+    const SLOT_LABELS: Record<string, string> = {
+        MainWeapon: 'Main Weapon',
+        Offhand: 'Offhand',
+        Helmet: 'Helmet',
+        Body: 'Body',
+        Legs: 'Legs',
+        Wings: 'Wings',
+        Necklace: 'Necklace',
+        RingLeft: 'Left Ring',
+        RingRight: 'Right Ring',
+    };
+
+    function orderedSlots(slots: IGearSlotSnapshot[]) {
         const slotMap = new Map(slots.map(s => [s.slot, s]));
-        const ordered = SLOT_ORDER.map(s => slotMap.get(s)).filter(Boolean) as typeof slots;
+        const ordered = SLOT_ORDER.map(s => slotMap.get(s)).filter(Boolean) as IGearSlotSnapshot[];
         const rest = slots.filter(s => !SLOT_ORDER.includes(s.slot));
         return [...ordered, ...rest];
+    }
+
+    function loadoutSlot(slots: IGearSlotSnapshot[], slotName: string): IGearSlotSnapshot {
+        return slots.find(slot => slot.slot === slotName) ?? { slot: slotName };
+    }
+
+    function additionalSlots(slots: IGearSlotSnapshot[]): IGearSlotSnapshot[] {
+        return orderedSlots(slots).filter(slot => !LOADOUT_SLOTS.includes(slot.slot));
+    }
+
+    function slotLabel(slot: string): string {
+        return SLOT_LABELS[slot] ?? slot;
+    }
+
+    function inferCharacterClass(snapshot?: ICharacterPassiveTreeSnapshot): string | undefined {
+        const nodeIds = new Set(snapshot?.allocatedNodes.filter(node => node.level > 0).map(node => node.referenceId) ?? []);
+
+        if (nodeIds.has(0)) return 'Melee';
+        if (nodeIds.has(-1)) return 'Ranged';
+        if (nodeIds.has(-2)) return 'Magic';
+        if (nodeIds.has(-3)) return 'Summoner';
+
+        return undefined;
+    }
+
+    function characterClassLabel(viewer: ICharacterViewer): string {
+        return viewer.characterClass || inferCharacterClass(viewer.passiveTreeSnapshot) || 'Unselected';
     }
 </script>
 
@@ -129,6 +178,11 @@
                             <a href="/profile/{viewer.profileName}/characters" class="text-sm text-gray-400 hover:text-white transition">
                                 @{viewer.profileName}
                             </a>
+                        {/if}
+                        {#if characterClassLabel(viewer) !== 'Unselected'}
+                            <div class="mt-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                                {characterClassLabel(viewer)}
+                            </div>
                         {/if}
                         {#if viewer.blacklisted}
                             <div class="mt-2 inline-flex rounded-full border border-rose-400/30 bg-rose-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-200">
@@ -167,7 +221,11 @@
                 <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
                     <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                         <h2 class="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">Stats</h2>
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                            <div class="min-w-0 rounded-xl border border-cyan-300/18 bg-cyan-300/10 px-4 py-3 text-center">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-300/70">Class</div>
+                                <div class="mt-1 text-lg font-black text-cyan-100">{characterClassLabel(viewer)}</div>
+                            </div>
                             <div class="min-w-0 rounded-xl border border-emerald-300/18 bg-emerald-300/10 px-4 py-3 text-center">
                                 <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-300/70">Level</div>
                                 <div class="mt-1 text-2xl font-black text-emerald-100">{viewer.stats.level}</div>
@@ -201,36 +259,75 @@
                                     <span class="text-xs text-gray-500">v{viewer.gearSnapshot.modVersion}</span>
                                 {/if}
                             </div>
-                            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                {#each orderedSlots(viewer.gearSnapshot.slots) as slot}
-                                    {#if slot.item}
-                                        <div class="rounded-xl border {rarityBorder(slot.item.rarity)} {rarityBg(slot.item.rarity)} p-3">
-                                            <div class="mb-1 flex items-center justify-between gap-2">
-                                                <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">{slot.slot}</span>
-                                                {#if slot.item.itemLevel > 0}
-                                                    <span class="text-[10px] text-gray-500">iLv {slot.item.itemLevel}</span>
-                                                {/if}
-                                            </div>
-                                            <div class="font-semibold {rarityColor(slot.item.rarity)}">{slot.item.displayName}</div>
-                                            <div class="mt-0.5 text-xs text-gray-500">{slot.item.itemType}</div>
-                                            {#if slot.item.corrupted}
-                                                <div class="mt-1 text-xs font-semibold text-red-400">Corrupted</div>
+                            <div class="mx-auto max-w-5xl">
+                                <div class="grid gap-3 md:grid-cols-3">
+                                    {#each LOADOUT_ROWS as row}
+                                        {#each row as slotName}
+                                            {@const slot = loadoutSlot(viewer.gearSnapshot.slots, slotName)}
+                                            {#if slot.item}
+                                                <div class="min-h-36 rounded-xl border {rarityBorder(slot.item.rarity)} {rarityBg(slot.item.rarity)} p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                                                    <div class="mb-1 flex items-center justify-between gap-2">
+                                                        <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">{slotLabel(slot.slot)}</span>
+                                                        {#if slot.item.itemLevel > 0}
+                                                            <span class="text-[10px] text-gray-500">iLv {slot.item.itemLevel}</span>
+                                                        {/if}
+                                                    </div>
+                                                    <div class="font-semibold {rarityColor(slot.item.rarity)}">{slot.item.displayName}</div>
+                                                    <div class="mt-0.5 text-xs text-gray-500">{slot.item.itemType}</div>
+                                                    {#if slot.item.corrupted}
+                                                        <div class="mt-1 text-xs font-semibold text-red-400">Corrupted</div>
+                                                    {/if}
+                                                    {#if slot.item.affixTextLines.length > 0}
+                                                        <ul class="mt-2 space-y-0.5 border-t border-white/10 pt-2">
+                                                            {#each slot.item.affixTextLines as line}
+                                                                <li class="text-xs text-gray-300">{line}</li>
+                                                            {/each}
+                                                        </ul>
+                                                    {/if}
+                                                </div>
+                                            {:else}
+                                                <div class="flex min-h-36 flex-col justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.025] p-3 text-center opacity-60">
+                                                    <div class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">{slotLabel(slot.slot)}</div>
+                                                    <div class="text-xs text-gray-600">Empty</div>
+                                                </div>
                                             {/if}
-                                            {#if slot.item.affixTextLines.length > 0}
-                                                <ul class="mt-2 space-y-0.5 border-t border-white/10 pt-2">
-                                                    {#each slot.item.affixTextLines as line}
-                                                        <li class="text-xs text-gray-300">{line}</li>
-                                                    {/each}
-                                                </ul>
+                                        {/each}
+                                    {/each}
+                                </div>
+
+                                {#if additionalSlots(viewer.gearSnapshot.slots).length > 0}
+                                    <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                        {#each additionalSlots(viewer.gearSnapshot.slots) as slot}
+                                            {#if slot.item}
+                                                <div class="rounded-xl border {rarityBorder(slot.item.rarity)} {rarityBg(slot.item.rarity)} p-3">
+                                                    <div class="mb-1 flex items-center justify-between gap-2">
+                                                        <span class="text-[10px] font-semibold uppercase tracking-widest text-gray-500">{slotLabel(slot.slot)}</span>
+                                                        {#if slot.item.itemLevel > 0}
+                                                            <span class="text-[10px] text-gray-500">iLv {slot.item.itemLevel}</span>
+                                                        {/if}
+                                                    </div>
+                                                    <div class="font-semibold {rarityColor(slot.item.rarity)}">{slot.item.displayName}</div>
+                                                    <div class="mt-0.5 text-xs text-gray-500">{slot.item.itemType}</div>
+                                                    {#if slot.item.corrupted}
+                                                        <div class="mt-1 text-xs font-semibold text-red-400">Corrupted</div>
+                                                    {/if}
+                                                    {#if slot.item.affixTextLines.length > 0}
+                                                        <ul class="mt-2 space-y-0.5 border-t border-white/10 pt-2">
+                                                            {#each slot.item.affixTextLines as line}
+                                                                <li class="text-xs text-gray-300">{line}</li>
+                                                            {/each}
+                                                        </ul>
+                                                    {/if}
+                                                </div>
+                                            {:else}
+                                                <div class="rounded-xl border border-white/5 bg-white/[0.02] p-3 opacity-40">
+                                                    <div class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">{slotLabel(slot.slot)}</div>
+                                                    <div class="text-xs text-gray-600">Empty</div>
+                                                </div>
                                             {/if}
-                                        </div>
-                                    {:else}
-                                        <div class="rounded-xl border border-white/5 bg-white/[0.02] p-3 opacity-40">
-                                            <div class="mb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-600">{slot.slot}</div>
-                                            <div class="text-xs text-gray-600">Empty</div>
-                                        </div>
-                                    {/if}
-                                {/each}
+                                        {/each}
+                                    </div>
+                                {/if}
                             </div>
                         </div>
                     </div>
@@ -238,6 +335,14 @@
                     <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px]">
                         <div class="rounded-[calc(2rem-1px)] bg-[linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] px-5 py-10 text-center ring-1 ring-white/10">
                             <div class="text-sm font-semibold text-gray-400">No gear data available</div>
+                        </div>
+                    </div>
+                {/if}
+
+                {#if viewer.passiveTreeSnapshot && viewer.passiveTreeSnapshot.allocatedNodes.length > 0}
+                    <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
+                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                            <PassiveTreeViewer snapshot={viewer.passiveTreeSnapshot} />
                         </div>
                     </div>
                 {/if}
