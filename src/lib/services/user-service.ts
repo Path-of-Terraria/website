@@ -150,6 +150,14 @@ export class UserService {
         return null;
     }
 
+    public async updateUserChatBan(userId: string, chatBanned: boolean) {
+        let response = await this.httpService.patch(`User/${userId}/ChatBanned`, { chatBanned });
+        if (response) {
+            return response;
+        }
+        return null;
+    }
+
     public async getMyBenefits(userId: string) {
         let response = await this.httpService.get(`User/Benefits`);
         if (response) {

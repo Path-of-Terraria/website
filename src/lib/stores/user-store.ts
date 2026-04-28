@@ -8,6 +8,7 @@ export interface IUser {
     steamId: string;
     profileName: string;
     roles: string[];
+    chatBanned: boolean;
     supporterPacks: string[];
     supporterSubscription: string;
     chosenBenefits: IChosenBenefits;

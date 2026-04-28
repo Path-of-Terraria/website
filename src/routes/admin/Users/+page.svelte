@@ -17,6 +17,10 @@
     let saveLoading = $state(false);
     let saveSuccess = $state(false);
     let saveError = $state("");
+    let canModerateChat = $state(false);
+    let chatBanSaveLoading = $state(false);
+    let chatBanSaveSuccess = $state(false);
+    let chatBanSaveError = $state("");
 
     let availableBenefits: AvailableBenefitsResponse = $state({ supporterPacks: [], subscriptions: [] });
     let selectedSupporterPacks: string[] = $state([]);
@@ -26,7 +30,7 @@
     let benefitsSaveSuccess = $state(false);
     let benefitsSaveError = $state("");
 
-    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ManagePlayers", "ManageBenefits", "SendAnnouncements"];
+    const availableRoles = ["ViewAdminPanel", "EditTranslations", "UpdateRoles", "ChatModerator", "ManagePlayers", "ManageBenefits", "SendAnnouncements"];
 
     let selectedRoles: string[] = $state([]);
 
@@ -58,12 +62,15 @@
     }
 
     onMount(() => {
-        loadAvailableBenefits();
-        const search = page.url.searchParams.get("search");
-        if (search) {
-            profileName = search;
-            searchUser();
-        }
+        void (async () => {
+            canModerateChat = await userService.hasRole("ChatModerator");
+            await loadAvailableBenefits();
+            const search = page.url.searchParams.get("search");
+            if (search) {
+                profileName = search;
+                await searchUser();
+            }
+        })();
     });
 
     async function searchUser(event?: SubmitEvent) {
@@ -136,6 +143,35 @@
             if (saveSuccess) {
                 setTimeout(() => {
                     saveSuccess = false;
+                }, 3000);
+            }
+        }
+    }
+
+    async function saveChatBan() {
+        if (!user) return;
+
+        chatBanSaveLoading = true;
+        chatBanSaveSuccess = false;
+        chatBanSaveError = "";
+
+        try {
+            const response = await userService.updateUserChatBan(user.id, user.chatBanned);
+
+            if (response) {
+                chatBanSaveSuccess = true;
+            } else {
+                chatBanSaveError = "Failed to update chat moderation status";
+            }
+        } catch (e) {
+            chatBanSaveError = "Error updating chat moderation status";
+            console.error(e);
+        } finally {
+            chatBanSaveLoading = false;
+
+            if (chatBanSaveSuccess) {
+                setTimeout(() => {
+                    chatBanSaveSuccess = false;
                 }, 3000);
             }
         }
@@ -276,11 +312,47 @@
                         </Button>
 
                         {#if saveSuccess}
-                            <P color="green" class="mt-2">User data updated successfully!</P>
+                            <P class="mt-2 text-emerald-300">User data updated successfully!</P>
                         {/if}
 
                         {#if saveError}
                             <P color="red" class="mt-2">{saveError}</P>
+                        {/if}
+                    </div>
+                </div>
+
+                <div class="mt-6 border-t border-white/10 pt-4">
+                    <h6 class="mb-3 text-lg font-medium text-gray-200">Chat Moderation</h6>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <Checkbox
+                                bind:checked={user.chatBanned}
+                                disabled={!canModerateChat || chatBanSaveLoading}
+                                class="border-white/20 bg-white/8 text-emerald-400 focus:ring-emerald-400/50 disabled:opacity-60"
+                            />
+                            <span class="ml-2 text-gray-100">Block this user from global chat across all players</span>
+                        </div>
+
+                        {#if canModerateChat}
+                            <Button
+                                size="sm"
+                                class="border-amber-400/20 bg-amber-500 text-white hover:bg-amber-400 disabled:border-white/10 disabled:bg-white/8 disabled:text-gray-400"
+                                disabled={chatBanSaveLoading}
+                                onclick={saveChatBan}
+                            >
+                                {chatBanSaveLoading ? "Saving..." : "Save Chat Moderation"}
+                            </Button>
+                        {:else}
+                            <P class="text-sm text-gray-400">Requires the ChatModerator role.</P>
+                        {/if}
+
+                        {#if chatBanSaveSuccess}
+                            <P class="mt-2 text-emerald-300">Chat moderation status updated successfully!</P>
+                        {/if}
+
+                        {#if chatBanSaveError}
+                            <P color="red" class="mt-2">{chatBanSaveError}</P>
                         {/if}
                     </div>
                 </div>
