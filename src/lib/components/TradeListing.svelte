@@ -1,10 +1,8 @@
 <script lang="ts">
     import {type ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
-    import placeholder from '$lib/images/item-placeholder.png';
     import { toast } from "$lib/toast";
     import {UserService} from "$lib/services/user-service";
     import {TradeListingService} from "$lib/services/trade-listing-service";
-    import {Button} from "flowbite-svelte";
 
     let userService = new UserService();
     let tradeListingService = new TradeListingService();
@@ -30,12 +28,64 @@
         "Unique",
     ]
 
-    const rarityColors = [
-        "gray-300",
-        "blue-300",
-        "yellow-300",
-        "green-300",
+    const rarityClasses = [
+        "text-gray-300 border-gray-300/20 bg-gray-300/10",
+        "text-sky-200 border-sky-300/20 bg-sky-300/10",
+        "text-amber-200 border-amber-300/20 bg-amber-300/10",
+        "text-emerald-200 border-emerald-300/20 bg-emerald-300/10",
     ]
+
+    const itemTypeNames: Record<number, string> = {
+        1: 'Sword',
+        2: 'Spear',
+        4: 'Bow',
+        8: 'Gun',
+        16: 'Staff',
+        32: 'Tome',
+        64: 'Helmet',
+        128: 'Chestplate',
+        256: 'Leggings',
+        512: 'Ring',
+        2048: 'Wand',
+        4096: 'Jewel',
+        8192: 'Map',
+        16384: 'Boomerang',
+        32768: 'Melee Flail',
+        65536: 'Ranged Flail',
+        131072: 'Launcher',
+        262144: 'Javelin',
+        524288: 'Whip',
+        1048576: 'War Shield',
+        2097152: 'Grimoire',
+        4194304: 'Battleaxe',
+        8388608: 'Amulet',
+        16777216: 'Shield',
+    };
+
+    function formatItemTypeLabel(typeName?: string) {
+        if (!typeName) {
+            return undefined;
+        }
+
+        if (typeName.startsWith('Terraria/')) {
+            return 'Vanilla';
+        }
+
+        const withoutNamespace = typeName.includes('/')
+            ? typeName.slice(typeName.indexOf('/') + 1)
+            : typeName;
+
+        return withoutNamespace
+            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    const itemTypeLabel = $derived(formatItemTypeLabel(
+        listing?.itemData.typeName
+        ?? (listing?.itemData.type !== undefined ? itemTypeNames[listing.itemData.type] : undefined)
+    ));
 
     async function requestBuy() {
         const user = await userService.getUserProfile();
@@ -47,36 +97,34 @@
     }
 </script>
 
-<div class="trade-listing-card bg-gray-800 rounded-lg shadow-md flex p-4 gap-4">
-    <!-- Left Section: Item Image -->
-    <div class="shrink-0 flex items-center">
-        <img
-                src="{placeholder}"
-                alt="{listing?.itemData.name}"
-                class="w-16 h-16 rounded-md object-cover"
-        />
-    </div>
-
+<article class="trade-listing-card group flex h-full flex-col gap-4 rounded-[1.5rem] border border-white/10 bg-[#0a1016]/72 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.26)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/20 hover:bg-[#0d151d]/82 sm:flex-row">
     <!-- Middle Section: Item Details -->
-    <div class="grow text-center">
-        <h3 class="text-lg font-semibold text-yellow-300">
+    <div class="min-w-0 grow text-center sm:text-left">
+        <h3 class="truncate text-lg font-semibold text-white">
             {listing?.itemData.name}
         </h3>
-        <p class="text-sm text-{rarityColors[listing?.itemData.rarity]}">
-            {rarityTexts[listing?.itemData.rarity]}
-        </p>
+        <div class="mt-1 flex flex-wrap justify-center gap-2 sm:justify-start">
+            <p class="inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold {rarityClasses[listing?.itemData.rarity] ?? rarityClasses[0]}">
+                {rarityTexts[listing?.itemData.rarity]}
+            </p>
+            {#if itemTypeLabel}
+                <p class="inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
+                    {itemTypeLabel}
+                </p>
+            {/if}
+        </div>
         {#if listing?.itemData.itemLevel > 0}
-            <p class="text-xs text-gray-400">
+            <p class="mt-2 text-xs text-gray-400">
                 Item Level <span class="text-gray-200">{listing?.itemData.itemLevel}</span>
             </p>
         {/if}
 
-        <ul class="text-sm text-gray-300 mt-2 space-y-1">
+        <ul class="mt-3 space-y-1 text-sm text-gray-300">
             {#each listing?.itemData.properties as property}
-                <li>
+                <li class="rounded-lg bg-white/[0.025] px-2 py-1">
                     <span>{property.name}</span>
                     {#if listing?.itemData.rarity !== TradeListingItemDataRarity.Unique}
-                        <span class="text-yellow-400">
+                        <span class="text-amber-300">
                             (Tier {property.tier})
                         </span>
                     {/if}
@@ -86,31 +134,27 @@
     </div>
 
     <!-- Right Section: Price and Actions -->
-    <div class="flex flex-col items-end">
-        <div class="text-sm text-gray-400">
+    <div class="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-white/10 pt-3 sm:min-w-36 sm:flex-col sm:items-end sm:justify-start sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+        <div class="text-left sm:text-right">
+        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
             Exact Price:
         </div>
-        <div class="text-lg font-semibold text-yellow-300">
+        <div class="mt-1 text-base font-semibold text-amber-200 sm:text-lg">
             {listing?.amount} {currencyNames[listing?.currency]}
         </div>
+        </div>
 
-        <div class="mt-4 flex gap-2">
-            <Button class="cursor-pointer" type="button" onclick={() => requestBuy()} color="green">
+        <div class="flex gap-2 sm:mt-4">
+            <button
+                    class="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/10 ring-1 ring-white/10 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    type="button"
+                    onclick={() => requestBuy()}
+            >
                 Buy
-            </Button>
+            </button>
 <!--            <Button class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-1.5 rounded-sm">-->
 <!--                Offer-->
 <!--            </Button>-->
         </div>
     </div>
-</div>
-
-<style>
-    .text-green-300 {
-        color: oklch(0.871 0.15 154.449);
-    }
-
-    .text-blue-300 {
-        color: oklch(0.871 0.15 210.449);
-    }
-</style>
+</article>

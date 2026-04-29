@@ -78,6 +78,9 @@
         { value: TradeListingItemDataRarity.Unique, label: 'Unique' }
     ];
 
+    const fieldClass = 'w-full rounded-xl border border-white/10 bg-[#0a1016]/80 px-3 py-2 text-sm text-white shadow-inner shadow-black/20 outline-none transition placeholder:text-gray-500 focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/15';
+    const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.14em] text-gray-400';
+
     function toggleExpand() {
         isExpanded = !isExpanded;
     }
@@ -111,21 +114,21 @@
     }
 </script>
 
-<div class="filter-panel bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+<div class="filter-panel mb-5 rounded-[1.5rem] border border-white/10 bg-[#0a1016]/72 p-3 shadow-[0_18px_50px_rgba(0,0,0,0.26)] md:p-4">
     <!-- Top bar: Search and Toggle -->
-    <div class="flex flex-col md:flex-row gap-4 mb-4">
+    <div class="mb-4 flex flex-col gap-3 md:flex-row">
         <!-- Search bar -->
-        <div class="search-bar flex-1 flex gap-2">
+        <div class="search-bar flex flex-1 gap-2">
             <input
                 type="text"
                 bind:value={filter.name}
                 onkeydown={(e) => e.key === 'Enter' && applyFilter()}
                 placeholder="Search by item name..."
-                class="flex-1 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                class="{fieldClass} flex-1"
             />
             <button
                 onclick={applyFilter}
-                class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+                class="rounded-xl bg-gradient-to-r from-indigo-500 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/10 ring-1 ring-white/10 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             >
                 Search
             </button>
@@ -134,22 +137,23 @@
         <!-- Collapsible section toggle -->
         <button
             onclick={toggleExpand}
-            class="flex items-center justify-between w-full md:w-auto md:min-w-[180px] p-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors"
+            class="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white transition-colors hover:bg-white/[0.08] md:w-auto md:min-w-[190px]"
         >
             <span class="font-medium">Advanced Filters</span>
-            <span class="transform transition-transform {isExpanded ? 'rotate-180' : ''}">▼</span>
+            <span class="transform text-xs text-emerald-200 transition-transform {isExpanded ? 'rotate-180' : ''}">▼</span>
         </button>
     </div>
 
     <!-- Collapsible filter section -->
     {#if isExpanded}
-        <div class="filter-controls grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="filter-controls mb-4 grid grid-cols-1 gap-4 border-t border-white/10 pt-4 md:grid-cols-2">
             <!-- Item Type -->
             <div class="filter-group">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Item Type</label>
+                <label class={labelClass} for="trade-item-type">Item Type</label>
                 <select
+                    id="trade-item-type"
                     bind:value={filter.type}
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                    class={fieldClass}
                 >
                     <option value={undefined}>Any</option>
                     {#each itemTypes as type}
@@ -160,21 +164,23 @@
 
             <!-- Type Name -->
             <div class="filter-group">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Type Name</label>
+                <label class={labelClass} for="trade-type-name">Type Name</label>
                 <input
+                    id="trade-type-name"
                     type="text"
                     bind:value={filter.typeName}
                     placeholder="e.g. Sword, Helmet..."
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                    class={fieldClass}
                 />
             </div>
 
             <!-- Rarity -->
             <div class="filter-group">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Rarity</label>
+                <label class={labelClass} for="trade-rarity">Rarity</label>
                 <select
+                    id="trade-rarity"
                     bind:value={filter.rarity}
-                    class="w-full p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                    class={fieldClass}
                 >
                     <option value={undefined}>Any</option>
                     {#each rarityOptions as option}
@@ -185,15 +191,15 @@
 
             <!-- Item Level -->
             <div class="filter-group">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Item Level</label>
-                <div class="flex space-x-2">
+                <div class={labelClass}>Item Level</div>
+                <div class="flex gap-2">
                     <input
                         type="number"
                         bind:value={filter.minItemLevel}
                         onkeydown={(e) => e.key === 'Enter' && applyFilter()}
                         placeholder="Min"
                         min="0"
-                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                        class="{fieldClass} w-1/2"
                     />
                     <input
                         type="number"
@@ -201,7 +207,7 @@
                         onkeydown={(e) => e.key === 'Enter' && applyFilter()}
                         placeholder="Max"
                         min="0"
-                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                        class="{fieldClass} w-1/2"
                     />
                 </div>
             </div>
@@ -285,16 +291,16 @@
         </div>
 
         <!-- Filter action buttons -->
-        <div class="filter-actions flex justify-end space-x-2">
+        <div class="filter-actions flex justify-end gap-2 border-t border-white/10 pt-4">
             <button
                 onclick={resetFilter}
-                class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
+                class="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/[0.08] hover:text-white"
             >
                 Reset
             </button>
             <button
                 onclick={applyFilter}
-                class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+                class="rounded-xl bg-gradient-to-r from-amber-500 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/10 ring-1 ring-white/10 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             >
                 Apply Filters
             </button>

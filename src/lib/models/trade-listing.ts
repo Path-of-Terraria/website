@@ -20,6 +20,8 @@ export enum TradeListingCurrency {
 
 export interface ITradeListingItemData {
     name: string;
+    type?: number;
+    typeName?: string;
     rarity: TradeListingItemDataRarity;
     properties: ITradeListingItemDataAffix[];
     itemLevel: number;
