@@ -15,22 +15,31 @@ export interface GearFilter {
     affixName?: string;
     affixMinTier?: number;
     affixMinValue?: number;
+    page?: number;
+    pageSize?: number;
 }
 
 export class TradeListingService {
     httpService = HttpService.getInstance();
 
-    public async getTradeListings(): Promise<ITradeListing[]> {
-        let response = await this.httpService.get('TradeListing');
+    public async getTradeListings(page = 1, pageSize = 20): Promise<ITradeListing[]> {
+        const params = new URLSearchParams({
+            Page: page.toString(),
+            PageSize: pageSize.toString()
+        });
+        
+        let response = await this.httpService.get(`TradeListing?${params.toString()}`);
         if (response) {
             return response.data as ITradeListing[];
         }
         return [];
     }
 
-    public async getFilteredTrades(filter: GearFilter): Promise<ITradeListing[]> {
+    public async getFilteredTrades(filter: GearFilter, page = 1, pageSize = 20): Promise<ITradeListing[]> {
         // Convert filter object to query parameters
         const params = new URLSearchParams();
+        params.append('Page', page.toString());
+        params.append('PageSize', pageSize.toString());
         
         if (filter.name) params.append('Name', filter.name);
         if (filter.typeName) params.append('TypeName', filter.typeName);

@@ -83,15 +83,9 @@
     }
 
     function applyFilter() {
-        // Clean up empty string values
-        const cleanFilter = { ...filter };
-
-        // Remove empty string and null values
-        Object.keys(cleanFilter).forEach(key => {
-            if (cleanFilter[key] === '' || cleanFilter[key] === null) {
-                cleanFilter[key] = undefined;
-            }
-        });
+        const cleanFilter = Object.fromEntries(
+            Object.entries(filter).filter(([, value]) => value !== '' && value !== null && value !== undefined)
+        ) as GearFilter;
 
         dispatch('filter', cleanFilter);
     }
