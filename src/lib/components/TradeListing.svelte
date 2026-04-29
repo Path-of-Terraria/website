@@ -65,6 +65,11 @@
         <p class="text-sm text-{rarityColors[listing?.itemData.rarity]}">
             {rarityTexts[listing?.itemData.rarity]}
         </p>
+        {#if listing?.itemData.itemLevel > 0}
+            <p class="text-xs text-gray-400">
+                Item Level <span class="text-gray-200">{listing?.itemData.itemLevel}</span>
+            </p>
+        {/if}
 
         <ul class="text-sm text-gray-300 mt-2 space-y-1">
             {#each listing?.itemData.properties as property}

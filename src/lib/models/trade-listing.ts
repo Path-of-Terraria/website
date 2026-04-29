@@ -22,6 +22,7 @@ export interface ITradeListingItemData {
     name: string;
     rarity: TradeListingItemDataRarity;
     properties: ITradeListingItemDataAffix[];
+    itemLevel: number;
 }
 
 export enum TradeListingItemDataRarity {

@@ -5,7 +5,7 @@
     import { onDestroy } from "svelte";
     import { toast } from "$lib/toast";
 
-    let userService = new UserService();
+    const userService = new UserService();
 
     let { data }: { data: PageData } = $props();
 
@@ -20,14 +20,6 @@
     onDestroy(() => {
         unsubscribe();
     });
-
-    async function getPlayer() {
-        return await userService.getPlayers(data.slug);
-    }
-
-    function reloadPlayers() {
-        playerPromise = getPlayer();
-    }
 
     function isDeleting(id: string) {
         return deletingPlayerIds.includes(id);
@@ -48,7 +40,7 @@
         try {
             await userService.deletePlayer(player.id);
             toast.push(`Deleted ${player.characterName}.`);
-            reloadPlayers();
+            playerPromise = userService.getPlayers(data.slug);
         } finally {
             deletingPlayerIds = deletingPlayerIds.filter((id) => id !== player.id);
         }
@@ -57,8 +49,8 @@
     const isOwnProfile = $derived(currentUser?.profileName === data.slug);
 
     $effect(() => {
-        data.slug;
-        reloadPlayers();
+        const slug = data.slug;
+        playerPromise = userService.getPlayers(slug);
     });
 </script>
 
@@ -117,7 +109,7 @@
                                                             {index + 1}
                                                         </div>
                                                         <div class="min-w-0">
-                                                            <a href="/character/{encodeURIComponent(data.slug)}/{encodeURIComponent(player.characterName)}" class="truncate text-sm font-semibold text-white transition hover:underline md:text-base">
+                                                            <a href={`/character/${encodeURIComponent(data.slug)}/${encodeURIComponent(player.characterName)}`} class="truncate text-sm font-semibold text-white transition hover:underline md:text-base">
                                                                 {player.characterName}
                                                             </a>
                                                         </div>

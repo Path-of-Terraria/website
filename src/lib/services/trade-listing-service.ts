@@ -10,6 +10,8 @@ export interface GearFilter {
     isMirrored?: boolean;
     minStack?: number;
     maxStack?: number;
+    minItemLevel?: number;
+    maxItemLevel?: number;
     affixName?: string;
     affixMinTier?: number;
     affixMinValue?: number;
@@ -38,6 +40,8 @@ export class TradeListingService {
         if (filter.isMirrored !== undefined) params.append('IsMirrored', filter.isMirrored.toString());
         if (filter.minStack !== undefined) params.append('MinStack', filter.minStack.toString());
         if (filter.maxStack !== undefined) params.append('MaxStack', filter.maxStack.toString());
+        if (filter.minItemLevel !== undefined) params.append('MinItemLevel', filter.minItemLevel.toString());
+        if (filter.maxItemLevel !== undefined) params.append('MaxItemLevel', filter.maxItemLevel.toString());
         if (filter.affixName) params.append('AffixName', filter.affixName);
         if (filter.affixMinTier !== undefined) params.append('AffixMinTier', filter.affixMinTier.toString());
         if (filter.affixMinValue !== undefined) params.append('AffixMinValue', filter.affixMinValue.toString());

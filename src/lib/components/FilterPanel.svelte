@@ -18,6 +18,8 @@
         isMirrored: undefined,
         minStack: undefined,
         maxStack: undefined,
+        minItemLevel: undefined,
+        maxItemLevel: undefined,
         affixName: '',
         affixMinTier: undefined,
         affixMinValue: undefined
@@ -84,9 +86,9 @@
         // Clean up empty string values
         const cleanFilter = { ...filter };
 
-        // Remove empty string values
+        // Remove empty string and null values
         Object.keys(cleanFilter).forEach(key => {
-            if (cleanFilter[key] === '') {
+            if (cleanFilter[key] === '' || cleanFilter[key] === null) {
                 cleanFilter[key] = undefined;
             }
         });
@@ -104,6 +106,8 @@
             isMirrored: undefined,
             minStack: undefined,
             maxStack: undefined,
+            minItemLevel: undefined,
+            maxItemLevel: undefined,
             affixName: '',
             affixMinTier: undefined,
             affixMinValue: undefined
@@ -183,6 +187,29 @@
                         <option value={option.value}>{option.label}</option>
                     {/each}
                 </select>
+            </div>
+
+            <!-- Item Level -->
+            <div class="filter-group">
+                <label class="block text-sm font-medium text-gray-300 mb-1">Item Level</label>
+                <div class="flex space-x-2">
+                    <input
+                        type="number"
+                        bind:value={filter.minItemLevel}
+                        onkeydown={(e) => e.key === 'Enter' && applyFilter()}
+                        placeholder="Min"
+                        min="0"
+                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                    />
+                    <input
+                        type="number"
+                        bind:value={filter.maxItemLevel}
+                        onkeydown={(e) => e.key === 'Enter' && applyFilter()}
+                        placeholder="Max"
+                        min="0"
+                        class="w-1/2 p-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:border-yellow-500 focus:outline-hidden"
+                    />
+                </div>
             </div>
 
             <!-- Stack Size -->
