@@ -51,7 +51,7 @@
     });
     
     async function loadTradeListings(reset = false) {
-        if (isLoading && !reset || !hasMore && !reset) {
+        if ((isLoading || !hasMore) && !reset) {
             return;
         }
         
@@ -97,8 +97,9 @@
     function handleFilter(event: CustomEvent<GearFilter>) {
         currentFilter = event.detail;
         
-        // Check if any filter is applied
-        const hasFilter = activeFilterCount > 0;
+        const hasFilter = Object.values(currentFilter).some(value =>
+            value !== undefined && value !== '' && value !== null
+        );
         
         isFiltering = hasFilter;
         loadTradeListings(true);

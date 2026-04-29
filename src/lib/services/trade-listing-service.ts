@@ -1,5 +1,6 @@
 import { HttpService } from "$lib/services/http-service";
 import type {ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
+import { expandTradeItemType } from "$lib/trade/item-types";
 
 export interface GearFilter {
     name?: string;
@@ -36,6 +37,27 @@ export class TradeListingService {
     }
 
     public async getFilteredTrades(filter: GearFilter, page = 1, pageSize = 20): Promise<ITradeListing[]> {
+        const expandedTypes = filter.type !== undefined ? expandTradeItemType(filter.type) : [];
+        if (expandedTypes.length > 0) {
+            const expandedPageSize = page * pageSize;
+            const groupedListings = await Promise.all(
+                expandedTypes.map((type) => this.getFilteredTradesForSingleType(
+                    { ...filter, type },
+                    1,
+                    expandedPageSize
+                ))
+            );
+            const uniqueListings = groupedListings
+                .flat()
+                .filter((listing, index, listings) => listings.findIndex((match) => match.id === listing.id) === index);
+
+            return uniqueListings.slice((page - 1) * pageSize, page * pageSize);
+        }
+
+        return this.getFilteredTradesForSingleType(filter, page, pageSize);
+    }
+
+    private async getFilteredTradesForSingleType(filter: GearFilter, page = 1, pageSize = 20): Promise<ITradeListing[]> {
         // Convert filter object to query parameters
         const params = new URLSearchParams();
         params.append('Page', page.toString());

@@ -3,6 +3,7 @@
     import { toast } from "$lib/toast";
     import {UserService} from "$lib/services/user-service";
     import {TradeListingService} from "$lib/services/trade-listing-service";
+    import { tradeItemTypeNames } from "$lib/trade/item-types";
 
     let userService = new UserService();
     let tradeListingService = new TradeListingService();
@@ -35,57 +36,11 @@
         "text-emerald-200 border-emerald-300/20 bg-emerald-300/10",
     ]
 
-    const itemTypeNames: Record<number, string> = {
-        1: 'Sword',
-        2: 'Spear',
-        4: 'Bow',
-        8: 'Gun',
-        16: 'Staff',
-        32: 'Tome',
-        64: 'Helmet',
-        128: 'Chestplate',
-        256: 'Leggings',
-        512: 'Ring',
-        2048: 'Wand',
-        4096: 'Jewel',
-        8192: 'Map',
-        16384: 'Boomerang',
-        32768: 'Melee Flail',
-        65536: 'Ranged Flail',
-        131072: 'Launcher',
-        262144: 'Javelin',
-        524288: 'Whip',
-        1048576: 'War Shield',
-        2097152: 'Grimoire',
-        4194304: 'Battleaxe',
-        8388608: 'Amulet',
-        16777216: 'Shield',
-    };
-
-    function formatItemTypeLabel(typeName?: string) {
-        if (!typeName) {
-            return undefined;
-        }
-
-        if (typeName.startsWith('Terraria/')) {
-            return 'Vanilla';
-        }
-
-        const withoutNamespace = typeName.includes('/')
-            ? typeName.slice(typeName.indexOf('/') + 1)
-            : typeName;
-
-        return withoutNamespace
-            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    const itemTypeLabel = $derived(formatItemTypeLabel(
-        listing?.itemData.typeName
-        ?? (listing?.itemData.type !== undefined ? itemTypeNames[listing.itemData.type] : undefined)
-    ));
+    const itemTypeLabel = $derived(
+        listing?.itemData.type !== undefined
+            ? tradeItemTypeNames[listing.itemData.type]
+            : undefined
+    );
 
     async function requestBuy() {
         const user = await userService.getUserProfile();
