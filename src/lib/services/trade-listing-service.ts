@@ -1,5 +1,5 @@
 import { HttpService } from "$lib/services/http-service";
-import type {ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
+import type {IFilteredTradeListingsResponse, ITradeListing, TradeListingItemDataRarity} from "$lib/models/trade-listing";
 import { expandTradeItemType } from "$lib/trade/item-types";
 
 export interface GearFilter {
@@ -36,28 +36,32 @@ export class TradeListingService {
         return [];
     }
 
-    public async getFilteredTrades(filter: GearFilter, page = 1, pageSize = 20): Promise<ITradeListing[]> {
+    public async getFilteredTrades(filter: GearFilter, page = 1, pageSize = 20): Promise<IFilteredTradeListingsResponse> {
         const expandedTypes = filter.type !== undefined ? expandTradeItemType(filter.type) : [];
         if (expandedTypes.length > 0) {
             const expandedPageSize = page * pageSize;
-            const groupedListings = await Promise.all(
+            const groupedResults = await Promise.all(
                 expandedTypes.map((type) => this.getFilteredTradesForSingleType(
                     { ...filter, type },
                     1,
                     expandedPageSize
                 ))
             );
-            const uniqueListings = groupedListings
+            const uniqueListings = groupedResults
+                .flatMap((result) => result.items)
                 .flat()
                 .filter((listing, index, listings) => listings.findIndex((match) => match.id === listing.id) === index);
 
-            return uniqueListings.slice((page - 1) * pageSize, page * pageSize);
+            return {
+                items: uniqueListings.slice((page - 1) * pageSize, page * pageSize),
+                totalMatches: groupedResults.reduce((total, result) => total + result.totalMatches, 0)
+            };
         }
 
         return this.getFilteredTradesForSingleType(filter, page, pageSize);
     }
 
-    private async getFilteredTradesForSingleType(filter: GearFilter, page = 1, pageSize = 20): Promise<ITradeListing[]> {
+    private async getFilteredTradesForSingleType(filter: GearFilter, page = 1, pageSize = 20): Promise<IFilteredTradeListingsResponse> {
         // Convert filter object to query parameters
         const params = new URLSearchParams();
         params.append('Page', page.toString());
@@ -82,9 +86,19 @@ export class TradeListingService {
         
         let response = await this.httpService.get(url);
         if (response) {
-            return response.data as ITradeListing[];
+            if (Array.isArray(response.data)) {
+                return {
+                    items: response.data as ITradeListing[],
+                    totalMatches: response.data.length
+                };
+            }
+
+            return response.data as IFilteredTradeListingsResponse;
         }
-        return [];
+        return {
+            items: [],
+            totalMatches: 0
+        };
     }
 
     public async requestTradeListingSold(tradeListingId: string, buyerSteamId: string): Promise<void> {

@@ -14,6 +14,7 @@
     let listingDisplay: ListingDisplay = $state('double');
     let isFiltering = $state(false);
     let listings: ITradeListing[] = $state([]);
+    let filteredMatchCount: number | null = $state(null);
     let currentPage = $state(1);
     let hasMore = $state(true);
     let isLoading = $state(false);
@@ -59,6 +60,7 @@
             requestVersion++;
             currentPage = 1;
             listings = [];
+            filteredMatchCount = isFiltering ? 0 : null;
             hasMore = true;
             loadError = false;
             isInitialLoading = true;
@@ -69,19 +71,27 @@
         isLoading = true;
         
         try {
-            const nextListings = isFiltering
+            const result = isFiltering
                 ? await tradeListingService.getFilteredTrades(currentFilter, pageToLoad, pageSize)
-                : await tradeListingService.getTradeListings(pageToLoad, pageSize);
+                : {
+                    items: await tradeListingService.getTradeListings(pageToLoad, pageSize),
+                    totalMatches: null
+                };
             
             if (version !== requestVersion) {
                 return;
             }
+
+            const nextListings = result.items;
             
             listings = pageToLoad === 1
                 ? nextListings
                 : [...listings, ...nextListings.filter(next => !listings.some(existing => existing.id === next.id))];
+            filteredMatchCount = result.totalMatches;
             currentPage = pageToLoad + 1;
-            hasMore = nextListings.length === pageSize;
+            hasMore = result.totalMatches === null
+                ? nextListings.length === pageSize
+                : listings.length < result.totalMatches;
         } catch (error) {
             if (version === requestVersion) {
                 loadError = true;
@@ -146,6 +156,12 @@
                         <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Shown</div>
                         <div class="mt-1 text-xl font-black text-white">{listings.length}</div>
                     </div>
+                    {#if isFiltering}
+                        <div class="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)]">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Matches</div>
+                            <div class="mt-1 text-xl font-black text-white">{filteredMatchCount ?? 0}</div>
+                        </div>
+                    {/if}
                     <div class="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.22)]">
                         <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Filters</div>
                         <div class="mt-1 text-xl font-black text-white">{activeFilterCount}</div>

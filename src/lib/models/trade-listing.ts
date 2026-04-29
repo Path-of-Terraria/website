@@ -8,6 +8,11 @@ export interface ITradeListing {
     isMirrored: boolean;
 }
 
+export interface IFilteredTradeListingsResponse {
+    items: ITradeListing[];
+    totalMatches: number;
+}
+
 export enum TradeListingCurrency {
     GlitteringShard = 0,
     UnfoldingShard = 1,
