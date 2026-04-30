@@ -7,9 +7,9 @@
     import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
     import { toast } from '$lib/toast';
     import { UserService } from '$lib/services/user-service';
-    import {IsLoggedIn} from "$lib/services/session-service";
     import { Button } from 'flowbite-svelte';
     import { ChevronDownOutline } from 'flowbite-svelte-icons';
+    import { user } from "$lib/stores/user-store";
 
     // Available languages for translation
     const availableLanguages = [
@@ -57,6 +57,7 @@
     
     // Flag to track if user has edit permissions
     let canEditTranslations = $state(false);
+    let isLoggedIn = $state(false);
 
     function isValidLanguage(languageCode: string) {
         return availableLanguages.some((language) => language.code === languageCode);
@@ -119,6 +120,18 @@
     }
 
     onMount(() => {
+        const unsubscribeUser = user.subscribe((value) => {
+            isLoggedIn = Boolean(value);
+            if (!isLoggedIn) {
+                canEditTranslations = false;
+                return;
+            }
+
+            void userService.hasRole("EditTranslations").then((hasRole) => {
+                canEditTranslations = hasRole;
+            });
+        });
+
         const handleDocumentClick = (event: MouseEvent) => {
             if (importCategoryDropdownContainer && !importCategoryDropdownContainer.contains(event.target as Node)) {
                 importCategoryDropdownOpen = false;
@@ -129,7 +142,6 @@
 
         (async () => {
             await fetchEnglishTranslations();
-            canEditTranslations = await userService.hasRole("EditTranslations");
 
             const languageFromQuery = page.url.searchParams.get("language");
             if (languageFromQuery && isValidLanguage(languageFromQuery)) {
@@ -138,6 +150,7 @@
         })();
 
         return () => {
+            unsubscribeUser();
             document.removeEventListener("click", handleDocumentClick);
             document.body.style.overflow = '';
         };
@@ -355,8 +368,7 @@
      */
     async function submitTranslation(key: string) {
         if (!key) return;
-        if (!IsLoggedIn()) {
-            toast.push('Please log in to add translations', {})
+        if (!isLoggedIn) {
             return;
         }
         if (!newTranslations[key] || newTranslations[key].trim() === '') {
@@ -519,6 +531,10 @@
      * This function handles the import of HJSON content and fills in missing translations
      */
     async function importHjsonTranslations() {
+        if (!isLoggedIn) {
+            return;
+        }
+
         if (!hjsonContent.trim()) {
             toast.push('Please enter HJSON content', {
                 theme: {
@@ -597,6 +613,12 @@
 <div class="container mx-auto px-4 py-24 text-white">
     <h1 class="mb-6 text-3xl font-black tracking-tight text-white">Terraria Mod Localization</h1>
 
+    {#if !isLoggedIn}
+        <div class="mb-6 rounded-lg border border-amber-300/25 bg-amber-300/10 px-4 py-3 text-sm text-amber-100">
+            You must be logged in to contribute to Localizations.
+        </div>
+    {/if}
+
     <!-- Language Selection -->
     {#if !showTranslationTable}
         <div class="mb-8 rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
@@ -646,8 +668,9 @@
             </div>
             <div class="flex flex-wrap gap-3">
                 <button
-                    class="flex cursor-pointer items-center rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400"
+                    class="flex cursor-pointer items-center rounded-md bg-sky-500 px-3 py-1.5 text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
                     onclick={openHjsonImportModal}
+                    disabled={!isLoggedIn}
                 >
                     Import HJSON
                 </button>
@@ -860,13 +883,14 @@
                                         <input
                                                 type="text"
                                                 class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
-                                                placeholder="Add translation"
+                                                placeholder={isLoggedIn ? "Add translation" : "Log in to contribute"}
                                                 bind:value={newTranslations[translation.key]}
+                                                disabled={!isLoggedIn}
                                         />
                                         <button
                                                 class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                 onclick={() => submitTranslation(translation.key)}
-                                                disabled={submitting[translation.key]}
+                                                disabled={!isLoggedIn || submitting[translation.key]}
                                         >
                                             {#if submitting[translation.key]}
                                                 <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
@@ -952,13 +976,14 @@
                                                     <input
                                                             type="text"
                                                             class="grow rounded-md border border-white/10 bg-white/8 px-2 py-1 text-sm text-white placeholder:text-gray-500"
-                                                            placeholder="Add translation"
+                                                            placeholder={isLoggedIn ? "Add translation" : "Log in to contribute"}
                                                             bind:value={newTranslations[translation.key]}
+                                                            disabled={!isLoggedIn}
                                                     />
                                                     <button
                                                             class="flex items-center rounded-md bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
                                                             onclick={() => submitTranslation(translation.key)}
-                                                            disabled={submitting[translation.key]}
+                                                            disabled={!isLoggedIn || submitting[translation.key]}
                                                     >
                                                         {#if submitting[translation.key]}
                                                             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
