@@ -7,11 +7,22 @@
     let count = $state(50);
     let skip = $state(0);
     let lastResultLength = $state(0);
+    let selectedClass = $state<'All' | 'Melee' | 'Ranged' | 'Magic' | 'Summoner'>('All');
+
+    const classes = ['All', 'Melee', 'Ranged', 'Magic', 'Summoner'] as const;
 
     async function refreshLeaderboards(): Promise<IPlayer[]> {
-        const data = await playerService.getLeaderboards(count, skip);
+        const filter = selectedClass === 'All' ? undefined : selectedClass;
+        const data = await playerService.getLeaderboards(count, skip, filter);
         lastResultLength = data.length;
         return data;
+    }
+
+    function selectClass(value: typeof selectedClass) {
+        if (selectedClass === value) return;
+        selectedClass = value;
+        skip = 0;
+        leaderboardsPromise = refreshLeaderboards();
     }
 
     let leaderboardsPromise: Promise<IPlayer[]> = $state(refreshLeaderboards());
@@ -74,6 +85,21 @@
                     >
                         Localizers
                     </a>
+                </div>
+            </div>
+
+            <div class="mb-4 flex justify-center">
+                <div class="inline-flex flex-wrap justify-center gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]">
+                    {#each classes as cls}
+                        <button
+                            type="button"
+                            onclick={() => selectClass(cls)}
+                            aria-pressed={selectedClass === cls}
+                            class="rounded-xl px-4 py-2 text-sm font-semibold transition-colors duration-200 {selectedClass === cls ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/6 hover:text-white'}"
+                        >
+                            {cls}
+                        </button>
+                    {/each}
                 </div>
             </div>
 

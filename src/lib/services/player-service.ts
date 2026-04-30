@@ -102,8 +102,11 @@ export interface ICharacterViewer {
 export class PlayerService {
     httpService = HttpService.getInstance();
 
-    public async getLeaderboards(count: number = 50, skip: number = 0): Promise<IPlayer[]> {
-        const url = `Player/Leaderboard?count=${encodeURIComponent(count)}&skip=${encodeURIComponent(skip)}`;
+    public async getLeaderboards(count: number = 50, skip: number = 0, characterClass?: string): Promise<IPlayer[]> {
+        let url = `Player/Leaderboard?count=${encodeURIComponent(count)}&skip=${encodeURIComponent(skip)}`;
+        if (characterClass) {
+            url += `&characterClass=${encodeURIComponent(characterClass)}`;
+        }
         const response = await this.httpService.get(url);
         if (response) {
             return response.data as IPlayer[];
