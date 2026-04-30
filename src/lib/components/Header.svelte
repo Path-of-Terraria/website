@@ -58,7 +58,6 @@
         <NavLi href="/tools" class={navLinkClass}>Tools</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank" class={navLinkClass}>Wiki</NavLi>
         {#if isDebug}
-            <NavLi href="/mod-data" class={navLinkClass}>Mod Data</NavLi>
             <NavLi href="/admin" class={navLinkClass}>Admin</NavLi>
         {/if}
     </NavUl>
