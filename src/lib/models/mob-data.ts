@@ -10,6 +10,7 @@ export interface IDamageConfiguration {
     fire?: IDamageDetail;
     lightning?: IDamageDetail;
     cold?: IDamageDetail;
+    chaos?: IDamageDetail;
 }
 
 export interface IDamageDetail {

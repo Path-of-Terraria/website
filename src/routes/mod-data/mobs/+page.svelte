@@ -4,7 +4,7 @@
     import EditModal from '$lib/components/EditMobDataModal.svelte';
     import { Button } from 'flowbite-svelte';
     let modDataService = new ModDataService();
-    import type { IMobData } from '$lib/models/mob-data';
+    import type { IDamageConfiguration, IMobData } from '$lib/models/mob-data';
 
     let mobData: IMobData[] = $state([]);
     let filteredMobData: IMobData[] = $state([]);
@@ -124,19 +124,45 @@
         return `${formatNumber((value ?? 0) * 100)}%`;
     }
 
-    function describeDamageTypes(damage: IMobData['damage'][number]) {
-        const types = [];
+    interface DamageTypeDescription {
+        label: string;
+        textClass: string;
+        description: string;
+    }
+
+    function describeDamageTypes(damage: IDamageConfiguration) {
+        const types: DamageTypeDescription[] = [];
 
         if (damage.fire) {
-            types.push(`Fire +${formatAdded(damage.fire.added)}, ${formatConversion(damage.fire.conversion)} conversion`);
+            types.push({
+                label: 'Fire',
+                textClass: 'text-red-300',
+                description: `Fire +${formatAdded(damage.fire.added)}, ${formatConversion(damage.fire.conversion)} conversion`
+            });
         }
 
         if (damage.lightning) {
-            types.push(`Lightning +${formatAdded(damage.lightning.added)}, ${formatConversion(damage.lightning.conversion)} conversion`);
+            types.push({
+                label: 'Lightning',
+                textClass: 'text-yellow-300',
+                description: `Lightning +${formatAdded(damage.lightning.added)}, ${formatConversion(damage.lightning.conversion)} conversion`
+            });
         }
 
         if (damage.cold) {
-            types.push(`Cold +${formatAdded(damage.cold.added)}, ${formatConversion(damage.cold.conversion)} conversion`);
+            types.push({
+                label: 'Cold',
+                textClass: 'text-sky-300',
+                description: `Cold +${formatAdded(damage.cold.added)}, ${formatConversion(damage.cold.conversion)} conversion`
+            });
+        }
+
+        if (damage.chaos) {
+            types.push({
+                label: 'Chaos',
+                textClass: 'text-purple-300',
+                description: `Chaos +${formatAdded(damage.chaos.added)}, ${formatConversion(damage.chaos.conversion)} conversion`
+            });
         }
 
         return types;
@@ -256,7 +282,7 @@
                                                 <div class="mt-1 text-[11px] text-gray-400">Applies when picked level is {damage.minLevel} or higher, until a higher row qualifies.</div>
                                                 <div class="mt-2 space-y-1">
                                                     {#each describeDamageTypes(damage) as damageType}
-                                                        <div class="text-gray-200">{damageType}</div>
+                                                        <div class={damageType.textClass}>{damageType.description}</div>
                                                     {/each}
                                                 </div>
                                             </li>
@@ -302,7 +328,7 @@
                                                             <li class="rounded-lg border border-white/8 bg-black/20 p-2">
                                                                 <div class="font-semibold text-white">Min Level {damage.minLevel}</div>
                                                                 {#each describeDamageTypes(damage) as damageType}
-                                                                    <div class="mt-1 text-gray-300">{damageType}</div>
+                                                                    <div class={`mt-1 ${damageType.textClass}`}>{damageType.description}</div>
                                                                 {/each}
                                                             </li>
                                                         {/each}

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { IMobData, IDamageConfiguration, IDamageDetail } from "$lib/models/mob-data";
+    import type { IMobData, IDamageConfiguration } from "$lib/models/mob-data";
     import { createEventDispatcher } from 'svelte';
     import { Accordion, AccordionItem, Button, Input, Label, Heading } from 'flowbite-svelte';
     import DataDropdown from '$lib/components/DataDropdown.svelte';
@@ -44,7 +44,7 @@
 
     function deleteEntry(index: number) {
         if (selectedMob) {
-            selectedMob.entries = selectedMob.entries.filter((_, i) => i !== index);
+            selectedMob.entries = selectedMob.entries.filter((_: IMobData['entries'][number], i: number) => i !== index);
         }
     }
 
@@ -61,13 +61,13 @@
     function removeDamageConfig(target: 'global' | number, index: number) {
         if (!selectedMob) return;
         if (target === 'global') {
-            selectedMob.damage = selectedMob.damage?.filter((_, i) => i !== index);
+            selectedMob.damage = selectedMob.damage?.filter((_: IDamageConfiguration, i: number) => i !== index);
         } else {
-            selectedMob.entries[target].damageOverrides = selectedMob.entries[target].damageOverrides?.filter((_, i) => i !== index);
+            selectedMob.entries[target].damageOverrides = selectedMob.entries[target].damageOverrides?.filter((_: IDamageConfiguration, i: number) => i !== index);
         }
     }
 
-    function toggleDamageType(config: IDamageConfiguration, type: 'fire' | 'lightning' | 'cold') {
+    function toggleDamageType(config: IDamageConfiguration, type: 'fire' | 'lightning' | 'cold' | 'chaos') {
         if (config[type]) {
             delete config[type];
         } else {
@@ -111,6 +111,7 @@
                                         <Button size="xs" outline={!config.fire} color="red" class="cursor-pointer" onclick={() => toggleDamageType(config, 'fire')}>Fire</Button>
                                         <Button size="xs" outline={!config.lightning} color="yellow" class="cursor-pointer" onclick={() => toggleDamageType(config, 'lightning')}>Lightning</Button>
                                         <Button size="xs" outline={!config.cold} color="blue" class="cursor-pointer" onclick={() => toggleDamageType(config, 'cold')}>Cold</Button>
+                                        <Button size="xs" outline={!config.chaos} color="purple" class="cursor-pointer" onclick={() => toggleDamageType(config, 'chaos')}>Chaos</Button>
                                     </div>
                                     <div class="ml-auto pt-5">
                                         <Button size="xs" class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" onclick={() => removeDamageConfig('global', configIdx)}>Remove</Button>
@@ -144,6 +145,15 @@
                                             </div>
                                         </div>
                                     {/if}
+                                    {#if config.chaos}
+                                        <div class="border-l-4 border-purple-500 pl-2">
+                                            <Label class="text-xs font-bold text-purple-300">Chaos</Label>
+                                            <div class="grid grid-cols-2 gap-1">
+                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.chaos.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.chaos.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                            </div>
+                                        </div>
+                                    {/if}
                                 </div>
                             </div>
                         {/each}
@@ -162,11 +172,13 @@
             <Accordion>
                 {#each selectedMob.entries as entry, index}
                     <AccordionItem classes={accordionItemClasses} class="mb-3 last:mb-0">
-                        <span slot="header" class="flex items-center w-full">
-                            <span class="mr-2 rounded bg-white/10 px-2 py-0.5 text-xs text-white">{index + 1}</span>
-                            <span class="font-semibold text-white">{entry.prefix || '(No Prefix)'}</span>
-                            <span class="ml-4 text-xs text-gray-400">Weight: {entry.weight} | Lvl: {entry.stats.level}</span>
-                        </span>
+                        {#snippet header()}
+                            <span class="flex w-full items-center">
+                                <span class="mr-2 rounded bg-white/10 px-2 py-0.5 text-xs text-white">{index + 1}</span>
+                                <span class="font-semibold text-white">{entry.prefix || '(No Prefix)'}</span>
+                                <span class="ml-4 text-xs text-gray-400">Weight: {entry.weight} | Lvl: {entry.stats.level}</span>
+                            </span>
+                        {/snippet}
                         <div class="mb-4 rounded-xl border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div>
@@ -215,6 +227,7 @@
                                                         <Button size="xs" outline={!config.fire} color="red" class="cursor-pointer" onclick={() => toggleDamageType(config, 'fire')}>Fire</Button>
                                                         <Button size="xs" outline={!config.lightning} color="yellow" class="cursor-pointer" onclick={() => toggleDamageType(config, 'lightning')}>Lightning</Button>
                                                         <Button size="xs" outline={!config.cold} color="blue" class="cursor-pointer" onclick={() => toggleDamageType(config, 'cold')}>Cold</Button>
+                                                        <Button size="xs" outline={!config.chaos} color="purple" class="cursor-pointer" onclick={() => toggleDamageType(config, 'chaos')}>Chaos</Button>
                                                     </div>
                                                     <div class="ml-auto pt-5">
                                                         <Button size="xs" class="border-red-400/20 bg-red-400/12 text-red-100 hover:bg-red-400/18" onclick={() => removeDamageConfig(index, configIdx)}>Remove</Button>
@@ -245,6 +258,15 @@
                                                             <div class="grid grid-cols-2 gap-1">
                                                                 <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.cold.added} class="border-white/10 bg-white/8 text-white" /></div>
                                                                 <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.cold.conversion} class="border-white/10 bg-white/8 text-white" /></div>
+                                                            </div>
+                                                        </div>
+                                                    {/if}
+                                                    {#if config.chaos}
+                                                        <div class="border-l-4 border-purple-500 pl-2">
+                                                            <Label class="text-xs font-bold text-purple-300">Chaos</Label>
+                                                            <div class="grid grid-cols-2 gap-1">
+                                                                <div><Label class="text-[10px] text-gray-300">Added</Label><Input type="number" size="sm" bind:value={config.chaos.added} class="border-white/10 bg-white/8 text-white" /></div>
+                                                                <div><Label class="text-[10px] text-gray-300">Conv</Label><Input type="number" size="sm" step="0.01" bind:value={config.chaos.conversion} class="border-white/10 bg-white/8 text-white" /></div>
                                                             </div>
                                                         </div>
                                                     {/if}

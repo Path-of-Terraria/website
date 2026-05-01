@@ -27,7 +27,7 @@
 	let open = $state(false);
 	let container: HTMLDivElement | null = $state(null);
 
-	const selectedLabel = $derived(options.find((option) => option.value === value)?.label ?? placeholder);
+	const selectedLabel = $derived(options.find((option: DropdownOption) => option.value === value)?.label ?? placeholder);
 
 	function selectOption(nextValue: string) {
 		value = nextValue;
