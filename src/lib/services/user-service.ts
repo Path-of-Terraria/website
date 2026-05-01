@@ -38,6 +38,7 @@ export class UserService {
             let response = await this.httpService.get('User/Profile');
             if (response) {
                 this.user = response.data;
+                this.roles = this.user?.roles ?? [];
                 //@ts-ignore
                 user.set(this.user);
                 return this.user;
@@ -60,6 +61,12 @@ export class UserService {
     }
 
     public async hasRole(role: string) {
+        if (!this.user) {
+            await this.getUserProfile();
+        }
+        if (this.user) {
+            return this.user.roles?.includes(role) ?? false;
+        }
         if (!this.roles.length) {
             await this.getRoles();
         }
@@ -95,6 +102,7 @@ export class UserService {
     public async signout() {
         SetJwtToken('');
         this.user = null;
+        this.roles = [];
         user.set(null);
     }
 

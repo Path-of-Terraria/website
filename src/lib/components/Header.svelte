@@ -22,9 +22,11 @@
     import SettingsModal from "$lib/components/SettingsModal.svelte";
     let userService = new UserService();
     const isDebug = import.meta.env.VITE_DEBUG === 'true';
+    const viewAdminPanelRole = 'ViewAdminPanel';
 
-    let currentUser: IUser | null = $state(null);
+    let currentUser = $state<IUser | null>(null);
     let settingsOpen = $state(false);
+    let canViewAdminPanel = $derived(currentUser?.roles?.includes(viewAdminPanelRole) ?? false);
 
     let navbarClass = 'fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-transparent backdrop-blur-sm';
     let brandTextClass = 'text-white';
@@ -57,7 +59,7 @@
         <NavLi href="/trade" class={navLinkClass}>Trade</NavLi>
         <NavLi href="/tools" class={navLinkClass}>Tools</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank" class={navLinkClass}>Wiki</NavLi>
-        {#if isDebug}
+        {#if isDebug || canViewAdminPanel}
             <NavLi href="/admin" class={navLinkClass}>Admin</NavLi>
         {/if}
     </NavUl>
@@ -102,4 +104,6 @@
     {/if}
 </Navbar>
 
-<SettingsModal bind:open={settingsOpen} bind:currentUser={currentUser}/>
+{#if currentUser}
+    <SettingsModal bind:open={settingsOpen} bind:currentUser={currentUser}/>
+{/if}
