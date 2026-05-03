@@ -22,17 +22,10 @@ export interface IMobEntry {
     scale?: number | null;
     prefix: string;
     weight: number;
-    stats: IMobStats;
     affixes: IMobEntryAffix[];
-    requirements: string;
     damageOverrides?: IDamageConfiguration[];
 }
 
 export interface IMobEntryAffix {
     name: string;
-}
-
-export interface IMobStats {
-    level: number;
-    experience: number;
 }

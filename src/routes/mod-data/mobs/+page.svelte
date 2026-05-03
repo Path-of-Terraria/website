@@ -87,9 +87,6 @@
             mob.netId,
             ...mob.entries.flatMap((entry) => [
                 entry.prefix,
-                entry.requirements,
-                entry.stats.level,
-                entry.stats.experience,
                 ...(entry.affixes?.map((affix) => affix.name) ?? [])
             ])
         ]
@@ -178,8 +175,7 @@
                 <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-200">How to read this</p>
                 <p class="mt-2 max-w-4xl text-sm leading-6 text-gray-300">
                     Each mob can have one or more weighted entries. The mod picks one entry by relative weight, applies its
-                    prefix to the NPC name when present, then applies the entry stats, requirements, guaranteed affixes, and
-                    any entry damage overrides.
+                    prefix to the NPC name when present, then applies guaranteed affixes and any entry damage overrides.
                 </p>
                 <div class="mt-4 grid gap-3 text-sm text-gray-300 md:grid-cols-2">
                     <div class="rounded-xl border border-white/8 bg-white/[0.035] p-3">
@@ -241,7 +237,7 @@
                 type="text"
                 bind:value={searchQuery}
                 oninput={handleSearch}
-                placeholder="Search by name, prefix, requirement, level, or affix..."
+                placeholder="Search by name, prefix, or affix..."
                 class="block w-full rounded-lg border border-white/10 bg-white/8 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:border-sky-400 focus:outline-hidden focus:ring-2 focus:ring-sky-400/30"
             />
         </div>
@@ -305,18 +301,10 @@
                                                     {getEntryChance(mob, entry.weight)} chance
                                                 </div>
                                             </div>
-                                            <div class="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                                            <div class="mt-3 grid gap-2 text-xs">
                                                 <div class="rounded-lg border border-white/8 bg-black/20 p-2">
                                                     <div class="uppercase tracking-[0.12em] text-gray-500">Weight</div>
                                                     <div class="mt-1 font-semibold text-white">{entry.weight} of {getTotalEntryWeight(mob)}</div>
-                                                </div>
-                                                <div class="rounded-lg border border-white/8 bg-black/20 p-2">
-                                                    <div class="uppercase tracking-[0.12em] text-gray-500">Stats</div>
-                                                    <div class="mt-1 font-semibold text-white">Level {entry.stats.level}, {entry.stats.experience} XP</div>
-                                                </div>
-                                                <div class="rounded-lg border border-white/8 bg-black/20 p-2 sm:col-span-2">
-                                                    <div class="uppercase tracking-[0.12em] text-gray-500">Requirements</div>
-                                                    <div class="mt-1 font-semibold text-white">{entry.requirements || 'None'}</div>
                                                 </div>
                                             </div>
                                             {#if entry.damageOverrides && entry.damageOverrides.length > 0}

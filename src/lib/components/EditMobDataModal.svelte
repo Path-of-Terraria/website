@@ -34,8 +34,6 @@
                 {
                     prefix: '',
                     weight: 0,
-                    stats: { level: 0, experience: 0 },
-                    requirements: '',
                     affixes: []
                 }
             ];
@@ -167,7 +165,7 @@
                 <Heading tag="h3" class="text-white">Mob Entries</Heading>
                 <Button class="bg-emerald-500 text-white hover:bg-emerald-400" size="sm" onclick={addEntry}>Add Entry</Button>
             </div>
-            <p class="mb-4 text-sm text-gray-400">Expand an entry to edit prefix data, stat requirements, and per-entry damage overrides.</p>
+            <p class="mb-4 text-sm text-gray-400">Expand an entry to edit prefix data, weights, guaranteed affixes, and per-entry damage overrides.</p>
 
             <Accordion>
                 {#each selectedMob.entries as entry, index}
@@ -176,7 +174,7 @@
                             <span class="flex w-full items-center">
                                 <span class="mr-2 rounded bg-white/10 px-2 py-0.5 text-xs text-white">{index + 1}</span>
                                 <span class="font-semibold text-white">{entry.prefix || '(No Prefix)'}</span>
-                                <span class="ml-4 text-xs text-gray-400">Weight: {entry.weight} | Lvl: {entry.stats.level}</span>
+                                <span class="ml-4 text-xs text-gray-400">Weight: {entry.weight}</span>
                             </span>
                         {/snippet}
                         <div class="mb-4 rounded-xl border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.2)]">
@@ -194,21 +192,6 @@
                                     <Input type="number" step="0.01" bind:value={entry.weight} class="border-white/10 bg-white/8 text-white" />
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <Label class="text-gray-300">Min Level</Label>
-                                    <Input type="number" bind:value={entry.stats.level} class="border-white/10 bg-white/8 text-white" />
-                                </div>
-                                <div>
-                                    <Label class="text-gray-300">Experience</Label>
-                                    <Input type="number" bind:value={entry.stats.experience} class="border-white/10 bg-white/8 text-white" />
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <Label class="text-gray-300">Requirements</Label>
-                                <Input type="text" bind:value={entry.requirements} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500" />
-                            </div>
-
                             <div class="mb-4 border-t border-white/10 pt-4">
                                 <div class="flex justify-between items-center mb-2">
                                     <Label class="font-bold text-white">Damage Overrides</Label>
