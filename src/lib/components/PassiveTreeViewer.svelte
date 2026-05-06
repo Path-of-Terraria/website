@@ -22,6 +22,9 @@
     const selectedNodeCount = $derived(snapshot.allocatedNodes.filter(node => node.level > 0).length);
     const spentPoints = $derived(getSpentPoints(selectedIds));
     const summaryItems = $derived(summarizeSelection(selectedIds));
+    const masteryItems = $derived(summaryItems.filter(item => item.group === 'mastery'));
+    const travelItems = $derived(summaryItems.filter(item => item.group === 'travel'));
+    const otherItems = $derived(summaryItems.filter(item => item.group !== 'mastery' && item.group !== 'travel'));
     const visibleNodes = $derived(plannerNodes.filter(node => !node.isHidden));
 
     function edgeIsActive(from: number, to: number): boolean {
@@ -101,15 +104,46 @@
         </svg>
     </div>
 
-    {#if summaryItems.length > 0}
-        <div class="summary-grid">
-            {#each summaryItems.slice(0, 12) as item}
-                <div class="summary-item">
-                    <strong>{item.name}</strong>
-                    <span>{item.tooltip || `${item.totalValue}`}</span>
-                </div>
-            {/each}
+    {#if masteryItems.length > 0}
+        <div class="summary-section">
+            <h3 class="summary-heading">Masteries <span class="summary-count">({masteryItems.length})</span></h3>
+            <div class="summary-grid">
+                {#each masteryItems as item}
+                    <div class="summary-item">
+                        <strong>{item.name}</strong>
+                        <span>{item.tooltip || `${item.totalValue}`}</span>
+                    </div>
+                {/each}
+            </div>
         </div>
+    {/if}
+
+    {#if otherItems.length > 0}
+        <details class="summary-collapsible">
+            <summary>Other passives <span class="summary-count">({otherItems.length})</span></summary>
+            <div class="summary-grid">
+                {#each otherItems as item}
+                    <div class="summary-item">
+                        <strong>{item.name}</strong>
+                        <span>{item.tooltip || `${item.totalValue}`}</span>
+                    </div>
+                {/each}
+            </div>
+        </details>
+    {/if}
+
+    {#if travelItems.length > 0}
+        <details class="summary-collapsible">
+            <summary>Travel nodes <span class="summary-count">({travelItems.length})</span></summary>
+            <div class="summary-grid">
+                {#each travelItems as item}
+                    <div class="summary-item">
+                        <strong>{item.name}</strong>
+                        <span>{item.tooltip || `${item.totalValue}`}</span>
+                    </div>
+                {/each}
+            </div>
+        </details>
     {/if}
 </section>
 
@@ -220,11 +254,71 @@
         opacity: 1;
     }
 
+    .summary-section {
+        margin-top: 1rem;
+    }
+
+    .summary-heading {
+        color: #f8fafc;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        margin: 0 0 0.5rem;
+        text-transform: uppercase;
+    }
+
+    .summary-count {
+        color: #94a3b8;
+        font-weight: 500;
+        letter-spacing: normal;
+    }
+
+    .summary-collapsible {
+        margin-top: 0.75rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .summary-collapsible > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 0.6rem 0.75rem;
+        color: #f8fafc;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        user-select: none;
+    }
+
+    .summary-collapsible > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .summary-collapsible > summary::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        transition: transform 0.15s ease;
+    }
+
+    .summary-collapsible[open] > summary::before {
+        transform: rotate(90deg);
+    }
+
+    .summary-collapsible > .summary-grid {
+        margin-top: 0;
+        padding: 0 0.75rem 0.75rem;
+    }
+
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
         gap: 0.65rem;
-        margin-top: 1rem;
+        margin-top: 0.5rem;
     }
 
     .summary-item {

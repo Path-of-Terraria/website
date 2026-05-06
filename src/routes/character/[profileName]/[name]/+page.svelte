@@ -95,6 +95,7 @@
         'MainWeapon', 'Offhand',
         'Helmet', 'Body', 'Legs', 'Wings', 'Necklace',
         'RingLeft', 'RingRight',
+        'Accessory1', 'Accessory2', 'Accessory3', 'Accessory4',
     ];
 
     const LOADOUT_ROWS = [
@@ -104,6 +105,8 @@
     ];
 
     const LOADOUT_SLOTS = LOADOUT_ROWS.flat();
+
+    const ACCESSORY_SLOT_PATTERN = /^Accessory\d+$/;
 
     const SLOT_LABELS: Record<string, string> = {
         MainWeapon: 'Main Weapon',
@@ -128,11 +131,32 @@
         return slots.find(slot => slot.slot === slotName) ?? { slot: slotName };
     }
 
+    function accessorySlotCount(slots: IGearSlotSnapshot[]): number {
+        const sentMax = slots
+            .map(s => ACCESSORY_SLOT_PATTERN.exec(s.slot)?.[0])
+            .filter((s): s is string => Boolean(s))
+            .map(s => Number.parseInt(s.slice('Accessory'.length), 10))
+            .reduce((max, n) => Math.max(max, n), 0);
+        return Math.max(2, sentMax);
+    }
+
     function additionalSlots(slots: IGearSlotSnapshot[]): IGearSlotSnapshot[] {
-        return orderedSlots(slots).filter(slot => !LOADOUT_SLOTS.includes(slot.slot));
+        const slotMap = new Map(slots.map(s => [s.slot, s]));
+        const accessoryCount = accessorySlotCount(slots);
+        const accessories: IGearSlotSnapshot[] = [];
+        for (let i = 1; i <= accessoryCount; i++) {
+            const name = `Accessory${i}`;
+            accessories.push(slotMap.get(name) ?? { slot: name });
+        }
+        const extras = orderedSlots(slots)
+            .filter(slot => !LOADOUT_SLOTS.includes(slot.slot) && !ACCESSORY_SLOT_PATTERN.test(slot.slot));
+        return [...accessories, ...extras];
     }
 
     function slotLabel(slot: string): string {
+        if (ACCESSORY_SLOT_PATTERN.test(slot)) {
+            return 'Accessory';
+        }
         return SLOT_LABELS[slot] ?? slot;
     }
 

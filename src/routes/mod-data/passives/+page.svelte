@@ -28,7 +28,7 @@
 	const groupOptions: Array<{ value: 'all' | PassiveGroup; label: string }> = [
 		{ value: 'all', label: 'All types' },
 		{ value: 'anchor', label: 'Anchors' },
-		{ value: 'attribute', label: 'Attributes' },
+		{ value: 'travel', label: 'Travel nodes' },
 		{ value: 'mastery', label: 'Masteries' },
 		{ value: 'notable', label: 'Notables' },
 		{ value: 'minor', label: 'Minor passives' }

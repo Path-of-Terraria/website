@@ -27,10 +27,12 @@ export interface PassiveNodeData {
 	requiredAllocatedEdges?: number;
 }
 
+export type PlannerNodeGroup = 'anchor' | 'travel' | 'mastery' | 'notable' | 'minor';
+
 export interface PlannerNode extends PassiveNodeData {
 	displayName: string;
 	displayTooltip: string;
-	group: 'anchor' | 'attribute' | 'mastery' | 'notable' | 'minor';
+	group: PlannerNodeGroup;
 	canvasX: number;
 	canvasY: number;
 	assetPath: string;
@@ -51,6 +53,7 @@ export interface PlannerSummaryItem {
 	totalValue: number;
 	count: number;
 	tooltip: string;
+	group: PlannerNodeGroup;
 }
 
 export interface PassivePresentation {
@@ -302,7 +305,8 @@ export function summarizeSelection(selectedIds: Set<number>): PlannerSummaryItem
 			name: node.displayName,
 			totalValue: node.value,
 			count: 1,
-			tooltip: formatTooltip(node.displayTooltip, node.value)
+			tooltip: formatTooltip(node.displayTooltip, node.value),
+			group: node.group
 		});
 	}
 
@@ -345,7 +349,7 @@ export function getNodeRadius(node: PlannerNode): number {
 			return 22;
 		case 'mastery':
 			return 22;
-		case 'attribute':
+		case 'travel':
 			return 17;
 		default:
 			return 15;
@@ -629,12 +633,18 @@ function getNodeGroup(node: PassiveNodeData): PlannerNode['group'] {
 		return 'mastery';
 	}
 
+	if (node.internalIdentifier.endsWith('Mastery')) {
+		return 'mastery';
+	}
+
 	if (
 		node.internalIdentifier.startsWith('AddedStrength') ||
 		node.internalIdentifier.startsWith('AddedDexterity') ||
-		node.internalIdentifier.startsWith('AddedIntelligence')
+		node.internalIdentifier.startsWith('AddedIntelligence') ||
+		node.internalIdentifier === 'AddedManaPassive' ||
+		node.internalIdentifier === 'AddedLifePassive'
 	) {
-		return 'attribute';
+		return 'travel';
 	}
 
 	if (node.maxLevel > 1 || (node.value ?? 0) >= 10 || node.isChoiceNode) {
