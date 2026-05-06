@@ -25,6 +25,15 @@
                     linkText="Send Announcement"
                 ></FeatureCard>
             </div>
+            <div class="mx-auto w-full">
+                <FeatureCard
+                    title="Polls"
+                    description="Create polls and view active polls"
+                    link="/admin/Polls"
+                    target=""
+                    linkText="Manage Polls"
+                ></FeatureCard>
+            </div>
         </div>
     </div>
 </div>
