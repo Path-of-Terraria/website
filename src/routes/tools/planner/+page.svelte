@@ -53,6 +53,19 @@
 		g: 'magic',
 		s: 'summon'
 	};
+	const devUndoLimit = 80;
+
+	type DevHistorySnapshot = {
+		positionOverrides: Record<number, { x: number; y: number }>;
+		valueOverrides: Record<number, number>;
+		requirementOverrides: Record<number, number>;
+		addedNodes: Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>;
+		removedNodeIds: number[];
+		addedEdges: string[];
+		removedEdges: string[];
+		connectSourceId: number | null;
+		focusedNodeId: number;
+	};
 
 	let startClass = $state<PlannerStartClass>(defaultStartClass);
 	let currentLevel = $state(1);
@@ -97,6 +110,9 @@
 	let draggingStartMouseX = 0;
 	let draggingStartMouseY = 0;
 	let draggingStartPositions = $state<Record<number, { x: number; y: number }>>({});
+	let draggingStartSnapshot: DevHistorySnapshot | null = null;
+	let hasRecordedCurrentDrag = false;
+	let devUndoStack = $state<DevHistorySnapshot[]>([]);
 
 	const anchorId = $derived(getAnchorId(startClass));
 	const selectedIdSet = $derived(new Set(selectedIds));
@@ -548,12 +564,15 @@
 
 		const handleWindowMouseUp = () => { endTreeDrag(); endNodeDrag(); };
 		const handleWindowMouseMove = (e: MouseEvent) => { handleDevNodeDragMove(e); };
+		const handleWindowKeydown = (e: KeyboardEvent) => { handleDevUndoKeydown(e); };
 		window.addEventListener('mouseup', handleWindowMouseUp);
 		window.addEventListener('mousemove', handleWindowMouseMove);
+		window.addEventListener('keydown', handleWindowKeydown);
 
 		return () => {
 			window.removeEventListener('mouseup', handleWindowMouseUp);
 			window.removeEventListener('mousemove', handleWindowMouseMove);
+			window.removeEventListener('keydown', handleWindowKeydown);
 		};
 	});
 
@@ -629,6 +648,108 @@
 		return `${Math.min(a, b)}:${Math.max(a, b)}`;
 	}
 
+	function cloneDevPositionOverrides(
+		positions: Record<number, { x: number; y: number }>
+	): Record<number, { x: number; y: number }> {
+		return Object.fromEntries(Object.entries(positions).map(([id, pos]) => [Number(id), { ...pos }]));
+	}
+
+	function getDevHistorySnapshot(): DevHistorySnapshot {
+		return {
+			positionOverrides: cloneDevPositionOverrides(devPositionOverrides),
+			valueOverrides: { ...devValueOverrides },
+			requirementOverrides: { ...devRequirementOverrides },
+			addedNodes: devAddedNodes.map((node) => ({ ...node, position: { ...node.position } })),
+			removedNodeIds: [...devRemovedNodeIds],
+			addedEdges: [...devAddedEdges],
+			removedEdges: [...devRemovedEdges],
+			connectSourceId: devConnectSourceId,
+			focusedNodeId
+		};
+	}
+
+	function devHistorySignature(snapshot: DevHistorySnapshot): string {
+		return JSON.stringify(snapshot);
+	}
+
+	function pushDevUndoSnapshot(snapshot = getDevHistorySnapshot()) {
+		const previous = devUndoStack.at(-1);
+		if (previous && devHistorySignature(previous) === devHistorySignature(snapshot)) {
+			return;
+		}
+
+		devUndoStack = [...devUndoStack, snapshot].slice(-devUndoLimit);
+	}
+
+	function restoreDevHistorySnapshot(snapshot: DevHistorySnapshot) {
+		devPositionOverrides = cloneDevPositionOverrides(snapshot.positionOverrides);
+		devValueOverrides = { ...snapshot.valueOverrides };
+		devRequirementOverrides = { ...snapshot.requirementOverrides };
+		devAddedNodes = snapshot.addedNodes.map((node) => ({ ...node, position: { ...node.position } }));
+		devRemovedNodeIds = new Set(snapshot.removedNodeIds);
+		devAddedEdges = new Set(snapshot.addedEdges);
+		devRemovedEdges = new Set(snapshot.removedEdges);
+		devConnectSourceId = snapshot.connectSourceId;
+		focusedNodeId = snapshot.focusedNodeId;
+	}
+
+	function undoDevChange() {
+		const snapshot = devUndoStack.at(-1);
+		if (!snapshot) {
+			return;
+		}
+
+		devUndoStack = devUndoStack.slice(0, -1);
+		restoreDevHistorySnapshot(snapshot);
+	}
+
+	function hasDevChanges(): boolean {
+		return (
+			Object.keys(devPositionOverrides).length > 0 ||
+			Object.keys(devValueOverrides).length > 0 ||
+			Object.keys(devRequirementOverrides).length > 0 ||
+			devAddedNodes.length > 0 ||
+			devRemovedNodeIds.size > 0 ||
+			devAddedEdges.size > 0 ||
+			devRemovedEdges.size > 0 ||
+			devConnectSourceId !== null
+		);
+	}
+
+	function isEditableShortcutTarget(target: EventTarget | null): boolean {
+		if (!(target instanceof HTMLElement)) {
+			return false;
+		}
+
+		return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+	}
+
+	function handleDevUndoKeydown(event: KeyboardEvent) {
+		if (!isDevMode || isEditableShortcutTarget(event.target)) {
+			return;
+		}
+
+		const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 'z';
+		if (isUndo) {
+			event.preventDefault();
+			undoDevChange();
+			return;
+		}
+
+		const isConnectHotkey = !event.ctrlKey && !event.metaKey && !event.altKey && event.code === 'Space';
+		if (!isConnectHotkey) {
+			return;
+		}
+
+		const focusedDevNode = devEffectiveNodeMap.get(focusedNodeId);
+		if (!focusedDevNode) {
+			return;
+		}
+
+		event.preventDefault();
+		devConnectSourceId = devConnectSourceId !== null ? null : focusedDevNode.referenceId;
+	}
+
 	function getDevViewportCenter(): { x: number; y: number } {
 		if (!treeScrollElement) return { x: 0, y: 0 };
 		const cx = (treeScrollElement.scrollLeft + treeScrollElement.clientWidth / 2) / zoomLevel;
@@ -650,6 +771,8 @@
 		draggingNodeId = referenceId;
 		draggingStartMouseX = event.clientX;
 		draggingStartMouseY = event.clientY;
+		draggingStartSnapshot = getDevHistorySnapshot();
+		hasRecordedCurrentDrag = false;
 		const sourceNode = devEffectiveNodeMap.get(referenceId);
 		const nodeIdsToDrag = sourceNode?.isChoiceNode
 			? [referenceId, ...getChoiceChildren(referenceId).map((node) => node.referenceId)]
@@ -668,6 +791,10 @@
 		if (draggingNodeId === null) return;
 		const dx = (event.clientX - draggingStartMouseX) / zoomLevel;
 		const dy = (event.clientY - draggingStartMouseY) / zoomLevel;
+		if (!hasRecordedCurrentDrag && (dx !== 0 || dy !== 0)) {
+			pushDevUndoSnapshot(draggingStartSnapshot ?? undefined);
+			hasRecordedCurrentDrag = true;
+		}
 		const nextPositions = { ...devPositionOverrides };
 		const movedPositions = new Map<number, { x: number; y: number }>();
 
@@ -693,6 +820,8 @@
 	function endNodeDrag() {
 		draggingNodeId = null;
 		draggingStartPositions = {};
+		draggingStartSnapshot = null;
+		hasRecordedCurrentDrag = false;
 	}
 
 	function getDevEditableValue(nodeId: number): number {
@@ -703,15 +832,64 @@
 		return devEffectiveNodeMap.get(nodeId)?.requiredAllocatedEdges ?? plannerNodeMap.get(nodeId)?.requiredAllocatedEdges ?? 1;
 	}
 
+	function getDevEditablePosition(referenceId: number): { x: number; y: number } | null {
+		const node = devEffectiveNodeMap.get(referenceId);
+		if (!node) {
+			return null;
+		}
+
+		return devPositionOverrides[referenceId] ?? node.position;
+	}
+
+	function updateDevNodePosition(referenceId: number, axis: 'x' | 'y', nextValue: number) {
+		if (!Number.isFinite(nextValue)) {
+			return;
+		}
+
+		const current = getDevEditablePosition(referenceId);
+		if (!current) {
+			return;
+		}
+
+		const normalized = Math.round(nextValue);
+		if (current[axis] === normalized) {
+			return;
+		}
+
+		pushDevUndoSnapshot();
+
+		const nextPosition = { ...current, [axis]: normalized };
+		const basePosition = plannerNodeMap.get(referenceId)?.position;
+		const nextPositionOverrides = { ...devPositionOverrides };
+
+		if (basePosition && nextPosition.x === basePosition.x && nextPosition.y === basePosition.y) {
+			delete nextPositionOverrides[referenceId];
+		} else {
+			nextPositionOverrides[referenceId] = nextPosition;
+		}
+
+		devPositionOverrides = nextPositionOverrides;
+		devAddedNodes = devAddedNodes.map((node) =>
+			node.referenceId === referenceId ? { ...node, position: nextPosition } : node
+		);
+	}
+
 	function updateDevNodeValue(referenceId: number, nextValue: number) {
 		const normalized = Number.isFinite(nextValue) ? Math.round(nextValue) : 0;
 		const baseValue = plannerNodeMap.get(referenceId)?.value ?? 0;
 		if (normalized === baseValue) {
+			if (devValueOverrides[referenceId] !== undefined) {
+				pushDevUndoSnapshot();
+			}
 			const next = { ...devValueOverrides };
 			delete next[referenceId];
 			devValueOverrides = next;
 			return;
 		}
+		if (devValueOverrides[referenceId] === normalized) {
+			return;
+		}
+		pushDevUndoSnapshot();
 		devValueOverrides = { ...devValueOverrides, [referenceId]: normalized };
 	}
 
@@ -719,15 +897,23 @@
 		const normalized = Math.max(0, Number.isFinite(nextRequirement) ? Math.round(nextRequirement) : 0);
 		const baseRequirement = plannerNodeMap.get(referenceId)?.requiredAllocatedEdges ?? 1;
 		if (normalized === baseRequirement) {
+			if (devRequirementOverrides[referenceId] !== undefined) {
+				pushDevUndoSnapshot();
+			}
 			const next = { ...devRequirementOverrides };
 			delete next[referenceId];
 			devRequirementOverrides = next;
 			return;
 		}
+		if (devRequirementOverrides[referenceId] === normalized) {
+			return;
+		}
+		pushDevUndoSnapshot();
 		devRequirementOverrides = { ...devRequirementOverrides, [referenceId]: normalized };
 	}
 
 	function devRemoveNode(referenceId: number) {
+		pushDevUndoSnapshot();
 		devRemovedNodeIds = new Set([...devRemovedNodeIds, referenceId]);
 		devAddedNodes = devAddedNodes.filter((n) => n.referenceId !== referenceId);
 		// Remove any override
@@ -746,6 +932,7 @@
 
 	function devAddNode() {
 		if (!devAddIdentifier) return;
+		pushDevUndoSnapshot();
 		const newId =
 			Math.max(
 				...plannerRawNodes.map((n) => n.referenceId),
@@ -773,12 +960,16 @@
 		const removedByDev = devRemovedEdges.has(key);
 
 		if (addedByDev) {
+			pushDevUndoSnapshot();
 			devAddedEdges = new Set([...devAddedEdges].filter((k) => k !== key));
 		} else if (existsInOriginal && !removedByDev) {
+			pushDevUndoSnapshot();
 			devRemovedEdges = new Set([...devRemovedEdges, key]);
 		} else if (existsInOriginal && removedByDev) {
+			pushDevUndoSnapshot();
 			devRemovedEdges = new Set([...devRemovedEdges].filter((k) => k !== key));
 		} else {
+			pushDevUndoSnapshot();
 			devAddedEdges = new Set([...devAddedEdges, key]);
 		}
 		devConnectSourceId = null;
@@ -786,6 +977,7 @@
 
 	function devRemoveEdge(fromId: number, toId: number) {
 		const key = devEdgeKey(fromId, toId);
+		pushDevUndoSnapshot();
 		if (devAddedEdges.has(key)) {
 			devAddedEdges = new Set([...devAddedEdges].filter((k) => k !== key));
 		} else {
@@ -794,6 +986,11 @@
 	}
 
 	function devResetChanges() {
+		if (!hasDevChanges()) {
+			return;
+		}
+
+		pushDevUndoSnapshot();
 		devPositionOverrides = {};
 		devValueOverrides = {};
 		devRequirementOverrides = {};
@@ -1215,6 +1412,32 @@
 									<div><dt>Game Y</dt><dd>{devFocusedPos?.y ?? '—'}</dd></div>
 								</dl>
 								<div class="dev-edit-grid">
+									<label class="dev-label">
+										<span>Game X</span>
+										<input
+											type="number"
+											value={devFocusedPos?.x ?? 0}
+											oninput={(event) =>
+												updateDevNodePosition(
+													devFocused.referenceId,
+													'x',
+													(event.currentTarget as HTMLInputElement).valueAsNumber
+												)}
+										/>
+									</label>
+									<label class="dev-label">
+										<span>Game Y</span>
+										<input
+											type="number"
+											value={devFocusedPos?.y ?? 0}
+											oninput={(event) =>
+												updateDevNodePosition(
+													devFocused.referenceId,
+													'y',
+													(event.currentTarget as HTMLInputElement).valueAsNumber
+												)}
+										/>
+									</label>
 									<label class="dev-label">
 										<span>Value</span>
 										<input
