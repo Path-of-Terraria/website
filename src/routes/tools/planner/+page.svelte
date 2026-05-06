@@ -904,7 +904,11 @@
 			.join('.');
 		const removes = [...devRemovedNodeIds].map((id) => id.toString(36)).join('.');
 		const adds = devAddedNodes
-			.map((n) => `${n.referenceId.toString(36)}:${n.internalIdentifier}:${signedBase36(n.position.x)}:${signedBase36(n.position.y)}`)
+			.map((n) => {
+				const identIdx = plannerUniqueIdentifiers.indexOf(n.internalIdentifier);
+				const identPart = identIdx >= 0 ? identIdx.toString(36) : n.internalIdentifier;
+				return `${n.referenceId.toString(36)}:${identPart}:${signedBase36(n.position.x)}:${signedBase36(n.position.y)}`;
+			})
 			.join('.');
 		const edgeAdds = [...devAddedEdges]
 			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
@@ -966,12 +970,19 @@
 			const added: typeof devAddedNodes = [];
 			if (addsPart && addsPart !== '-') {
 				for (const entry of addsPart.split('.')) {
-					const [idPart, identifier, xPart, yPart] = entry.split(':');
+					const [idPart, identPart, xPart, yPart] = entry.split(':');
 					const id = parseInt(idPart, 36);
 					const x = parseSignedBase36(xPart);
 					const y = parseSignedBase36(yPart);
-					if (!isNaN(id) && identifier && !isNaN(x) && !isNaN(y)) {
-						added.push({ referenceId: id, internalIdentifier: identifier, position: { x, y } });
+					if (!isNaN(id) && identPart && !isNaN(x) && !isNaN(y)) {
+						const identIdx = parseInt(identPart, 36);
+						const internalIdentifier =
+							!isNaN(identIdx) && identIdx < plannerUniqueIdentifiers.length
+								? plannerUniqueIdentifiers[identIdx]
+								: identPart;
+						if (internalIdentifier) {
+							added.push({ referenceId: id, internalIdentifier, position: { x, y } });
+						}
 					}
 				}
 			}
