@@ -248,7 +248,7 @@
                                     id={`comment-${poll.id}`}
                                     bind:value={comments[poll.id]}
                                     rows={2}
-                                    maxlength={500}
+                                    maxlength={2000}
                                     placeholder="Add an optional comment with your vote"
                                     class="w-full border-white/10 bg-white/8 text-white placeholder:text-gray-500"
                                 />
