@@ -19,14 +19,26 @@
     import {onDestroy} from "svelte";
     import LoginModal from "$lib/components/LoginModal.svelte";
     import {UserService} from "$lib/services/user-service";
+    import {PollService} from "$lib/services/poll-service";
     import SettingsModal from "$lib/components/SettingsModal.svelte";
     let userService = new UserService();
+    let pollService = new PollService();
     const isDebug = import.meta.env.VITE_DEBUG === 'true';
     const viewAdminPanelRole = 'ViewAdminPanel';
 
     let currentUser = $state<IUser | null>(null);
     let settingsOpen = $state(false);
     let canViewAdminPanel = $derived(currentUser?.roles?.includes(viewAdminPanelRole) ?? false);
+    let pendingPollCount = $state(0);
+
+    async function refreshPendingPolls() {
+        try {
+            const polls = await pollService.getAll();
+            pendingPollCount = polls.filter(p => p.isActive && !p.hasAnswered).length;
+        } catch (e) {
+            pendingPollCount = 0;
+        }
+    }
 
     let navbarClass = 'fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-transparent backdrop-blur-sm';
     let brandTextClass = 'text-white';
@@ -37,6 +49,7 @@
 
     const unsubscribe = user.subscribe(value => {
         currentUser = value;
+        void refreshPendingPolls();
     });
 
     // Cleanup on component destruction
@@ -59,6 +72,17 @@
         <NavLi href="/trade" class={navLinkClass}>Trade</NavLi>
         <NavLi href="/tools" class={navLinkClass}>Tools</NavLi>
         <NavLi href="https://wiki.pathofterraria.com" target="_blank" class={navLinkClass}>Wiki</NavLi>
+        {#if pendingPollCount > 0}
+            <NavLi href="/polls" class="font-semibold text-amber-300 hover:text-amber-200">
+                <span class="relative inline-flex items-center gap-2">
+                    Polls
+                    <span class="relative inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-black">
+                        {pendingPollCount}
+                        <span class="absolute inset-0 -z-10 animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                    </span>
+                </span>
+            </NavLi>
+        {/if}
         {#if isDebug || canViewAdminPanel}
             <NavLi href="/admin" class={navLinkClass}>Admin</NavLi>
         {/if}
