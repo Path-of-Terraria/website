@@ -54,6 +54,12 @@
 		s: 'summon'
 	};
 	const devUndoLimit = 80;
+	const plannerReferenceNodeByIdentifier = plannerNodes.reduce((map, node) => {
+		if (!map.has(node.internalIdentifier)) {
+			map.set(node.internalIdentifier, node);
+		}
+		return map;
+	}, new Map<string, PlannerNode>());
 
 	type DevHistorySnapshot = {
 		positionOverrides: Record<number, { x: number; y: number }>;
@@ -155,7 +161,7 @@
 				const requiredAllocatedEdges = devRequirementOverrides[n.referenceId];
 				const internalIdentifier = devIdentifierOverrides[n.referenceId] ?? n.internalIdentifier;
 				const presentation = getPassivePresentation(internalIdentifier);
-				const referenceNode = plannerNodes.find((node) => node.internalIdentifier === internalIdentifier);
+				const referenceNode = plannerReferenceNodeByIdentifier.get(internalIdentifier);
 				if (
 					!pos &&
 					value === undefined &&
