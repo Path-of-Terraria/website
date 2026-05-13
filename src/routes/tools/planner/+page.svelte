@@ -59,6 +59,7 @@
 		positionOverrides: Record<number, { x: number; y: number }>;
 		valueOverrides: Record<number, number>;
 		requirementOverrides: Record<number, number>;
+		identifierOverrides: Record<number, string>;
 		addedNodes: Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>;
 		removedNodeIds: number[];
 		addedEdges: string[];
@@ -98,6 +99,7 @@
 	let devPositionOverrides = $state<Record<number, { x: number; y: number }>>({});
 	let devValueOverrides = $state<Record<number, number>>({});
 	let devRequirementOverrides = $state<Record<number, number>>({});
+	let devIdentifierOverrides = $state<Record<number, string>>({});
 	let devAddedNodes = $state<Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>>([]);
 	let devRemovedNodeIds = $state<Set<number>>(new Set());
 	let devAddedEdges = $state<Set<string>>(new Set());
@@ -151,11 +153,25 @@
 				const pos = devPositionOverrides[n.referenceId];
 				const value = devValueOverrides[n.referenceId];
 				const requiredAllocatedEdges = devRequirementOverrides[n.referenceId];
-				if (!pos && value === undefined && requiredAllocatedEdges === undefined) return n;
+				const internalIdentifier = devIdentifierOverrides[n.referenceId] ?? n.internalIdentifier;
+				const presentation = getPassivePresentation(internalIdentifier);
+				const referenceNode = plannerNodes.find((node) => node.internalIdentifier === internalIdentifier);
+				if (
+					!pos &&
+					value === undefined &&
+					requiredAllocatedEdges === undefined &&
+					internalIdentifier === n.internalIdentifier
+				)
+					return n;
 				return {
 					...n,
+					internalIdentifier,
+					displayName: presentation.displayName,
+					displayTooltip: presentation.displayTooltip,
+					assetPath: presentation.assetPath,
 					value: value ?? n.value,
 					requiredAllocatedEdges: requiredAllocatedEdges ?? n.requiredAllocatedEdges,
+					group: referenceNode?.group ?? n.group,
 					canvasX: (pos?.x ?? n.position.x) + plannerOffsetX,
 					canvasY: (pos?.y ?? n.position.y) + plannerOffsetY
 				};
@@ -273,6 +289,7 @@
 		void devPositionOverrides;
 		void devValueOverrides;
 		void devRequirementOverrides;
+		void devIdentifierOverrides;
 		void devAddedNodes;
 		void devRemovedNodeIds;
 		void devAddedEdges;
@@ -659,6 +676,7 @@
 			positionOverrides: cloneDevPositionOverrides(devPositionOverrides),
 			valueOverrides: { ...devValueOverrides },
 			requirementOverrides: { ...devRequirementOverrides },
+			identifierOverrides: { ...devIdentifierOverrides },
 			addedNodes: devAddedNodes.map((node) => ({ ...node, position: { ...node.position } })),
 			removedNodeIds: [...devRemovedNodeIds],
 			addedEdges: [...devAddedEdges],
@@ -685,6 +703,7 @@
 		devPositionOverrides = cloneDevPositionOverrides(snapshot.positionOverrides);
 		devValueOverrides = { ...snapshot.valueOverrides };
 		devRequirementOverrides = { ...snapshot.requirementOverrides };
+		devIdentifierOverrides = { ...snapshot.identifierOverrides };
 		devAddedNodes = snapshot.addedNodes.map((node) => ({ ...node, position: { ...node.position } }));
 		devRemovedNodeIds = new Set(snapshot.removedNodeIds);
 		devAddedEdges = new Set(snapshot.addedEdges);
@@ -708,6 +727,7 @@
 			Object.keys(devPositionOverrides).length > 0 ||
 			Object.keys(devValueOverrides).length > 0 ||
 			Object.keys(devRequirementOverrides).length > 0 ||
+			Object.keys(devIdentifierOverrides).length > 0 ||
 			devAddedNodes.length > 0 ||
 			devRemovedNodeIds.size > 0 ||
 			devAddedEdges.size > 0 ||
@@ -841,6 +861,10 @@
 		return devPositionOverrides[referenceId] ?? node.position;
 	}
 
+	function getDevEditableIdentifier(referenceId: number): string {
+		return devEffectiveNodeMap.get(referenceId)?.internalIdentifier ?? plannerNodeMap.get(referenceId)?.internalIdentifier ?? '';
+	}
+
 	function updateDevNodePosition(referenceId: number, axis: 'x' | 'y', nextValue: number) {
 		if (!Number.isFinite(nextValue)) {
 			return;
@@ -912,6 +936,40 @@
 		devRequirementOverrides = { ...devRequirementOverrides, [referenceId]: normalized };
 	}
 
+	function updateDevNodeIdentifier(referenceId: number, nextIdentifier: string) {
+		if (!nextIdentifier) {
+			return;
+		}
+
+		const currentIdentifier = getDevEditableIdentifier(referenceId);
+		if (currentIdentifier === nextIdentifier) {
+			return;
+		}
+
+		pushDevUndoSnapshot();
+
+		const addedNode = devAddedNodes.find((node) => node.referenceId === referenceId);
+		if (addedNode) {
+			devAddedNodes = devAddedNodes.map((node) =>
+				node.referenceId === referenceId ? { ...node, internalIdentifier: nextIdentifier } : node
+			);
+			const nextOverrides = { ...devIdentifierOverrides };
+			delete nextOverrides[referenceId];
+			devIdentifierOverrides = nextOverrides;
+			return;
+		}
+
+		const baseIdentifier = plannerNodeMap.get(referenceId)?.internalIdentifier;
+		const nextOverrides = { ...devIdentifierOverrides };
+		if (!baseIdentifier || nextIdentifier === baseIdentifier) {
+			delete nextOverrides[referenceId];
+		} else {
+			nextOverrides[referenceId] = nextIdentifier;
+		}
+
+		devIdentifierOverrides = nextOverrides;
+	}
+
 	function devRemoveNode(referenceId: number) {
 		pushDevUndoSnapshot();
 		devRemovedNodeIds = new Set([...devRemovedNodeIds, referenceId]);
@@ -926,6 +984,9 @@
 		const nextRequirementOverrides = { ...devRequirementOverrides };
 		delete nextRequirementOverrides[referenceId];
 		devRequirementOverrides = nextRequirementOverrides;
+		const nextIdentifierOverrides = { ...devIdentifierOverrides };
+		delete nextIdentifierOverrides[referenceId];
+		devIdentifierOverrides = nextIdentifierOverrides;
 		// Remove edges involving this node
 		devAddedEdges = new Set([...devAddedEdges].filter((k) => !k.split(':').includes(String(referenceId))));
 	}
@@ -994,6 +1055,7 @@
 		devPositionOverrides = {};
 		devValueOverrides = {};
 		devRequirementOverrides = {};
+		devIdentifierOverrides = {};
 		devAddedNodes = [];
 		devRemovedNodeIds = new Set();
 		devAddedEdges = new Set();
@@ -1010,6 +1072,7 @@
 		const positionOverrides = { ...devPositionOverrides };
 		const valueOverrides = { ...devValueOverrides };
 		const requirementOverrides = { ...devRequirementOverrides };
+		const identifierOverrides = { ...devIdentifierOverrides };
 		const addedEdges = new Set(devAddedEdges);
 		const removedEdges = new Set(devRemovedEdges);
 		const rawNodeMap = new Map(rawNodes.map((n) => [n.referenceId, n]));
@@ -1057,6 +1120,7 @@
 			if (rawNode) {
 				output.push({
 					...rawNode,
+					internalIdentifier: identifierOverrides[id] ?? rawNode.internalIdentifier,
 					value: valueOverrides[id] ?? rawNode.value,
 					position: pos ?? rawNode.position,
 					connections: connMap.get(id) ?? rawNode.connections,
@@ -1099,6 +1163,9 @@
 		const requirements = Object.entries(devRequirementOverrides)
 			.map(([id, requirement]) => `${Number(id).toString(36)}:${signedBase36(requirement)}`)
 			.join('.');
+		const identifiers = Object.entries(devIdentifierOverrides)
+			.map(([id, identifier]) => `${Number(id).toString(36)}:${identifier}`)
+			.join('.');
 		const removes = [...devRemovedNodeIds].map((id) => id.toString(36)).join('.');
 		const adds = devAddedNodes
 			.map((n) => {
@@ -1113,17 +1180,29 @@
 		const edgeRemoves = [...devRemovedEdges]
 			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
 			.join('.');
-		return [moves || '-', values || '-', requirements || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
+		return [moves || '-', values || '-', requirements || '-', identifiers || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
 	}
 
 	function decodeDevState(value: string | null): boolean {
 		if (!value) return false;
 		try {
 			const parts = value.split('~');
-			const [movesPart, valuesPart, requirementsPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] =
-				parts.length >= 7
-					? parts
-					: [parts[0], '-', '-', parts[1], parts[2], parts[3], parts[4]];
+			let movesPart = '-';
+			let valuesPart = '-';
+			let requirementsPart = '-';
+			let identifiersPart = '-';
+			let removesPart = '-';
+			let addsPart = '-';
+			let edgeAddsPart = '-';
+			let edgeRemovesPart = '-';
+
+			if (parts.length >= 8) {
+				[movesPart, valuesPart, requirementsPart, identifiersPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] = parts;
+			} else if (parts.length >= 7) {
+				[movesPart, valuesPart, requirementsPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] = parts;
+			} else {
+				[movesPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] = parts;
+			}
 
 			const positions: Record<number, { x: number; y: number }> = {};
 			if (movesPart && movesPart !== '-') {
@@ -1153,6 +1232,15 @@
 					const id = parseInt(idPart, 36);
 					const requirement = parseSignedBase36(requirementPart);
 					if (!isNaN(id) && !isNaN(requirement)) requirements[id] = requirement;
+				}
+			}
+
+			const identifiers: Record<number, string> = {};
+			if (identifiersPart && identifiersPart !== '-') {
+				for (const entry of identifiersPart.split('.')) {
+					const [idPart, identifier] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					if (!isNaN(id) && identifier) identifiers[id] = identifier;
 				}
 			}
 
@@ -1207,6 +1295,7 @@
 			devPositionOverrides = positions;
 			devValueOverrides = values;
 			devRequirementOverrides = requirements;
+			devIdentifierOverrides = identifiers;
 			devRemovedNodeIds = removed;
 			devAddedNodes = added;
 			devAddedEdges = addedEdges;
@@ -1412,6 +1501,22 @@
 									<div><dt>Game Y</dt><dd>{devFocusedPos?.y ?? '—'}</dd></div>
 								</dl>
 								<div class="dev-edit-grid">
+									<label class="dev-label">
+										<span>Identifier</span>
+										<select
+											class="dev-select"
+											value={getDevEditableIdentifier(devFocused.referenceId)}
+											onchange={(event) =>
+												updateDevNodeIdentifier(
+													devFocused.referenceId,
+													(event.currentTarget as HTMLSelectElement).value
+												)}
+										>
+											{#each devAddOptions as option}
+												<option value={option.identifier}>{option.displayName}</option>
+											{/each}
+										</select>
+									</label>
 									<label class="dev-label">
 										<span>Game X</span>
 										<input
