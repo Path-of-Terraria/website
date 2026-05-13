@@ -54,6 +54,7 @@
 		s: 'summon'
 	};
 	const devUndoLimit = 80;
+	const plannerIdentifierSet = new Set(plannerUniqueIdentifiers);
 	const plannerReferenceNodeByIdentifier = plannerNodes.reduce((map, node) => {
 		if (!map.has(node.internalIdentifier)) {
 			map.set(node.internalIdentifier, node);
@@ -867,7 +868,7 @@
 		return devPositionOverrides[referenceId] ?? node.position;
 	}
 
-	function getDevEditableIdentifier(referenceId: number): string {
+	function getDevCurrentIdentifier(referenceId: number): string {
 		return devEffectiveNodeMap.get(referenceId)?.internalIdentifier ?? plannerNodeMap.get(referenceId)?.internalIdentifier ?? '';
 	}
 
@@ -947,7 +948,11 @@
 			return;
 		}
 
-		const currentIdentifier = getDevEditableIdentifier(referenceId);
+		if (!plannerIdentifierSet.has(nextIdentifier)) {
+			return;
+		}
+
+		const currentIdentifier = getDevCurrentIdentifier(referenceId);
 		if (currentIdentifier === nextIdentifier) {
 			return;
 		}
@@ -1246,7 +1251,7 @@
 				for (const entry of identifiersPart.split('.')) {
 					const [idPart, identifier] = entry.split(':');
 					const id = parseInt(idPart, 36);
-					if (!isNaN(id) && identifier) identifiers[id] = identifier;
+					if (!isNaN(id) && identifier && plannerIdentifierSet.has(identifier)) identifiers[id] = identifier;
 				}
 			}
 
@@ -1511,7 +1516,7 @@
 										<span>Identifier</span>
 										<select
 											class="dev-select"
-											value={getDevEditableIdentifier(devFocused.referenceId)}
+											value={getDevCurrentIdentifier(devFocused.referenceId)}
 											onchange={(event) =>
 												updateDevNodeIdentifier(
 													devFocused.referenceId,
