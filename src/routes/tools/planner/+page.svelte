@@ -12,6 +12,7 @@
 		getChoiceChildren,
 		getDisplayNode,
 		getFormattedTooltip,
+		getNodeGroup,
 		getNodeRadius,
 		getPassivePresentation,
 		getPrunedSelectionAfterDeallocate,
@@ -57,6 +58,7 @@
 
 	type DevHistorySnapshot = {
 		positionOverrides: Record<number, { x: number; y: number }>;
+		identifierOverrides: Record<number, string>;
 		valueOverrides: Record<number, number>;
 		requirementOverrides: Record<number, number>;
 		addedNodes: Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>;
@@ -96,6 +98,7 @@
 	let isDevMode = $state(false);
 	let devActiveTab = $state<'node' | 'dev'>('node');
 	let devPositionOverrides = $state<Record<number, { x: number; y: number }>>({});
+	let devIdentifierOverrides = $state<Record<number, string>>({});
 	let devValueOverrides = $state<Record<number, number>>({});
 	let devRequirementOverrides = $state<Record<number, number>>({});
 	let devAddedNodes = $state<Array<{ referenceId: number; internalIdentifier: string; position: { x: number; y: number } }>>([]);
@@ -149,13 +152,19 @@
 			.filter((n) => !devRemovedNodeIds.has(n.referenceId))
 			.map((n) => {
 				const pos = devPositionOverrides[n.referenceId];
+				const internalIdentifier = devIdentifierOverrides[n.referenceId] ?? n.internalIdentifier;
 				const value = devValueOverrides[n.referenceId];
 				const requiredAllocatedEdges = devRequirementOverrides[n.referenceId];
-				if (!pos && value === undefined && requiredAllocatedEdges === undefined) return n;
+				if (!pos && internalIdentifier === n.internalIdentifier && value === undefined && requiredAllocatedEdges === undefined) return n;
+				const nextValue = value ?? n.value;
+				const presentation = getPassivePresentation(internalIdentifier);
 				return {
 					...n,
-					value: value ?? n.value,
+					...presentation,
+					internalIdentifier,
+					value: nextValue,
 					requiredAllocatedEdges: requiredAllocatedEdges ?? n.requiredAllocatedEdges,
+					group: getNodeGroup({ ...n, internalIdentifier, value: nextValue }),
 					canvasX: (pos?.x ?? n.position.x) + plannerOffsetX,
 					canvasY: (pos?.y ?? n.position.y) + plannerOffsetY
 				};
@@ -168,7 +177,13 @@
 			value: devValueOverrides[n.referenceId] ?? 0,
 			position: n.position,
 			connections: [],
-			group: 'minor' as const,
+			group: getNodeGroup({
+				internalIdentifier: n.internalIdentifier,
+				referenceId: n.referenceId,
+				maxLevel: 1,
+				value: devValueOverrides[n.referenceId] ?? 0,
+				position: n.position
+			}),
 			requiredAllocatedEdges: devRequirementOverrides[n.referenceId],
 			canvasX: n.position.x + plannerOffsetX,
 			canvasY: n.position.y + plannerOffsetY
@@ -271,6 +286,7 @@
 		if (!hasLoadedStoredState || !isDevMode) return;
 		// Access all dev state to track dependencies
 		void devPositionOverrides;
+		void devIdentifierOverrides;
 		void devValueOverrides;
 		void devRequirementOverrides;
 		void devAddedNodes;
@@ -657,6 +673,7 @@
 	function getDevHistorySnapshot(): DevHistorySnapshot {
 		return {
 			positionOverrides: cloneDevPositionOverrides(devPositionOverrides),
+			identifierOverrides: { ...devIdentifierOverrides },
 			valueOverrides: { ...devValueOverrides },
 			requirementOverrides: { ...devRequirementOverrides },
 			addedNodes: devAddedNodes.map((node) => ({ ...node, position: { ...node.position } })),
@@ -683,6 +700,7 @@
 
 	function restoreDevHistorySnapshot(snapshot: DevHistorySnapshot) {
 		devPositionOverrides = cloneDevPositionOverrides(snapshot.positionOverrides);
+		devIdentifierOverrides = { ...(snapshot.identifierOverrides ?? {}) };
 		devValueOverrides = { ...snapshot.valueOverrides };
 		devRequirementOverrides = { ...snapshot.requirementOverrides };
 		devAddedNodes = snapshot.addedNodes.map((node) => ({ ...node, position: { ...node.position } }));
@@ -706,6 +724,7 @@
 	function hasDevChanges(): boolean {
 		return (
 			Object.keys(devPositionOverrides).length > 0 ||
+			Object.keys(devIdentifierOverrides).length > 0 ||
 			Object.keys(devValueOverrides).length > 0 ||
 			Object.keys(devRequirementOverrides).length > 0 ||
 			devAddedNodes.length > 0 ||
@@ -725,11 +744,18 @@
 	}
 
 	function handleDevUndoKeydown(event: KeyboardEvent) {
-		if (!isDevMode || isEditableShortcutTarget(event.target)) {
+		if (!isDevMode) {
 			return;
 		}
 
 		const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 'z';
+		const target = event.target instanceof HTMLElement ? event.target : null;
+		const isFocusedPassiveSelect = Boolean(target?.closest('select.dev-focused-select'));
+
+		if (isEditableShortcutTarget(event.target) && !(isUndo && isFocusedPassiveSelect)) {
+			return;
+		}
+
 		if (isUndo) {
 			event.preventDefault();
 			undoDevChange();
@@ -832,6 +858,47 @@
 		return devEffectiveNodeMap.get(nodeId)?.requiredAllocatedEdges ?? plannerNodeMap.get(nodeId)?.requiredAllocatedEdges ?? 1;
 	}
 
+	function updateDevNodeIdentifier(referenceId: number, nextIdentifier: string) {
+		if (!plannerUniqueIdentifiers.includes(nextIdentifier)) {
+			return;
+		}
+
+		const addedNode = devAddedNodes.find((node) => node.referenceId === referenceId);
+		if (addedNode) {
+			if (addedNode.internalIdentifier === nextIdentifier) {
+				return;
+			}
+
+			pushDevUndoSnapshot();
+			devAddedNodes = devAddedNodes.map((node) =>
+				node.referenceId === referenceId ? { ...node, internalIdentifier: nextIdentifier } : node
+			);
+			return;
+		}
+
+		const baseIdentifier = plannerNodeMap.get(referenceId)?.internalIdentifier;
+		if (!baseIdentifier) {
+			return;
+		}
+
+		if (nextIdentifier === baseIdentifier) {
+			if (devIdentifierOverrides[referenceId] !== undefined) {
+				pushDevUndoSnapshot();
+			}
+			const next = { ...devIdentifierOverrides };
+			delete next[referenceId];
+			devIdentifierOverrides = next;
+			return;
+		}
+
+		if (devIdentifierOverrides[referenceId] === nextIdentifier) {
+			return;
+		}
+
+		pushDevUndoSnapshot();
+		devIdentifierOverrides = { ...devIdentifierOverrides, [referenceId]: nextIdentifier };
+	}
+
 	function getDevEditablePosition(referenceId: number): { x: number; y: number } | null {
 		const node = devEffectiveNodeMap.get(referenceId);
 		if (!node) {
@@ -920,6 +987,9 @@
 		const nextPositionOverrides = { ...devPositionOverrides };
 		delete nextPositionOverrides[referenceId];
 		devPositionOverrides = nextPositionOverrides;
+		const nextIdentifierOverrides = { ...devIdentifierOverrides };
+		delete nextIdentifierOverrides[referenceId];
+		devIdentifierOverrides = nextIdentifierOverrides;
 		const nextValueOverrides = { ...devValueOverrides };
 		delete nextValueOverrides[referenceId];
 		devValueOverrides = nextValueOverrides;
@@ -992,6 +1062,7 @@
 
 		pushDevUndoSnapshot();
 		devPositionOverrides = {};
+		devIdentifierOverrides = {};
 		devValueOverrides = {};
 		devRequirementOverrides = {};
 		devAddedNodes = [];
@@ -1008,6 +1079,7 @@
 		const addedNodes = [...devAddedNodes];
 		const removedNodeIds = new Set(devRemovedNodeIds);
 		const positionOverrides = { ...devPositionOverrides };
+		const identifierOverrides = { ...devIdentifierOverrides };
 		const valueOverrides = { ...devValueOverrides };
 		const requirementOverrides = { ...devRequirementOverrides };
 		const addedEdges = new Set(devAddedEdges);
@@ -1057,6 +1129,7 @@
 			if (rawNode) {
 				output.push({
 					...rawNode,
+					internalIdentifier: identifierOverrides[id] ?? rawNode.internalIdentifier,
 					value: valueOverrides[id] ?? rawNode.value,
 					position: pos ?? rawNode.position,
 					connections: connMap.get(id) ?? rawNode.connections,
@@ -1093,6 +1166,13 @@
 		const moves = Object.entries(devPositionOverrides)
 			.map(([id, pos]) => `${Number(id).toString(36)}:${signedBase36(pos.x)}:${signedBase36(pos.y)}`)
 			.join('.');
+		const identifiers = Object.entries(devIdentifierOverrides)
+			.map(([id, identifier]) => {
+				const identIdx = plannerUniqueIdentifiers.indexOf(identifier);
+				const identPart = identIdx >= 0 ? identIdx.toString(36) : identifier;
+				return `${Number(id).toString(36)}:${identPart}`;
+			})
+			.join('.');
 		const values = Object.entries(devValueOverrides)
 			.map(([id, value]) => `${Number(id).toString(36)}:${signedBase36(value)}`)
 			.join('.');
@@ -1113,17 +1193,28 @@
 		const edgeRemoves = [...devRemovedEdges]
 			.map((k) => k.split(':').map(Number).map((n) => n.toString(36)).join(':'))
 			.join('.');
-		return [moves || '-', values || '-', requirements || '-', removes || '-', adds || '-', edgeAdds || '-', edgeRemoves || '-'].join('~');
+		return [
+			moves || '-',
+			values || '-',
+			requirements || '-',
+			identifiers || '-',
+			removes || '-',
+			adds || '-',
+			edgeAdds || '-',
+			edgeRemoves || '-'
+		].join('~');
 	}
 
 	function decodeDevState(value: string | null): boolean {
 		if (!value) return false;
 		try {
 			const parts = value.split('~');
-			const [movesPart, valuesPart, requirementsPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] =
-				parts.length >= 7
+			const [movesPart, valuesPart, requirementsPart, identifiersPart, removesPart, addsPart, edgeAddsPart, edgeRemovesPart] =
+				parts.length >= 8
 					? parts
-					: [parts[0], '-', '-', parts[1], parts[2], parts[3], parts[4]];
+					: parts.length >= 7
+						? [parts[0], parts[1], parts[2], '-', parts[3], parts[4], parts[5], parts[6]]
+						: [parts[0], '-', '-', '-', parts[1], parts[2], parts[3], parts[4]];
 
 			const positions: Record<number, { x: number; y: number }> = {};
 			if (movesPart && movesPart !== '-') {
@@ -1153,6 +1244,23 @@
 					const id = parseInt(idPart, 36);
 					const requirement = parseSignedBase36(requirementPart);
 					if (!isNaN(id) && !isNaN(requirement)) requirements[id] = requirement;
+				}
+			}
+
+			const identifiers: Record<number, string> = {};
+			if (identifiersPart && identifiersPart !== '-') {
+				for (const entry of identifiersPart.split('.')) {
+					const [idPart, identPart] = entry.split(':');
+					const id = parseInt(idPart, 36);
+					const identIdx = parseInt(identPart, 36);
+					const internalIdentifier =
+						!isNaN(identIdx) && identIdx < plannerUniqueIdentifiers.length
+							? plannerUniqueIdentifiers[identIdx]
+							: identPart;
+					const baseIdentifier = plannerNodeMap.get(id)?.internalIdentifier;
+					if (!isNaN(id) && internalIdentifier && baseIdentifier && internalIdentifier !== baseIdentifier) {
+						identifiers[id] = internalIdentifier;
+					}
 				}
 			}
 
@@ -1205,6 +1313,7 @@
 			}
 
 			devPositionOverrides = positions;
+			devIdentifierOverrides = identifiers;
 			devValueOverrides = values;
 			devRequirementOverrides = requirements;
 			devRemovedNodeIds = removed;
@@ -1348,10 +1457,11 @@
 							{@const nodeRadius = getNodeRadius(node)}
 							{@const isDevAdded = devAddedNodes.some((n) => n.referenceId === node.referenceId)}
 							{@const isDevConnectSource = devConnectSourceId === node.referenceId}
+							{@const isDevFocused = isDevMode && focusedNodeId === node.referenceId}
 							{@const searchClass = !isDevMode && normalizedPassiveSearch ? (matchingNodeIds.has(node.referenceId) ? 'search-match' : 'search-dim') : ''}
 							<button
 								type="button"
-								class={`tree-node ${node.group} ${isDevMode ? 'dev-node' : getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${isDevAdded ? 'dev-added' : ''} ${isDevConnectSource ? 'dev-connect-source' : ''} ${draggingNodeId === node.referenceId ? 'dev-dragging' : ''} ${searchClass}`}
+								class={`tree-node ${node.group} ${isDevMode ? 'dev-node' : getNodeState(node)} ${isChoiceHub(node) ? 'choice-hub' : ''} ${isDevAdded ? 'dev-added' : ''} ${isDevConnectSource ? 'dev-connect-source' : ''} ${isDevFocused ? 'dev-focused' : ''} ${draggingNodeId === node.referenceId ? 'dev-dragging' : ''} ${searchClass}`}
 								style={`left:${node.canvasX}px;top:${node.canvasY}px;width:${nodeRadius * 2}px;height:${nodeRadius * 2}px;margin-left:-${nodeRadius}px;margin-top:-${nodeRadius}px;`}
 								aria-label={renderedNode.displayName}
 								onclick={() => toggleNode(node)}
@@ -1404,10 +1514,26 @@
 						<section class="card">
 							<p class="eyebrow">Focused node</p>
 							{#if devFocused}
-								<h2>{devFocused.displayName}</h2>
+								<label class="dev-label dev-focused-picker">
+									<span>Passive</span>
+									<select
+										class="dev-select dev-focused-select"
+										value={devFocused.internalIdentifier}
+										onchange={(event) =>
+											updateDevNodeIdentifier(
+												devFocused.referenceId,
+												(event.currentTarget as HTMLSelectElement).value
+											)}
+									>
+										{#each devAddOptions as option}
+											<option value={option.identifier}>{option.displayName}</option>
+										{/each}
+									</select>
+								</label>
 								<dl class="detail-grid">
 									<div><dt>Ref ID</dt><dd>{devFocused.referenceId}</dd></div>
 									<div><dt>Group</dt><dd>{devFocused.group}</dd></div>
+									<div><dt>Identifier</dt><dd>{devFocused.internalIdentifier}</dd></div>
 									<div><dt>Game X</dt><dd>{devFocusedPos?.x ?? '—'}</dd></div>
 									<div><dt>Game Y</dt><dd>{devFocusedPos?.y ?? '—'}</dd></div>
 								</dl>
@@ -2320,6 +2446,18 @@
 		z-index: 10;
 	}
 
+	.tree-node.dev-focused {
+		border-color: #fbbf24;
+		box-shadow:
+			0 0 0 5px rgba(251, 191, 36, 0.35),
+			0 0 28px rgba(251, 191, 36, 0.7);
+		z-index: 9;
+	}
+
+	.tree-node.dev-focused img {
+		filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.75));
+	}
+
 	@keyframes dev-pulse {
 		0%, 100% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.28); }
 		50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0.12); }
@@ -2421,6 +2559,10 @@
 		font-size: 0.82rem;
 	}
 
+	.dev-focused-picker {
+		margin-bottom: 0.8rem;
+	}
+
 	.dev-label span {
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
@@ -2435,6 +2577,11 @@
 		border-radius: 12px;
 		background: rgba(30, 41, 59, 0.96);
 		color: #f8fafc;
+	}
+
+	.dev-focused-select {
+		font-size: 1.08rem;
+		font-weight: 800;
 	}
 
 	.dev-select-summary {

@@ -624,7 +624,7 @@ function countAllocatedNeighbors(nodeId: number, selectedIds: Set<number>): numb
 	return count;
 }
 
-function getNodeGroup(node: PassiveNodeData): PlannerNode['group'] {
+export function getNodeGroup(node: PassiveNodeData): PlannerNode['group'] {
 	if (node.internalIdentifier === 'AnchorPassive') {
 		return 'anchor';
 	}
