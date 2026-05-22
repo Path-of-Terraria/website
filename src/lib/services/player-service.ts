@@ -86,6 +86,44 @@ export interface ICharacterPassiveTreeSnapshot {
     allocatedNodes: IPassiveTreeNodeSnapshot[];
 }
 
+export interface ISkillTreeNodeSnapshot {
+    internalIdentifier: string;
+    displayName: string;
+    displayTooltip?: string;
+    posX: number;
+    posY: number;
+    level: number;
+    maxLevel: number;
+    isSpecialization: boolean;
+    isAnchor: boolean;
+    isHidden: boolean;
+}
+
+export interface ISkillTreeEdgeSnapshot {
+    fromInternalIdentifier: string;
+    toInternalIdentifier: string;
+}
+
+export interface IEquippedSkillSnapshot {
+    slotIndex: number;
+    sourceMod: string;
+    internalName: string;
+    displayName: string;
+    level: number;
+    maxLevel: number;
+    points: number;
+    specializationInternalName?: string;
+    specializationDisplayName?: string;
+    nodes: ISkillTreeNodeSnapshot[];
+    edges: ISkillTreeEdgeSnapshot[];
+}
+
+export interface ICharacterSkillsSnapshot {
+    capturedAt: string;
+    modVersion?: string;
+    skills: IEquippedSkillSnapshot[];
+}
+
 export interface ICharacterViewer {
     id: string;
     characterName: string;
@@ -96,6 +134,7 @@ export interface ICharacterViewer {
     stats: ICharacterViewerStats;
     gearSnapshot?: ICharacterGearSnapshot;
     passiveTreeSnapshot?: ICharacterPassiveTreeSnapshot;
+    skillsSnapshot?: ICharacterSkillsSnapshot;
     updatedDate?: string;
 }
 

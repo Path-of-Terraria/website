@@ -6,6 +6,7 @@
     import { GetJwtToken } from '$lib/services/session-service';
     import { UserService } from '$lib/services/user-service';
     import PassiveTreeViewer from '$lib/components/PassiveTreeViewer.svelte';
+    import SkillTreeViewer from '$lib/components/SkillTreeViewer.svelte';
     import { toast } from '$lib/toast';
 
     let { data }: { data: PageData } = $props();
@@ -367,6 +368,14 @@
                     <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
                         <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                             <PassiveTreeViewer snapshot={viewer.passiveTreeSnapshot} />
+                        </div>
+                    </div>
+                {/if}
+
+                {#if viewer.skillsSnapshot && viewer.skillsSnapshot.skills.length > 0}
+                    <div class="rounded-[2rem] bg-gradient-to-br from-fuchsia-300/14 via-rose-300/8 to-amber-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
+                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                            <SkillTreeViewer snapshot={viewer.skillsSnapshot} />
                         </div>
                     </div>
                 {/if}
