@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button, Select } from 'flowbite-svelte';
+    import { Button, Select, Tooltip } from 'flowbite-svelte';
     import { type IPlayer, PlayerService } from '$lib/services/player-service';
 
     const playerService = new PlayerService();
@@ -22,6 +22,10 @@
         if (!characterClass) return undefined;
         const file = classIconFiles[characterClass];
         return file ? `/classes/${file}.png` : undefined;
+    }
+
+    function formatIconLabel(value: string): string {
+        return value.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
     }
 
     async function refreshLeaderboards(): Promise<IPlayer[]> {
@@ -164,17 +168,9 @@
                                                                     <img
                                                                         src={classIconSrc(leader.characterClass)}
                                                                         alt={`${leader.characterClass} class`}
-                                                                        title={leader.characterClass}
                                                                         class="h-5 w-5 shrink-0 [image-rendering:pixelated]"
                                                                     />
-                                                                {/if}
-                                                                {#if leader.user?.chosenBenefits?.chatIcon?.value}
-                                                                    <img
-                                                                        src={`/chat-icons/${leader.user.chosenBenefits.chatIcon.value}.png`}
-                                                                        alt={leader.user.chosenBenefits.chatIcon.value}
-                                                                        title={leader.user.chosenBenefits.chatIcon.value}
-                                                                        class="h-5 w-5 shrink-0 [image-rendering:pixelated]"
-                                                                    />
+                                                                    <Tooltip>{leader.characterClass} class</Tooltip>
                                                                 {/if}
                                                                 <a
                                                                     href={`/character/${encodeURIComponent(leader.profileName ?? '')}/${encodeURIComponent(leader.name)}`}
@@ -183,6 +179,14 @@
                                                                 >
                                                                     {leader.name}
                                                                 </a>
+                                                                {#if leader.user?.chosenBenefits?.chatIcon?.value}
+                                                                    <img
+                                                                        src={`/chat-icons/${leader.user.chosenBenefits.chatIcon.value}.png`}
+                                                                        alt={formatIconLabel(leader.user.chosenBenefits.chatIcon.value)}
+                                                                        class="h-5 w-5 shrink-0 [image-rendering:pixelated]"
+                                                                    />
+                                                                    <Tooltip>{formatIconLabel(leader.user.chosenBenefits.chatIcon.value)}</Tooltip>
+                                                                {/if}
                                                             </div>
                                                         </div>
                                                     </div>
