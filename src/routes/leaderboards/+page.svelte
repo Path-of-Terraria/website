@@ -11,6 +11,19 @@
 
     const classes = ['All', 'Melee', 'Ranged', 'Magic', 'Summoner'] as const;
 
+    const classIconFiles: Record<string, string> = {
+        Melee: 'Melee',
+        Ranged: 'Ranged',
+        Magic: 'Magic',
+        Summoner: 'Summon',
+    };
+
+    function classIconSrc(characterClass?: string): string | undefined {
+        if (!characterClass) return undefined;
+        const file = classIconFiles[characterClass];
+        return file ? `/classes/${file}.png` : undefined;
+    }
+
     async function refreshLeaderboards(): Promise<IPlayer[]> {
         const filter = selectedClass === 'All' ? undefined : selectedClass;
         const data = await playerService.getLeaderboards(count, skip, filter);
@@ -147,9 +160,22 @@
                                                         </div>
                                                             <div class="min-w-0">
                                                                 <div class="flex items-center gap-2">
-                                                                <!--{#if leader.user?.chosenBenefits?.chatIcon?.value}-->
-                                                                <!--    <i class={leader.user.chosenBenefits.chatIcon.value}></i>-->
-                                                                <!--{/if}-->
+                                                                {#if classIconSrc(leader.characterClass)}
+                                                                    <img
+                                                                        src={classIconSrc(leader.characterClass)}
+                                                                        alt={`${leader.characterClass} class`}
+                                                                        title={leader.characterClass}
+                                                                        class="h-5 w-5 shrink-0 [image-rendering:pixelated]"
+                                                                    />
+                                                                {/if}
+                                                                {#if leader.user?.chosenBenefits?.chatIcon?.value}
+                                                                    <img
+                                                                        src={`/chat-icons/${leader.user.chosenBenefits.chatIcon.value}.png`}
+                                                                        alt={leader.user.chosenBenefits.chatIcon.value}
+                                                                        title={leader.user.chosenBenefits.chatIcon.value}
+                                                                        class="h-5 w-5 shrink-0 [image-rendering:pixelated]"
+                                                                    />
+                                                                {/if}
                                                                 <a
                                                                     href={`/character/${encodeURIComponent(leader.profileName ?? '')}/${encodeURIComponent(leader.name)}`}
                                                                     class="truncate text-sm font-semibold text-white transition hover:underline md:text-base"

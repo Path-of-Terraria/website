@@ -5,6 +5,7 @@ export interface IPlayer {
     id: string;
     name: string;
     profileName?: string;
+    characterClass?: string;
     stats: IPlayerStats;
     user?: IUser;
 }
