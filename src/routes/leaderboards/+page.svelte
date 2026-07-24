@@ -1,13 +1,18 @@
 <script lang="ts">
+    import { onDestroy } from 'svelte';
     import { Button, Select, Tooltip } from 'flowbite-svelte';
     import { type IPlayer, PlayerService } from '$lib/services/player-service';
 
     const playerService = new PlayerService();
+    const searchDelayMs = 300;
 
     let count = $state(50);
     let skip = $state(0);
     let lastResultLength = $state(0);
     let selectedClass = $state<'All' | 'Melee' | 'Ranged' | 'Magic' | 'Summoner'>('All');
+    let searchQuery = $state('');
+    let searchTimer: ReturnType<typeof setTimeout> | undefined;
+    let requestSequence = 0;
 
     const classes = ['All', 'Melee', 'Ranged', 'Magic', 'Summoner'] as const;
 
@@ -29,9 +34,16 @@
     }
 
     async function refreshLeaderboards(): Promise<IPlayer[]> {
-        const filter = selectedClass === 'All' ? undefined : selectedClass;
-        const data = await playerService.getLeaderboards(count, skip, filter);
-        lastResultLength = data.length;
+        const requestId = ++requestSequence;
+        const filters = {
+            characterClass: selectedClass === 'All' ? undefined : selectedClass,
+            search: searchQuery,
+        };
+        const data = await playerService.getLeaderboards(count, skip, filters);
+        if (requestId === requestSequence) {
+            lastResultLength = data.length;
+        }
+
         return data;
     }
 
@@ -41,6 +53,26 @@
         skip = 0;
         leaderboardsPromise = refreshLeaderboards();
     }
+
+    function updateSearch() {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            skip = 0;
+            leaderboardsPromise = refreshLeaderboards();
+        }, searchDelayMs);
+    }
+
+    function clearSearch() {
+        if (!searchQuery) return;
+        if (searchTimer) clearTimeout(searchTimer);
+        searchQuery = '';
+        skip = 0;
+        leaderboardsPromise = refreshLeaderboards();
+    }
+
+    onDestroy(() => {
+        if (searchTimer) clearTimeout(searchTimer);
+    });
 
     let leaderboardsPromise: Promise<IPlayer[]> = $state(refreshLeaderboards());
 
@@ -105,8 +137,8 @@
                 </div>
             </div>
 
-            <div class="mb-4 flex justify-center">
-                <div class="inline-flex flex-wrap justify-center gap-1 rounded-2xl border border-white/10 bg-white/[0.04] p-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]">
+            <div class="mb-4 grid gap-3 xl:grid-cols-[1fr_auto_1fr] xl:items-center">
+                <div class="inline-flex flex-wrap justify-center gap-1 justify-self-center rounded-2xl border border-white/10 bg-white/[0.04] p-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)] xl:col-start-2">
                     {#each classes as cls}
                         <button
                             type="button"
@@ -117,6 +149,42 @@
                             {cls}
                         </button>
                     {/each}
+                </div>
+
+                <div class="w-full max-w-sm justify-self-center xl:col-start-3 xl:justify-self-end">
+                    <label for="player-search" class="sr-only">Search by player name</label>
+                    <div class="relative">
+                        <svg
+                            aria-hidden="true"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400"
+                        >
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m20 20-3.5-3.5"></path>
+                        </svg>
+                        <input
+                            id="player-search"
+                            type="search"
+                            placeholder="Search player name"
+                            autocomplete="off"
+                            bind:value={searchQuery}
+                            oninput={updateSearch}
+                            class="w-full rounded-xl border border-white/10 bg-[#0a1016]/90 py-2.5 pr-10 pl-10 text-sm text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)] outline-none transition placeholder:text-gray-500 focus:border-emerald-300/40 focus:ring-2 focus:ring-emerald-300/15"
+                        />
+                        {#if searchQuery}
+                            <button
+                                type="button"
+                                onclick={clearSearch}
+                                aria-label="Clear player search"
+                                class="absolute top-1/2 right-2.5 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 transition hover:bg-white/10 hover:text-white"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        {/if}
+                    </div>
                 </div>
             </div>
 
@@ -148,8 +216,12 @@
                         {:then leaders}
                             {#if leaders.length === 0}
                                 <div class="px-5 py-14 text-center">
-                                    <div class="text-lg font-semibold text-white">No player data found</div>
-                                    <p class="mt-2 text-sm text-gray-400">Try a different page size or check back later.</p>
+                                    <div class="text-lg font-semibold text-white">
+                                        {searchQuery.trim() ? `No players match "${searchQuery.trim()}"` : 'No player data found'}
+                                    </div>
+                                    <p class="mt-2 text-sm text-gray-400">
+                                        {searchQuery.trim() ? 'Try a different player name or class filter.' : 'Try a different page size or check back later.'}
+                                    </p>
                                 </div>
                             {:else}
                                 <div class="divide-y divide-white/6 px-3 md:px-4">

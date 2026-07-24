@@ -139,15 +139,27 @@ export interface ICharacterViewer {
     updatedDate?: string;
 }
 
+export interface ILeaderboardFilters {
+    characterClass?: string;
+    search?: string;
+}
+
 export class PlayerService {
     httpService = HttpService.getInstance();
 
-    public async getLeaderboards(count: number = 50, skip: number = 0, characterClass?: string): Promise<IPlayer[]> {
-        let url = `Player/Leaderboard?count=${encodeURIComponent(count)}&skip=${encodeURIComponent(skip)}`;
-        if (characterClass) {
-            url += `&characterClass=${encodeURIComponent(characterClass)}`;
+    public async getLeaderboards(count: number = 50, skip: number = 0, filters: ILeaderboardFilters = {}): Promise<IPlayer[]> {
+        const query = new URLSearchParams({
+            count: count.toString(),
+            skip: skip.toString(),
+        });
+        if (filters.characterClass) {
+            query.set('characterClass', filters.characterClass);
         }
-        const response = await this.httpService.get(url);
+        if (filters.search?.trim()) {
+            query.set('search', filters.search.trim());
+        }
+
+        const response = await this.httpService.get(`Player/Leaderboard?${query.toString()}`);
         if (response) {
             return response.data as IPlayer[];
         }
