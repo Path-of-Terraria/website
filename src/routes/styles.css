@@ -197,11 +197,18 @@ button:focus:not(:focus-visible) {
 }
 
 /* Ice crust with icicles. Pair with `top-0` (default) or add
-   `.rune-crust-flip` on a bottom-anchored element. */
+   `.rune-crust-flip` on a bottom-anchored element.
+
+   Two details that matter:
+   - The gradient is `userSpaceOnUse`, so it spans the whole tile rather than
+     each spike's own bounding box. Per-shape (the default) fades every tip to
+     transparent exactly where the point should be, blunting them.
+   - `background-size: auto 100%` scales the tile to the host's height, so the
+     spikes are never clipped flat by a container shorter than the artwork. */
 .rune-crust {
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='64' viewBox='0 0 240 64'%3E%3Cdefs%3E%3ClinearGradient id='c' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23eafaff' stop-opacity='.95'/%3E%3Cstop offset='.45' stop-color='%23a5dcf6' stop-opacity='.75'/%3E%3Cstop offset='1' stop-color='%234f9fd0' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23c)'%3E%3Crect width='240' height='11'/%3E%3Cpolygon points='8,9 15,9 11,44'/%3E%3Cpolygon points='26,9 31,9 28,26'/%3E%3Cpolygon points='44,9 52,9 48,56'/%3E%3Cpolygon points='63,9 68,9 65,30'/%3E%3Cpolygon points='79,9 87,9 83,48'/%3E%3Cpolygon points='99,9 104,9 101,24'/%3E%3Cpolygon points='116,9 124,9 120,52'/%3E%3Cpolygon points='134,9 139,9 136,28'/%3E%3Cpolygon points='151,9 159,9 155,42'/%3E%3Cpolygon points='170,9 175,9 172,22'/%3E%3Cpolygon points='186,9 194,9 190,58'/%3E%3Cpolygon points='205,9 210,9 207,32'/%3E%3Cpolygon points='220,9 228,9 224,46'/%3E%3C/g%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='44' viewBox='0 0 300 44'%3E%3Cdefs%3E%3ClinearGradient id='i' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='0' y2='44'%3E%3Cstop offset='0' stop-color='%23f2fcff' stop-opacity='.95'/%3E%3Cstop offset='.25' stop-color='%23cdeeff' stop-opacity='.85'/%3E%3Cstop offset='.6' stop-color='%238fd0f0' stop-opacity='.7'/%3E%3Cstop offset='1' stop-color='%235aa8d8' stop-opacity='.52'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23i)'%3E%3Crect width='300' height='6.5'/%3E%3Cpath d='M6.5 6Q8.1 18.1 10 28Q11.9 18.1 13.5 6ZM21.8 6Q22.8 12.6 24 18Q25.2 12.6 26.2 6ZM33.8 6Q35.7 24.7 38 40Q40.3 24.7 42.2 6ZM49.4 6Q50.6 14.8 52 22Q53.4 14.8 54.6 6ZM64.8 6Q66.2 20.3 68 32Q69.8 20.3 71.2 6ZM78.2 6Q79 11 80 15Q81 11 81.8 6ZM90.4 6Q92.5 26.9 95 44Q97.5 26.9 99.6 6ZM107.6 6Q108.7 13.7 110 20Q111.3 13.7 112.4 6ZM121 6Q122.4 17.6 124 27Q125.7 17.6 127 6ZM134 6Q134.9 12.1 136 17Q137.1 12.1 138 6ZM148 6Q149.8 23.1 152 37Q154.2 23.1 156 6ZM164.4 6Q165.6 15.4 167 23Q168.4 15.4 169.6 6ZM176.6 6Q178.1 19.8 180 31Q181.9 19.8 183.4 6ZM191.1 6Q192 11.5 193 16Q194 11.5 194.9 6ZM203.6 6Q205.6 25.8 208 42Q210.4 25.8 212.4 6ZM220.7 6Q221.7 13.2 223 19Q224.3 13.2 225.3 6ZM232.9 6Q234.3 18.7 236 29Q237.7 18.7 239.1 6ZM247 6Q247.9 12.6 249 18Q250.1 12.6 251 6ZM259.2 6Q261 21.9 263 35Q265 21.9 266.8 6ZM274.5 6Q275.6 14.3 277 21Q278.4 14.3 279.5 6ZM287 6Q288.4 16.5 290 25Q291.7 16.5 293 6Z'/%3E%3C/g%3E%3Crect width='300' height='1.2' fill='%23ffffff' opacity='.4'/%3E%3Cg stroke='%23ffffff' stroke-opacity='.28' stroke-width='.8' fill='none' stroke-linecap='round'%3E%3Cpath d='M36.7 9Q37.5 23 38 36'/%3E%3Cpath d='M93.4 9Q94.3 25 95 41'/%3E%3Cpath d='M206.6 9Q207.4 25 208 39'/%3E%3C/g%3E%3C/svg%3E");
 	background-repeat: repeat-x;
-	background-size: 240px 64px;
+	background-size: auto 100%;
 }
 
 .rune-crust-flip {
