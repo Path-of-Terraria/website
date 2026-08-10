@@ -128,7 +128,7 @@
             <P color="red">{error}</P>
         </div>
     {:else}
-        <Card class="mx-auto max-w-md border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:p-6 md:p-8">
+        <Card class="mx-auto max-w-md border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:p-6 md:p-8">
             <div class="mb-6 flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h5 class="text-xl font-medium text-gray-300">Manage Your Benefits</h5>

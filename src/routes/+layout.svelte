@@ -37,8 +37,12 @@
 </script>
 <Toaster />
 <div class="app">
+	<!-- Ambience: etched glyphs and drifting frost behind every page. -->
+	<div class="rune-glyphs pointer-events-none fixed inset-0 -z-10 opacity-[0.035]"></div>
+	<div class="rune-motes pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-40"></div>
+
 	<Header />
-	
+
 	<main class="pt-20">
 		<slot />
 	</main>

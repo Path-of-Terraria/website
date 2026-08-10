@@ -61,7 +61,7 @@
         </div>
 
         <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-            <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
+            <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
                 <div class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
                     <div class={`hidden gap-4 border-b border-white/10 bg-white/[0.04] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-300 md:grid ${isOwnProfile ? 'md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr_0.9fr]' : 'md:grid-cols-[minmax(0,2.2fr)_0.8fr_0.9fr_0.9fr_0.9fr]'}`}>
                         <div>Character Name</div>

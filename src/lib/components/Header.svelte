@@ -40,7 +40,7 @@
         }
     }
 
-    let navbarClass = 'fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-transparent backdrop-blur-sm';
+    let navbarClass = 'fixed top-0 left-0 right-0 z-50 border-b border-rune-300/12 bg-transparent backdrop-blur-sm';
     let brandTextClass = 'text-white';
     let navLinkClass = 'text-white hover:text-gray-200';
     let hamburgerClass = 'text-white';
@@ -65,6 +65,7 @@
 			Path of Terraria
 		</span>
     </NavBrand>
+
     <style>ul {gap: 16px; }</style>
     <NavUl>
         <NavLi href="/" class={navLinkClass}>Home</NavLi>
@@ -126,6 +127,11 @@
             </DropdownGroup>
         </Dropdown>
     {/if}
+
+    <!-- Frost clinging to the underside of the navbar, on every page.
+         Anchored to the navbar's own bottom edge so it tracks the real
+         height (including when the mobile menu expands). -->
+    <div class="rune-crust pointer-events-none absolute inset-x-0 top-full h-7 opacity-35"></div>
 </Navbar>
 
 {#if currentUser}

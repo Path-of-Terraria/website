@@ -79,7 +79,7 @@
                     <Heading tag="h2" class="mb-6 text-white">League Packs</Heading>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each oneTimePacks as pack}
-                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
                                 <div class="mb-3 flex items-center gap-3">
                                     {#if pack.imageUrl}
                                         <img
@@ -122,7 +122,7 @@
                     <Heading tag="h2" class="mb-6 text-white">Subscriptions</Heading>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {#each subscriptionPacks as pack}
-                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+                            <Card class="border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
                                 <div class="mb-3 flex items-center gap-3">
                                     {#if pack.imageUrl}
                                         <img

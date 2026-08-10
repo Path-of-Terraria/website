@@ -244,7 +244,7 @@
                 </div>
 
                 <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                    <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                    <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                         <h2 class="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">Stats</h2>
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
                             <div class="min-w-0 rounded-xl border border-cyan-300/18 bg-cyan-300/10 px-4 py-3 text-center">
@@ -277,7 +277,7 @@
 
                 {#if viewer.gearSnapshot && viewer.gearSnapshot.slots.length > 0}
                     <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                             <div class="mb-4 flex items-center justify-between">
                                 <h2 class="text-xs font-semibold uppercase tracking-[0.22em] text-gray-400">Gear</h2>
                                 {#if viewer.gearSnapshot.modVersion}
@@ -366,7 +366,7 @@
 
                 {#if viewer.passiveTreeSnapshot && viewer.passiveTreeSnapshot.allocatedNodes.length > 0}
                     <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                             <PassiveTreeViewer snapshot={viewer.passiveTreeSnapshot} />
                         </div>
                     </div>
@@ -374,7 +374,7 @@
 
                 {#if viewer.skillsSnapshot && viewer.skillsSnapshot.skills.length > 0}
                     <div class="rounded-[2rem] bg-gradient-to-br from-fuchsia-300/14 via-rose-300/8 to-amber-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
+                        <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-5 ring-1 ring-white/10 backdrop-blur-sm">
                             <SkillTreeViewer snapshot={viewer.skillsSnapshot} />
                         </div>
                     </div>

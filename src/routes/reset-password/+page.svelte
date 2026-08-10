@@ -34,7 +34,7 @@
 </script>
 
 <div class="container mx-auto mt-16 px-4 py-24 text-white">
-    <div class="mx-auto max-w-lg rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.32)] sm:p-8">
+    <div class="mx-auto max-w-lg rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.32)] sm:p-8">
     <Heading tag="h2" class="text-center text-white">
         Reset Password
     </Heading>

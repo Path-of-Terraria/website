@@ -621,7 +621,7 @@
 
     <!-- Language Selection -->
     {#if !showTranslationTable}
-        <div class="mb-8 rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+        <div class="mb-8 rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
             <h2 class="mb-4 text-xl font-semibold text-white">Select a Language</h2>
             <p class="mb-4 text-gray-300">Please select a language to view and edit translations:</p>
 

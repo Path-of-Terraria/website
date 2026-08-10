@@ -36,11 +36,13 @@
     />
 </svelte:head>
 
-<div class="relative -mt-20 min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(151,255,120,0.10),transparent_22%),linear-gradient(180deg,#090c12_0%,#111827_30%,#10191c_62%,#10191c_100%)] pt-20 text-white">
+<div class="relative -mt-20 min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(130,216,255,0.12),transparent_24%),linear-gradient(180deg,#080d14_0%,#0e1c28_30%,#101c22_62%,#10191c_100%)] pt-20 text-white">
     <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20"></div>
-    <div class="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-gradient-to-br from-lime-400/25 via-emerald-400/12 to-sky-400/8 blur-3xl"></div>
-    <div class="pointer-events-none absolute top-10 right-0 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-400/16 via-indigo-400/10 to-transparent blur-3xl"></div>
-    <div class="pointer-events-none absolute top-80 left-1/2 h-72 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-amber-500/14 via-emerald-400/10 to-sky-400/14 blur-3xl"></div>
+    <div class="rune-glyphs pointer-events-none absolute inset-0"></div>
+    <div class="rune-motes pointer-events-none absolute inset-0 overflow-hidden opacity-60"></div>
+    <div class="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-gradient-to-br from-rune-300/22 via-rune-400/12 to-runegold-400/8 blur-3xl"></div>
+    <div class="pointer-events-none absolute top-10 right-0 h-96 w-96 rounded-full bg-gradient-to-br from-rune-400/16 via-indigo-400/10 to-transparent blur-3xl"></div>
+    <div class="pointer-events-none absolute top-80 left-1/2 h-72 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-runegold-400/12 via-rune-300/12 to-rune-500/14 blur-3xl"></div>
     <div class="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-black/10 to-transparent"></div>
 
     <section class="relative">
@@ -73,14 +75,14 @@
                 This leaderboard is for people who have contributed to the localization of the mod.
                 <a
                     href="/mod-data/localization"
-                    class="ml-1 font-semibold text-emerald-200 transition-colors duration-200 hover:text-emerald-100"
+                    class="ml-1 font-semibold text-rune-200 transition-colors duration-200 hover:text-rune-100"
                 >
                     Help translate here.
                 </a>
             </div>
 
-            <div class="rounded-[2rem] bg-gradient-to-br from-amber-300/14 via-emerald-300/8 to-cyan-300/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
-                <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.07),transparent_30%),linear-gradient(180deg,rgba(17,24,39,0.96),rgba(9,14,24,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
+            <div class="rounded-[2rem] bg-gradient-to-br from-rune-200/18 via-rune-400/8 to-runegold-400/12 p-[1px] shadow-[0_20px_90px_rgba(0,0,0,0.28)]">
+                <div class="rounded-[calc(2rem-1px)] bg-[radial-gradient(circle_at_top_left,rgba(130,216,255,0.09),transparent_32%),linear-gradient(180deg,rgba(17,28,41,0.96),rgba(9,15,25,0.94))] p-4 ring-1 ring-white/10 backdrop-blur-sm md:p-5">
                     <div class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a1016] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
                         <div class="hidden grid-cols-[minmax(0,2.2fr)_0.9fr_0.8fr_1.2fr] gap-4 border-b border-white/10 bg-white/[0.04] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-300 md:grid">
                             <div>Localizer</div>
