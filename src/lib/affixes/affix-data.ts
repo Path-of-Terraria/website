@@ -76,12 +76,15 @@ const itemTypeMasks: Record<string, number> = {
 	Talisman: 1 << 26,
 	Focus: 1 << 27,
 	Summon: 1 << 28,
-	Yoyo: 1 << 29
+	Yoyo: 1 << 29,
+	Accessory: 1 << 30,
+	Wings: 1 << 31,
+	JumpAccessories: 1 << 32
 };
 
 itemTypeMasks.Armor = itemTypeMasks.Helmet | itemTypeMasks.Chestplate | itemTypeMasks.Leggings;
-itemTypeMasks.Accessories = itemTypeMasks.Ring | itemTypeMasks.Charm | itemTypeMasks.Amulet;
-itemTypeMasks.Equipment = itemTypeMasks.Armor | itemTypeMasks.Accessories;
+itemTypeMasks.Accessories = itemTypeMasks.Accessory;
+itemTypeMasks.Equipment = itemTypeMasks.Armor | itemTypeMasks.Ring | itemTypeMasks.Charm | itemTypeMasks.Amulet | itemTypeMasks.Wings | itemTypeMasks.JumpAccessories | itemTypeMasks.Accessories;
 itemTypeMasks.Offhand = itemTypeMasks.Shield | itemTypeMasks.Quiver | itemTypeMasks.Talisman | itemTypeMasks.Focus;
 itemTypeMasks.Melee =
 	itemTypeMasks.Sword | itemTypeMasks.Spear | itemTypeMasks.MeleeFlail | itemTypeMasks.WarShield | itemTypeMasks.Battleaxe | itemTypeMasks.Yoyo;
@@ -125,7 +128,10 @@ const singleItemTypeNames = [
 	'Talisman',
 	'Focus',
 	'Summon',
-	'Yoyo'
+	'Yoyo',
+	'Accessory',
+	'Wings',
+	'JumpAccessories'
 ];
 
 export const itemTypes: ItemTypeDefinition[] = singleItemTypeNames.map((name) => ({
