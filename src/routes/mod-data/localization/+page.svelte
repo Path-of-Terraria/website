@@ -3,13 +3,15 @@
     import { goto } from "$app/navigation";
     import { page } from "$app/state";
     import { TranslationEntryService } from '$lib/services/translation-entry-service';
-    import { HjsonParserService } from '$lib/services/hjson-parser-service';
+    import { HjsonParserService, type IHjsonExportEntry } from '$lib/services/hjson-parser-service';
     import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
     import { toast } from '$lib/toast';
     import { UserService } from '$lib/services/user-service';
     import { Button } from 'flowbite-svelte';
     import { ChevronDownOutline } from 'flowbite-svelte-icons';
     import { user } from "$lib/stores/user-store";
+    import GlossaryText from "$lib/components/GlossaryText.svelte";
+    import { GLOSSARY_CATEGORY, EMPTY_GLOSSARY, buildGlossary } from "$lib/data/localization/glossary";
 
     // Available languages for translation
     const availableLanguages = [
@@ -33,6 +35,9 @@
     let showTranslationTable: boolean = $state(false);
     let newTranslations: Record<string, string> = $state({});
     let submitting: Record<string, boolean> = $state({});
+
+    // Glossary terms/notes come from the "Glossary" translation category (translated when available)
+    const glossary = $derived(buildGlossary(categorizedTranslations[GLOSSARY_CATEGORY] ?? []));
 
     // Filter options
     let hideTranslatedEntries: boolean = $state(false);
@@ -155,6 +160,36 @@
             document.body.style.overflow = '';
         };
     });
+
+    /**
+     * Exports the active category as an HJSON file for the selected language.
+     * Entries that have no translation yet fall back to their English text, so
+     * the file is complete and can be used as a localization file as-is.
+     */
+    function exportCategoryAsHjson() {
+        const entries: IHjsonExportEntry[] = categorizedTranslations[activeCategory] ?? [];
+
+        if (entries.length === 0) {
+            toast.push('There is nothing to export in this category', {type: 'error'});
+            return;
+        }
+
+        const content = hjsonParserService.serializeToHjson(entries, activeCategory);
+        const fileName = `${activeCategory}.${selectedLanguage}.hjson`;
+        const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+
+        const translatedCount = entries.filter(entry => entry.translatedValue).length;
+        toast.push(`Exported ${fileName} (${translatedCount} of ${entries.length} translated)`);
+    }
 
     /**
      * Fetches English translation entries from the API
@@ -674,6 +709,14 @@
                 >
                     Import HJSON
                 </button>
+                <button
+                    class="flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    onclick={exportCategoryAsHjson}
+                    disabled={!activeCategory || (categorizedTranslations[activeCategory]?.length ?? 0) === 0}
+                    title="Download the current category as an HJSON file"
+                >
+                    Export HJSON
+                </button>
             </div>
         </div>
 
@@ -835,7 +878,7 @@
                     {#each filteredNonGrouped as translation}
                         <tr class="border-t border-white/8 hover:bg-white/[0.025]">
                             <td class="px-4 py-3 text-gray-200">{getDisplayKey(translation.key)}</td>
-                            <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                            <td class="px-4 py-3 text-gray-300"><GlossaryText text={translation.value} glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary} /></td>
                             <td class="px-4 py-3 text-gray-200">
                                 {#if translation.translatedValue}
                                     {#if canEditTranslations && editingTranslations[translation.key]}
@@ -928,7 +971,7 @@
                                 {#each filteredGroupTranslations as translation}
                                     <tr class="border-t border-white/8 bg-white/[0.02] hover:bg-white/[0.04]">
                                         <td class="px-4 py-3 pl-8 text-gray-200">{getDisplayKey(translation.key, groupKey)}</td>
-                                        <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                                        <td class="px-4 py-3 text-gray-300"><GlossaryText text={translation.value} glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary} /></td>
                                         <td class="px-4 py-3 text-gray-200">
                                             {#if translation.translatedValue}
                                                 {#if canEditTranslations && editingTranslations[translation.key]}

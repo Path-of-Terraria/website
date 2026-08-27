@@ -1,5 +1,18 @@
 import type { ITranslationEntry } from '$lib/models/localization';
 
+/** A category entry to export: the English source value and its translation, if any. */
+export interface IHjsonExportEntry {
+    key: string;
+    value: string;
+    translatedValue?: string;
+}
+
+/** Node of the tree built from dotted translation keys while serializing. */
+interface HjsonNode {
+    children?: Map<string, HjsonNode>;
+    entry?: IHjsonExportEntry;
+}
+
 /**
  * Service for parsing HJSON content for translations
  * 
@@ -97,6 +110,10 @@ export class HjsonParserService {
                     .concat(keyPart)
                     .join('.');
 
+            // Skip empty values: exported files contain empty placeholders for entries
+            // that are not translated yet, and those must not be imported as blanks.
+            if (value.trim() === '') continue;
+
             parsedTranslations[fullKey] = value;
         }
 
@@ -146,5 +163,100 @@ export class HjsonParserService {
         }
         
         return { translationsToAdd, stats };
+    }
+
+    /**
+     * Serializes the translations of a single category into HJSON, in the same
+     * shape `parseHjsonContent` accepts (keys are written relative to
+     * `Mods.PathOfTerraria.<category>.`), so an exported file can be edited and
+     * imported back.
+     *
+     * Entries that have no translation yet fall back to their English value, so
+     * the document is always complete and directly usable as a localization file.
+     *
+     * @param entries The category's entries: English value plus optional translation
+     * @param category The category being exported
+     * @returns The HJSON document
+     */
+    public serializeToHjson(entries: IHjsonExportEntry[], category: string): string {
+        if (!category) return '';
+
+        const prefix = `Mods.PathOfTerraria.${category}.`;
+        const root: HjsonNode = {};
+
+        for (const entry of entries) {
+            if (!entry.key.startsWith(prefix)) continue;
+
+            const segments = entry.key.slice(prefix.length).split('.').filter(Boolean);
+            if (segments.length === 0) continue;
+
+            let node = root;
+            for (const segment of segments.slice(0, -1)) {
+                const children = (node.children ??= new Map<string, HjsonNode>());
+                let child = children.get(segment);
+                if (!child) {
+                    child = {};
+                    children.set(segment, child);
+                }
+                node = child;
+            }
+
+            const children = (node.children ??= new Map<string, HjsonNode>());
+            const leafName = segments[segments.length - 1];
+            const leaf = children.get(leafName) ?? {};
+            leaf.entry = entry;
+            children.set(leafName, leaf);
+        }
+
+        const lines = this.renderNode(root, 0);
+        return lines.length > 0 ? lines.join('\n') + '\n' : '';
+    }
+
+    /** Renders a node's children as indented HJSON lines. */
+    private renderNode(node: HjsonNode, depth: number): string[] {
+        const lines: string[] = [];
+        const indent = '\t'.repeat(depth);
+        const blockDelimiter = "'''";
+
+        for (const [name, child] of node.children ?? []) {
+            const key = /^[\w-]+$/.test(name) ? name : `"${name}"`;
+
+            if (child.children && child.children.size > 0) {
+                if (child.entry) {
+                    // A key used both as a value and as a parent cannot be expressed in
+                    // HJSON; keep the value visible as a comment so nothing is lost.
+                    const own = child.entry.translatedValue || child.entry.value;
+                    lines.push(`${indent}# ${key} = ${this.toSingleLine(own)}`);
+                }
+
+                lines.push(`${indent}${key}: {`);
+                lines.push(...this.renderNode(child, depth + 1));
+                lines.push(`${indent}}`);
+                continue;
+            }
+
+            if (!child.entry) continue;
+
+            // Untranslated entries fall back to the English text.
+            const value = child.entry.translatedValue || child.entry.value;
+            if (value.includes('\n')) {
+                lines.push(`${indent}${key}: ${blockDelimiter}`);
+                for (const valueLine of value.split('\n')) {
+                    lines.push(`${indent}\t${valueLine}`);
+                }
+                lines.push(`${indent}${blockDelimiter}`);
+            } else {
+                // Surrounding quotes are stripped as a pair on import, so wrapping is
+                // safe even when the value itself contains quotes, commas or braces.
+                lines.push(`${indent}${key}: "${value}"`);
+            }
+        }
+
+        return lines;
+    }
+
+    /** Collapses newlines so a value can be used inside a single-line comment. */
+    private toSingleLine(value: string): string {
+        return value.replace(/\s*\n\s*/g, ' ').trim();
     }
 }
