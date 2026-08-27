@@ -31,6 +31,14 @@
         view = "login";
     }
 
+    // Mirrors the submit buttons' enabled state so Enter behaves the same as clicking them
+    const canSubmit = $derived(
+        !isSubmitting &&
+        !!email &&
+        (view === 'forgot-password' || !!password) &&
+        (view !== 'register' || !!profileName)
+    );
+
     async function handleSubmit() {
         if (isSubmitting) {
             return;
@@ -47,6 +55,20 @@
             }
         } finally {
             isSubmitting = false;
+        }
+    }
+
+    /**
+     * Submits on Enter. The default button of the modal's form is the header
+     * close button, so implicit submission would dismiss the modal instead of
+     * logging in - always prevent it and run the current view's action.
+     */
+    function handleEnter(event: KeyboardEvent) {
+        if (event.key !== 'Enter' || event.isComposing) return;
+
+        event.preventDefault();
+        if (canSubmit) {
+            void handleSubmit();
         }
     }
 
@@ -74,17 +96,17 @@
     {#if view === 'register'}
         <div class="mb-4">
             <Label for="profile" class="mb-2 block text-gray-300">Profile Name</Label>
-            <Input id="profile" size="sm" placeholder="DrBibbityBob" bind:value={profileName} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
+            <Input id="profile" size="sm" placeholder="DrBibbityBob" bind:value={profileName} onkeydown={handleEnter} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
     {/if}
     <div class="mb-6">
         <Label for="email" class="mb-2 block text-gray-300">Email</Label>
-        <Input required id="email" type="email" size="sm" placeholder="imsocool@example.com" bind:value={email} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
+        <Input required id="email" type="email" size="sm" placeholder="imsocool@example.com" bind:value={email} onkeydown={handleEnter} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
     </div>
     {#if view !== 'forgot-password'}
         <div class="mb-6">
             <Label for="password" class="mb-2 block text-gray-300">Password</Label>
-            <Input required type="password" id="password" size="sm" placeholder="password123" bind:value={password} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
+            <Input required type="password" id="password" size="sm" placeholder="password123" bind:value={password} onkeydown={handleEnter} class="border-white/10 bg-white/8 text-white placeholder:text-gray-500"/>
         </div>
     {/if}
     {#snippet footer()}
@@ -99,21 +121,21 @@
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'register'}>
                         Register Instead
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || isSubmitting}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!canSubmit}>
                         {isSubmitting ? 'Logging In...' : 'Login'}
                     </Button>
                 {:else if view === 'register'}
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Signin Instead
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || !password || !profileName || isSubmitting}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!canSubmit}>
                         {isSubmitting ? 'Signing Up...' : 'Signup'}
                     </Button>
                 {:else}
                     <Button class="border-white/10 bg-white/8 text-gray-200 hover:bg-white/12 hover:text-white" onclick={() => view = 'login'}>
                         Back to Login
                     </Button>
-                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!email || isSubmitting}>
+                    <Button value="accept" type="submit" class="bg-emerald-500 text-white hover:bg-emerald-400" disabled={!canSubmit}>
                         {isSubmitting ? 'Sending...' : 'Send Reset Email'}
                     </Button>
                 {/if}
