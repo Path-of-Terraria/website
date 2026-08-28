@@ -3,7 +3,7 @@
     import { goto } from "$app/navigation";
     import { page } from "$app/state";
     import { TranslationEntryService } from '$lib/services/translation-entry-service';
-    import { HjsonParserService, type IHjsonExportEntry } from '$lib/services/hjson-parser-service';
+    import { HjsonParserService } from '$lib/services/hjson-parser-service';
     import type { IEnglishTranslation, ITranslationEntry } from '$lib/models/localization';
     import { toast } from '$lib/toast';
     import { UserService } from '$lib/services/user-service';
@@ -52,6 +52,7 @@
     let hjsonContent: string = $state('');
     let importStats = $state({total: 0, added: 0, skipped: 0});
     let isImporting: boolean = $state(false);
+    let isExporting: boolean = $state(false);
     let selectedImportCategory: string = $state('');
     let importCategoryDropdownOpen: boolean = $state(false);
     let importCategoryDropdownContainer: HTMLDivElement | null = $state(null);
@@ -162,33 +163,35 @@
     });
 
     /**
-     * Exports the active category as an HJSON file for the selected language.
-     * Entries that have no translation yet fall back to their English text, so
-     * the file is complete and can be used as a localization file as-is.
+     * Downloads the export the server generates for the selected language: a zip
+     * with one hjson file per category. Fetching it instead of building it here
+     * keeps the download identical to what the server ships.
      */
-    function exportCategoryAsHjson() {
-        const entries: IHjsonExportEntry[] = categorizedTranslations[activeCategory] ?? [];
-
-        if (entries.length === 0) {
-            toast.push('There is nothing to export in this category', {type: 'error'});
+    async function exportTranslations() {
+        if (!selectedLanguage || isExporting) {
             return;
         }
 
-        const content = hjsonParserService.serializeToHjson(entries, activeCategory);
-        const fileName = `${activeCategory}.${selectedLanguage}.hjson`;
-        const blob = new Blob([content], {type: 'text/plain;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
+        isExporting = true;
+        try {
+            const blob = await translationService.exportLanguage(selectedLanguage);
+            const fileName = `translations_${selectedLanguage}.zip`;
+            const url = URL.createObjectURL(blob);
 
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
 
-        const translatedCount = entries.filter(entry => entry.translatedValue).length;
-        toast.push(`Exported ${fileName} (${translatedCount} of ${entries.length} translated)`);
+            toast.push(`Exported ${fileName}`);
+        } catch {
+            toast.push('Failed to export translations', {type: 'error'});
+        } finally {
+            isExporting = false;
+        }
     }
 
     /**
@@ -711,11 +714,11 @@
                 </button>
                 <button
                     class="flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    onclick={exportCategoryAsHjson}
-                    disabled={!activeCategory || (categorizedTranslations[activeCategory]?.length ?? 0) === 0}
-                    title="Download the current category as an HJSON file"
+                    onclick={exportTranslations}
+                    disabled={!selectedLanguage || isExporting}
+                    title="Download every category for this language as a zip of HJSON files"
                 >
-                    Export HJSON
+                    {isExporting ? 'Exporting...' : 'Export HJSON'}
                 </button>
             </div>
         </div>
@@ -878,7 +881,12 @@
                     {#each filteredNonGrouped as translation}
                         <tr class="border-t border-white/8 hover:bg-white/[0.025]">
                             <td class="px-4 py-3 text-gray-200">{getDisplayKey(translation.key)}</td>
-                            <td class="px-4 py-3 text-gray-300"><GlossaryText text={translation.value} glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary} /></td>
+                            <td class="px-4 py-3 text-gray-300">
+                                <GlossaryText
+                                        text={translation.value}
+                                        glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary}
+                                />
+                            </td>
                             <td class="px-4 py-3 text-gray-200">
                                 {#if translation.translatedValue}
                                     {#if canEditTranslations && editingTranslations[translation.key]}
@@ -971,7 +979,12 @@
                                 {#each filteredGroupTranslations as translation}
                                     <tr class="border-t border-white/8 bg-white/[0.02] hover:bg-white/[0.04]">
                                         <td class="px-4 py-3 pl-8 text-gray-200">{getDisplayKey(translation.key, groupKey)}</td>
-                                        <td class="px-4 py-3 text-gray-300"><GlossaryText text={translation.value} glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary} /></td>
+                                        <td class="px-4 py-3 text-gray-300">
+                                            <GlossaryText
+                                                    text={translation.value}
+                                                    glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary}
+                                            />
+                                        </td>
                                         <td class="px-4 py-3 text-gray-200">
                                             {#if translation.translatedValue}
                                                 {#if canEditTranslations && editingTranslations[translation.key]}
