@@ -97,6 +97,10 @@ export class HjsonParserService {
                     .concat(keyPart)
                     .join('.');
 
+            // Skip empty values: exported files contain empty placeholders for entries
+            // that are not translated yet, and those must not be imported as blanks.
+            if (value.trim() === '') continue;
+
             parsedTranslations[fullKey] = value;
         }
 

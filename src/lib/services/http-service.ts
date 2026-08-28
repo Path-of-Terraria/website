@@ -52,8 +52,8 @@ export class HttpService {
         return HttpService.instance;
     }
 
-    public async get(url: string): Promise<AxiosResponse> {
-        return await axios.get(url);
+    public async get(url: string, options?: AxiosRequestConfig): Promise<AxiosResponse> {
+        return await axios.get(url, options);
     }
 
     public async post(url: string, data: any, options?: AxiosRequestConfig): Promise<AxiosResponse> {

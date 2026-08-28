@@ -29,6 +29,15 @@ export class TranslationEntryService {
         return [];
     }
 
+    /**
+     * Downloads the server-generated export for a language: a zip holding one
+     * hjson file per category.
+     */
+    public async exportLanguage(language: string): Promise<Blob> {
+        const response = await this.httpService.get(`TranslationEntry/Export/${language}`, { responseType: 'blob' });
+        return response.data as Blob;
+    }
+
     public async getLeaderboards(): Promise<ITranslationContributorLeaderboardEntry[]> {
         const response = await this.httpService.get('TranslationEntry/Leaderboard');
         if (response) {

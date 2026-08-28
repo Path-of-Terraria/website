@@ -10,6 +10,8 @@
     import { Button } from 'flowbite-svelte';
     import { ChevronDownOutline } from 'flowbite-svelte-icons';
     import { user } from "$lib/stores/user-store";
+    import GlossaryText from "$lib/components/GlossaryText.svelte";
+    import { GLOSSARY_CATEGORY, EMPTY_GLOSSARY, buildGlossary } from "$lib/data/localization/glossary";
 
     // Available languages for translation
     const availableLanguages = [
@@ -34,6 +36,9 @@
     let newTranslations: Record<string, string> = $state({});
     let submitting: Record<string, boolean> = $state({});
 
+    // Glossary terms/notes come from the "Glossary" translation category (translated when available)
+    const glossary = $derived(buildGlossary(categorizedTranslations[GLOSSARY_CATEGORY] ?? []));
+
     // Filter options
     let hideTranslatedEntries: boolean = $state(false);
     let searchQuery: string = $state('');
@@ -47,6 +52,7 @@
     let hjsonContent: string = $state('');
     let importStats = $state({total: 0, added: 0, skipped: 0});
     let isImporting: boolean = $state(false);
+    let isExporting: boolean = $state(false);
     let selectedImportCategory: string = $state('');
     let importCategoryDropdownOpen: boolean = $state(false);
     let importCategoryDropdownContainer: HTMLDivElement | null = $state(null);
@@ -155,6 +161,38 @@
             document.body.style.overflow = '';
         };
     });
+
+    /**
+     * Downloads the export the server generates for the selected language: a zip
+     * with one hjson file per category. Fetching it instead of building it here
+     * keeps the download identical to what the server ships.
+     */
+    async function exportTranslations() {
+        if (!selectedLanguage || isExporting) {
+            return;
+        }
+
+        isExporting = true;
+        try {
+            const blob = await translationService.exportLanguage(selectedLanguage);
+            const fileName = `translations_${selectedLanguage}.zip`;
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+
+            toast.push(`Exported ${fileName}`);
+        } catch {
+            toast.push('Failed to export translations', {type: 'error'});
+        } finally {
+            isExporting = false;
+        }
+    }
 
     /**
      * Fetches English translation entries from the API
@@ -674,6 +712,14 @@
                 >
                     Import HJSON
                 </button>
+                <button
+                    class="flex cursor-pointer items-center rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-gray-200 hover:bg-white/12 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    onclick={exportTranslations}
+                    disabled={!selectedLanguage || isExporting}
+                    title="Download every category for this language as a zip of HJSON files"
+                >
+                    {isExporting ? 'Exporting...' : 'Export HJSON'}
+                </button>
             </div>
         </div>
 
@@ -835,7 +881,12 @@
                     {#each filteredNonGrouped as translation}
                         <tr class="border-t border-white/8 hover:bg-white/[0.025]">
                             <td class="px-4 py-3 text-gray-200">{getDisplayKey(translation.key)}</td>
-                            <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                            <td class="px-4 py-3 text-gray-300">
+                                <GlossaryText
+                                        text={translation.value}
+                                        glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary}
+                                />
+                            </td>
                             <td class="px-4 py-3 text-gray-200">
                                 {#if translation.translatedValue}
                                     {#if canEditTranslations && editingTranslations[translation.key]}
@@ -928,7 +979,12 @@
                                 {#each filteredGroupTranslations as translation}
                                     <tr class="border-t border-white/8 bg-white/[0.02] hover:bg-white/[0.04]">
                                         <td class="px-4 py-3 pl-8 text-gray-200">{getDisplayKey(translation.key, groupKey)}</td>
-                                        <td class="px-4 py-3 text-gray-300">{translation.value}</td>
+                                        <td class="px-4 py-3 text-gray-300">
+                                            <GlossaryText
+                                                    text={translation.value}
+                                                    glossary={activeCategory === GLOSSARY_CATEGORY ? EMPTY_GLOSSARY : glossary}
+                                            />
+                                        </td>
                                         <td class="px-4 py-3 text-gray-200">
                                             {#if translation.translatedValue}
                                                 {#if canEditTranslations && editingTranslations[translation.key]}
